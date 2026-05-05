@@ -1,0 +1,3088 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢字すごろくゲーム</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            animation: backgroundShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundShift {
+            0%, 100% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%); }
+            33% { background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%); }
+            66% { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
+        }
+        
+        .game-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #3498db;
+        }
+        
+        .title {
+            text-align: center;
+            color: #3498db;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            font-weight: bold;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(52, 152, 219, 0.3); }
+            100% { text-shadow: 3px 3px 6px rgba(0,0,0,0.5), 0 0 30px rgba(52, 152, 219, 0.6); }
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            row-gap: 15px;
+            margin: 10px 0;
+            padding: 15px;
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            border-radius: 15px;
+            border: 3px solid #3498db;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+            height: 200px;
+            overflow: visible;
+            max-width: 100%;
+        }
+        
+        .cell {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+            font-size: 0.7rem;
+            min-height: 25px;
+            max-height: 50px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .start { background: #4CAF50; color: white; }
+        .goal { background: #FF6B6B; color: white; }
+        .color1 { background: #FF9999; color: white; }
+        .color2 { background: #99CCFF; color: white; }
+        .color3 { background: #99FF99; color: white; }
+        .color4 { background: #FFCC99; color: white; }
+        .color5 { background: #FF99FF; color: white; }
+        .color6 { background: #99FFFF; color: white; }
+        .color7 { background: #FFFF99; color: #333; }
+        .color8 { background: #CC99FF; color: white; }
+        .color9 { background: #FFB366; color: white; }
+        .color10 { background: #66FFB3; color: white; }
+        
+        .player {
+            position: absolute;
+            font-size: 2rem;
+            z-index: 10;
+            animation: bounce 0.5s ease;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
+        }
+        
+        .player1 { top: -8px; left: 2px; }
+        .player2 { bottom: -8px; right: 2px; }
+        
+        .game-info {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 15px;
+            margin: 10px 0;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        
+        .player-info {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 0.75rem;
+            border: 2px solid #7f8c8d;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-info.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.6);
+            border-color: #3498db;
+            animation: activeGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes activeGlow {
+            0% { box-shadow: 0 10px 30px rgba(52, 152, 219, 0.6); }
+            100% { box-shadow: 0 15px 40px rgba(52, 152, 219, 0.8); }
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 10px 0;
+            flex-shrink: 0;
+        }
+        
+        .dice-container {
+            display: inline-block;
+            margin: 10px;
+        }
+        
+        .dice {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffd93d, #ffb347);
+            border: 3px solid #ff6b6b;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0 auto 8px;
+            transition: transform 0.5s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            color: #333;
+        }
+        
+        .dice.rolling {
+            animation: roll 1s ease-in-out;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            border: 1px solid #2980b9;
+        }
+        
+        .card-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px 0;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            border: 1px solid #8e44ad;
+            min-width: 120px;
+            min-height: 50px;
+        }
+        
+        .card-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(155, 89, 182, 0.5);
+            background: linear-gradient(135deg, #8e44ad, #7d3c98);
+        }
+        
+        .card-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(52, 152, 219, 0.5);
+            background: linear-gradient(135deg, #2980b9, #1f4e79);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .question-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .answer-input:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .submit-answer {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .submit-answer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+            animation: timerPulse 1s ease-in-out infinite alternate;
+        }
+        
+        .timer-display.warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            animation: timerWarning 0.5s ease-in-out infinite alternate;
+        }
+        
+        .timer-display.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            animation: timerDanger 0.3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes timerPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        @keyframes timerWarning {
+            0% { transform: scale(1); box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3); }
+            100% { transform: scale(1.1); box-shadow: 0 5px 15px rgba(243, 156, 18, 0.6); }
+        }
+        
+        @keyframes timerDanger {
+            0% { transform: scale(1); box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3); }
+            100% { transform: scale(1.15); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.8); }
+        }
+        
+        .cards-section {
+            margin-top: 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .cards-display {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #ffd93d, #ff6b6b);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .player-cards {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .mini-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .mini-card:hover {
+            transform: scale(1.1);
+        }
+        
+        .card-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500;
+        }
+        
+        .card-menu {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .card-item {
+            background: linear-gradient(135deg, #a8b5f0, #b8a8d4);
+            color: #2c3e50;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .card-item.turn-end {
+            background: linear-gradient(135deg, #f5a3a3, #f0b3b3);
+            color: #2c3e50;
+        }
+        
+        .card-item.turn-continue {
+            background: linear-gradient(135deg, #a3d5a3, #b3e0b3);
+            color: #2c3e50;
+        }
+        
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        
+        .card-description {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .winner-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .winner-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            animation: celebration 1s ease-in-out;
+        }
+        
+        @keyframes celebration {
+            0% { transform: scale(0.5) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .card-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        
+        .card-popup-content {
+            background: linear-gradient(135deg, #ffd93d, #ff6b6b);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: cardAppear 0.8s ease-out;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes cardAppear {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(0deg); opacity: 0.8; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .card-popup h2 {
+            margin: 0 0 20px 0;
+            font-size: 2rem;
+        }
+        
+        .card-popup .card-name {
+            font-size: 1.5rem;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card-popup .card-desc {
+            font-size: 1.1rem;
+            margin: 15px 0;
+            opacity: 0.9;
+        }
+        
+        /* モーション弱め設定対応（酔いやすい子のために） */
+        @media (prefers-reduced-motion: reduce) {
+            * { 
+                animation: none !important; 
+                transition: none !important; 
+            }
+        }
+        
+        /* 追加：シンプルなトースト */
+        .toast {
+            position: fixed; 
+            left: 50%; 
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,.85); 
+            color: #fff;
+            padding: 10px 14px; 
+            border-radius: 10px;
+            font-weight: bold; 
+            z-index: 4000;
+            box-shadow: 0 8px 20px rgba(0,0,0,.3);
+            animation: toastIn .2s ease-out;
+        }
+        @keyframes toastIn { 
+            from { opacity:0; transform:translate(-50%,10px); } 
+            to { opacity:1; transform:translate(-50%,0); } 
+        }
+        
+        .setup-screen, .instructions-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .setup-container, .instructions-container {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 2px solid #3498db;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .setup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #ecf0f1;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .name-input, .grade-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .name-input:focus, .grade-select:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .instructions-content {
+            color: #ecf0f1;
+            text-align: left;
+            line-height: 1.6;
+        }
+        
+        .instructions-content h3 {
+            color: #3498db;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        .instructions-content ol, .instructions-content ul {
+            padding-left: 20px;
+        }
+        
+        .instructions-content li {
+            margin-bottom: 8px;
+        }
+        
+        .roulette-chip{
+          background: linear-gradient(135deg,#f1c40f,#f39c12);
+          color:#2c3e50;
+          padding:12px 16px;
+          border-radius:12px;
+          min-width:180px;
+          text-align:center;
+          border:2px solid #e67e22;
+          box-shadow:0 8px 20px rgba(0,0,0,0.2);
+          font-weight:bold;
+          transition:transform .15s ease, box-shadow .15s ease;
+        }
+        .roulette-chip.active{
+          transform: scale(1.08);
+          box-shadow:0 12px 26px rgba(230,126,34,.45);
+          border-color:#e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <!-- 初期設定画面 -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-container">
+            <h1 class="title">🎯 漢字すごろくゲーム 🎯</h1>
+            <div class="setup-form">
+                <div class="input-group">
+                    <label>プレイ人数を選択してください</label>
+                    <select id="playerCountSelect" class="grade-select" onchange="togglePlayer2Input()">
+                        <option value="1">1人プレイ（vs コンピューター）</option>
+                        <option value="2">2人プレイ</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>プレイヤー1の名前</label>
+                    <input type="text" id="player1Name" value="プレイヤー1" class="name-input" onfocus="this.select()">
+                </div>
+
+                <div class="input-group" id="player2Group">
+                    <label>プレイヤー2の名前</label>
+                    <input type="text" id="player2Name" value="プレイヤー2" class="name-input" onfocus="this.select()">
+                </div>
+                <div class="input-group">
+                    <label>難易度を選択してください</label>
+                    <select id="gradeSelect" class="grade-select">
+                        <option value="4">小学校4年生</option>
+                        <option value="5">小学校5年生</option>
+                        <option value="6">小学校6年生</option>
+                    </select>
+                </div>
+                <button class="btn setup-btn" onclick="showInstructions()">次へ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ゲーム説明画面 -->
+    <div class="instructions-screen" id="instructionsScreen" style="display: none;">
+        <div class="instructions-container">
+            <h1 class="title">🎮 ゲームの説明 🎮</h1>
+            <div class="instructions-content">
+                <h3>🎯 ゲームの目標</h3>
+                <p>30マスのS字型コースを進んで、最初にゴールに到達したプレイヤーの勝利です！</p>
+                
+                <h3>🎲 ゲームの流れ</h3>
+                <ol>
+                    <li>サイコロを振って出た目の数だけ進めます</li>
+                    <li>漢字の問題が出題されます</li>
+                    <li>正解すると進むことができ、カードがもらえることがあります</li>
+                    <li>不正解の場合は進めません</li>
+                </ol>
+                
+                <h3>🃏 カードについて</h3>
+                <p>カードには様々な効果があります：</p>
+                <ul>
+                    <li>🎲 サイコロ系：より多く進める</li>
+                    <li>💥 攻撃系：相手を妨害する</li>
+                    <li>🛡️ 防御系：攻撃から身を守る</li>
+                    <li>🚀 移動系：特別な移動ができる</li>
+                </ul>
+                
+                <button class="btn start-btn" onclick="startGame()">ゲーム開始！</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <h1 class="title">🎯 漢字すごろくゲーム 🎯</h1>
+        
+        <div class="game-board" id="gameBoard"></div>
+        
+        <div class="game-info">
+            <div class="player-info active" id="player1Info">
+                <h4 style="margin: 0; font-size: 0.9rem;" id="player1NameDisplay">👦 プレイヤー1</h4>
+                <button class="card-btn" id="useCardBtn1" onclick="showCardMenu(1)" style="display: none;">🃏 カード</button>
+                <div class="player-cards" id="player1CardsList"></div>
+            </div>
+            
+            <div class="dice-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div id="diceArea" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;">
+                    <div class="dice" id="dice">?</div>
+                </div>
+                <button class="btn" id="rollBtn" onclick="rollDice()" style="font-size: 1rem; padding: 12px 24px; margin: 8px;">サイコロ</button>
+                <button class="btn" onclick="showQuitConfirm()" style="font-size: 0.7rem; padding: 6px 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); margin-top: 15px;">ゲーム終了</button>
+            </div>
+            
+            <div class="player-info" id="player2Info">
+                <h4 style="margin: 0; font-size: 0.9rem;" id="player2NameDisplay">👧 プレイヤー2</h4>
+                <button class="card-btn" id="useCardBtn2" onclick="showCardMenu(2)" style="display: none;">🃏 カード</button>
+                <div class="player-cards" id="player2CardsList"></div>
+            </div>
+        </div>
+        
+
+        
+
+    </div>
+    
+    <!-- 問題モーダル -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <div class="timer-display" id="timerDisplay">20</div>
+            <h3>漢字問題</h3>
+            <div class="question-text" id="questionText"></div>
+            <input type="text" class="answer-input" id="answerInput" placeholder="ひらがなで答えを入力してください" onkeypress="if(event.key==='Enter') submitAnswer()">
+            <button class="submit-answer" onclick="submitAnswer()">回答する</button>
+        </div>
+    </div>
+    
+    <!-- カードメニューモーダル -->
+    <div class="card-modal" id="cardModal">
+        <div class="card-menu">
+            <h3>カードを選択してください</h3>
+            <div class="card-list" id="cardList"></div>
+            <button class="btn" onclick="closeCardMenu()">キャンセル</button>
+        </div>
+    </div>
+    
+    <!-- カード獲得ポップアップ -->
+    <div class="card-popup" id="cardPopup">
+        <div class="card-popup-content">
+            <h2>🎉 カード獲得！ 🎉</h2>
+            <div class="card-name" id="popupCardName"></div>
+            <div class="card-desc" id="popupCardDesc"></div>
+            <button class="btn" onclick="closeCardPopup()">OK</button>
+        </div>
+    </div>
+    
+    <!-- シールド発動ポップアップ -->
+    <div class="card-popup" id="shieldPopup">
+        <div class="card-popup-content" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+            <h2>🛡️ シールド発動！ 🛡️</h2>
+            <div class="card-name">攻撃を防ぎました！</div>
+            <button class="btn" onclick="closeShieldPopup()">OK</button>
+        </div>
+    </div>
+    
+    <!-- 正解・不正解ポップアップ -->
+    <div class="card-popup" id="answerPopup">
+        <div class="card-popup-content" id="answerPopupContent">
+            <h2 id="answerResultTitle">🎉 正解！ 🎉</h2>
+            <div class="card-name" id="answerResultMessage"></div>
+            <button class="btn" onclick="closeAnswerPopup()">OK</button>
+        </div>
+    </div>
+    
+    <!-- カード使用ポップアップ -->
+    <div class="card-popup" id="cardUsePopup">
+        <div class="card-popup-content" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+            <h2>🃏 カード使用！ 🃏</h2>
+            <div class="card-name" id="usedCardName"></div>
+            <div class="card-desc" id="usedCardDesc"></div>
+            <button class="btn" onclick="closeCardUsePopup()">OK</button>
+        </div>
+    </div>
+    
+    <!-- 勝利モーダル -->
+    <div class="winner-modal" id="winnerModal">
+        <div class="winner-content">
+            <h2 id="winnerText"></h2>
+            <p>🎉 おめでとうございます！ 🎉</p>
+            <button class="btn" onclick="resetGame()">もう一度遊ぶ</button>
+        </div>
+    </div>
+
+    <!-- ゲーム終了確認モーダル -->
+    <div class="winner-modal" id="quitModal">
+        <div class="winner-content">
+            <h2>🚪 ゲーム終了</h2>
+            <p>本当にゲームをやめますか？</p>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <button class="btn" onclick="quitGame()" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">はい</button>
+                <button class="btn" onclick="closeQuitConfirm()">いいえ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 先行ルーレット -->
+    <div class="winner-modal" id="firstPlayerModal" style="display:none;">
+      <div class="winner-content" style="max-width:520px;">
+        <h2>🎰 先攻プレイヤーを決めます</h2>
+        <div id="rouletteArea" style="display:flex; gap:16px; justify-content:center; margin:20px 0;">
+          <div id="rouletteP1" class="roulette-chip">👦 <span id="rouletteP1Name">プレイヤー1</span></div>
+          <div id="rouletteP2" class="roulette-chip">👧 <span id="rouletteP2Name">プレイヤー2</span></div>
+        </div>
+        <div id="rouletteMsg" style="margin:10px 0 20px; font-weight:bold;"></div>
+        <button class="btn" id="rouletteStartBtn" onclick="startFirstPlayerRoulette()">スタート</button>
+        <button class="btn" id="rouletteProceedBtn" style="display:none;" onclick="proceedAfterRoulette()">この順で開始</button>
+      </div>
+    </div>
+
+    <script>
+        // トースト表示関数（ノンブロッキング）
+        function toast(msg, ms = 1400) {
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => { el.remove(); }, ms);
+        }
+        
+        // 入力正規化関数（子どもの入力ゆらぎ対応）
+        function toHiragana(input){
+            // 全角化・小書き統一・カタカナ→ひらがな・長音処理・空白除去
+            let s = input.normalize('NFKC').toLowerCase().trim();
+            // カタカナ→ひらがな
+            s = s.replace(/[\u30A1-\u30F6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+            // 長音「ー」を直前母音に展開（おおざっぱだが実用的）
+            s = s.replace(/([あいうえお])ー/g, '$1$1');
+            // 小書き統一（ゃゅょ→やゆよ等）※必要に応じて調整
+            const map = {'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','ゃ':'や','ゅ':'ゆ','ょ':'よ','っ':'つ','ゎ':'わ'};
+            s = s.replace(/[ぁぃぅぇぉゃゅょっゎ]/g, m => map[m] || m);
+            // 空白・句読点の除去
+            s = s.replace(/[\s、。．・･]/g,'');
+            return s;
+        }
+        const normalize = toHiragana;
+
+        // ゲーム状態
+        let currentPlayer = 1;
+        let players = {
+            1: { position: 0, cards: [], shields: 0, skipTurn: false, name: "" },
+            2: { position: 0, cards: [], shields: 0, skipTurn: false, name: "" }
+        };
+        let diceValue = 0;
+        let gameEnded = false;
+        let selectedGrade = 4;
+        let currentQuestion = null;
+        let isAIGame = false;
+        let playerCount = 2;
+        let turnLocked = false;
+        // ★変更: ターン所有者システム追加（競合バグ修正）
+        let pendingAnswerFor = null;
+        // ラッキー6効果フラグ
+        let lucky6Active = false;
+        // AI再入防止フラグ
+        let aiBusy = false;
+        // タイマー管理配列
+        const timers = [];
+        // カードポップアップ閉じ処理の二重実行防止
+        let isClosingCardPopup = false;
+        // ターン切り替えの二重実行防止
+        let isSwitchingTurn = false;
+        // 直前の解答が正解だったか（文字列判定バグ防止）
+        let lastAnswerCorrect = null;
+        // ターン識別子（各ターンの一意ID）
+        let turnId = 0;
+        // 15秒タイマー関連
+        let answerTimer = null;
+        let timeLeft = 20;
+        
+        // ルーレット関連変数
+        let rouletteInterval = null;
+        let rouletteSpins = 0;
+        let rouletteDecided = null;
+        
+        // 学年別漢字問題データ
+        // 追加：問題重複防止の履歴（学年ごとに既出インデックスを記録）
+let questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+
+function pickQuestion(grade){
+  const pool = questionsByGrade[grade];
+  if (!pool || pool.length === 0) return null;
+  // 全問出し切ったらリセット
+  if (questionHistory[grade].size >= pool.length) questionHistory[grade].clear();
+  let idx, attempts = 0;
+  do {
+    idx = Math.floor(Math.random() * pool.length);
+    attempts++;
+  } while (questionHistory[grade].has(idx) && attempts < pool.length);
+  questionHistory[grade].add(idx);
+  return pool[idx];
+}
+
+        const questionsByGrade = {
+            4: [
+                { question: "この漢字の読み方は？「協力」", answer: "きょうりょく" },
+                { question: "この漢字の読み方は？「対象」", answer: "たいしょう" },
+                { question: "この漢字の読み方は？「結果」", answer: "けっか" },
+                { question: "この漢字の読み方は？「説教」", answer: "せっきょう" },
+                { question: "この漢字の読み方は？「無実」", answer: "むじつ" },
+                { question: "この漢字の読み方は？「順位」", answer: "じゅんい" },
+                { question: "この漢字の読み方は？「衣類」", answer: "いるい" },
+                { question: "この漢字の読み方は？「要求」", answer: "ようきゅう" },
+                { question: "この漢字の読み方は？「加熱」", answer: "かねつ" },
+                { question: "この漢字の読み方は？「関連」", answer: "かんれん" },
+                { question: "この漢字の読み方は？「実験」", answer: "じっけん" },
+                { question: "この漢字の読み方は？「時差」", answer: "じさ" },
+                { question: "この漢字の読み方は？「景品」", answer: "けいひん" },
+                { question: "この漢字の読み方は？「念願」", answer: "ねんがん" },
+                { question: "この漢字の読み方は？「兵士」", answer: "へいし" },
+                { question: "この漢字の読み方は？「北極」", answer: "ほっきょく" },
+                { question: "この漢字の読み方は？「録音」", answer: "ろくおん" },
+                { question: "この漢字の読み方は？「最近」", answer: "さいきん" },
+                { question: "この漢字の読み方は？「達人」", answer: "たつじん" },
+                { question: "この漢字の読み方は？「円周」", answer: "えんしゅう" },
+                { question: "この漢字の読み方は？「欠場」", answer: "けつじょう" },
+                { question: "この漢字の読み方は？「村民」", answer: "そんみん" },
+                { question: "この漢字の読み方は？「出席」", answer: "しゅっせき" },
+                { question: "この漢字の読み方は？「遠浅」", answer: "とおあさ" },
+                { question: "この漢字の読み方は？「察知」", answer: "さっち" },
+                { question: "この漢字の読み方は？「通信」", answer: "つうしん" },
+                { question: "この漢字の読み方は？「入隊」", answer: "にゅうたい" },
+                { question: "この漢字の読み方は？「種類」", answer: "しゅるい" },
+                { question: "この漢字の読み方は？「粉末」", answer: "ふんまつ" },
+                { question: "この漢字の読み方は？「年輪」", answer: "ねんりん" },
+                { question: "この漢字の読み方は？「水位」", answer: "すいい" },
+                { question: "この漢字の読み方は？「未定」", answer: "みてい" },
+                { question: "この漢字の読み方は？「加入」", answer: "かにゅう" },
+                { question: "この漢字の読み方は？「残暑」", answer: "ざんしょ" },
+                { question: "この漢字の読み方は？「小包」", answer: "こづつみ" },
+                { question: "この漢字の読み方は？「満点」", answer: "まんてん" },
+                { question: "この漢字の読み方は？「当然」", answer: "とうぜん" },
+                { question: "この漢字の読み方は？「関係」", answer: "かんけい" },
+                { question: "この漢字の読み方は？「案内」", answer: "あんない" },
+                { question: "この漢字の読み方は？「型紙」", answer: "かたがみ" },
+                { question: "この漢字の読み方は？「面積」", answer: "めんせき" },
+                { question: "この漢字の読み方は？「追加」", answer: "ついか" },
+                { question: "この漢字の読み方は？「年末」", answer: "ねんまつ" },
+                { question: "この漢字の読み方は？「木材」", answer: "もくざい" },
+                { question: "この漢字の読み方は？「国民」", answer: "こくみん" },
+                { question: "この漢字の読み方は？「法事」", answer: "ほうじ" },
+                { question: "この漢字の読み方は？「兵器」", answer: "へいき" },
+                { question: "この漢字の読み方は？「信号」", answer: "しんごう" },
+                { question: "この漢字の読み方は？「倉庫」", answer: "そうこ" },
+                { question: "この漢字の読み方は？「兵隊」", answer: "へいたい" },
+                { question: "この漢字の読み方は？「気候」", answer: "きこう" },
+                { question: "この漢字の読み方は？「札束」", answer: "さつたば" },
+                { question: "この漢字の読み方は？「徒歩」", answer: "とほ" },
+                { question: "この漢字の読み方は？「録画」", answer: "ろくが" },
+                { question: "この漢字の読み方は？「大臣」", answer: "だいじん" },
+                { question: "この漢字の読み方は？「会費」", answer: "かいひ" },
+                { question: "この漢字の読み方は？「方法」", answer: "ほうほう" },
+                { question: "この漢字の読み方は？「共用」", answer: "きょうよう" },
+                { question: "この漢字の読み方は？「機械」", answer: "きかい" },
+                { question: "この漢字の読み方は？「観客」", answer: "かんきゃく" },
+                { question: "この漢字の読み方は？「愛犬」", answer: "あいけん" },
+                { question: "この漢字の読み方は？「命令」", answer: "めいれい" },
+                { question: "この漢字の読み方は？「祝福」", answer: "しゅくふく" },
+                { question: "この漢字の読み方は？「楽器」", answer: "がっき" },
+                { question: "この漢字の読み方は？「良薬」", answer: "りょうやく" },
+                { question: "この漢字の読み方は？「軍手」", answer: "ぐんて" },
+                { question: "この漢字の読み方は？「結束」", answer: "けっそく" },
+                { question: "この漢字の読み方は？「連続」", answer: "れんぞく" },
+                { question: "この漢字の読み方は？「名札」", answer: "なふだ" },
+                { question: "この漢字の読み方は？「放置」", answer: "ほうち" },
+                { question: "この漢字の読み方は？「文脈」", answer: "ぶんみゃく" },
+                { question: "この漢字の読み方は？「夫人」", answer: "ふじん" },
+                { question: "この漢字の読み方は？「冷静」", answer: "れいせい" },
+                { question: "この漢字の読み方は？「達成」", answer: "たっせい" },
+                { question: "この漢字の読み方は？「会議」", answer: "かいぎ" },
+                { question: "この漢字の読み方は？「要点」", answer: "ようてん" },
+                { question: "この漢字の読み方は？「国産」", answer: "こくさん" },
+                { question: "この漢字の読み方は？「投票」", answer: "とうひょう" },
+                { question: "この漢字の読み方は？「消印」", answer: "けしいん" },
+                { question: "この漢字の読み方は？「発達」", answer: "はったつ" },
+                { question: "この漢字の読み方は？「重要」", answer: "じゅうよう" },
+                { question: "この漢字の読み方は？「目印」", answer: "めじるし" },
+                { question: "この漢字の読み方は？「得点」", answer: "とくてん" },
+                { question: "この漢字の読み方は？「軍隊」", answer: "ぐんたい" },
+                { question: "この漢字の読み方は？「清流」", answer: "せいりゅう" },
+                { question: "この漢字の読み方は？「得意」", answer: "とくい" },
+                { question: "この漢字の読み方は？「浴室」", answer: "よくしつ" },
+                { question: "この漢字の読み方は？「山脈」", answer: "さんみゃく" },
+                { question: "この漢字の読み方は？「願望」", answer: "がんぼう" },
+                { question: "この漢字の読み方は？「周辺」", answer: "しゅうへん" },
+                { question: "この漢字の読み方は？「出費」", answer: "しゅっぴ" },
+                { question: "この漢字の読み方は？「目標」", answer: "もくひょう" },
+                { question: "この漢字の読み方は？「信用」", answer: "しんよう" },
+                { question: "この漢字の読み方は？「観察」", answer: "かんさつ" },
+                { question: "この漢字の読み方は？「辞書」", answer: "じしょ" },
+                { question: "この漢字の読み方は？「席順」", answer: "せきじゅん" },
+                { question: "この漢字の読み方は？「生産」", answer: "せいさん" },
+                { question: "この漢字の読み方は？「塩害」", answer: "えんがい" },
+                { question: "この漢字の読み方は？「飛行」", answer: "ひこう" },
+                { question: "この漢字の読み方は？「大陸」", answer: "たいりく" },
+                { question: "この漢字の読み方は？「小麦粉」", answer: "こむぎこ" },
+                { question: "この漢字の読み方は？「日光浴」", answer: "にっこうよく" },
+                { question: "この漢字の読み方は？「一時的」", answer: "いちじてき" },
+                { question: "この漢字の読み方は？「入場料」", answer: "にゅうじょうりょう" },
+                { question: "この漢字の読み方は？「大自然」", answer: "だいしぜん" },
+                { question: "この漢字の読み方は？「年会費」", answer: "ねんかいひ" },
+                { question: "この漢字の読み方は？「音楽隊」", answer: "おんがくたい" },
+                { question: "この漢字の読み方は？「気温差」", answer: "きおんさ" },
+                { question: "この漢字の読み方は？「一億人」", answer: "いちおくにん" },
+                { question: "この漢字の読み方は？「水不足」", answer: "みずぶそく" },
+                { question: "この漢字の読み方は？「三輪車」", answer: "さんりんしゃ" },
+                { question: "この漢字の読み方は？「一輪車」", answer: "いちりんしゃ" },
+                { question: "この漢字の読み方は？「目的地」", answer: "もくてきち" },
+                { question: "この漢字の読み方は？「百貨店」", answer: "ひゃっかてん" },
+                { question: "この漢字の読み方は？「学芸会」", answer: "がくげいかい" },
+                { question: "この漢字の読み方は？「生徒会」", answer: "せいとかい" },
+                { question: "この漢字の読み方は？「大型船」", answer: "おおがたせん" },
+                { question: "この漢字の読み方は？「出席者」", answer: "しゅっせきしゃ" },
+                { question: "この漢字の読み方は？「大成功」", answer: "だいせいこう" },
+                { question: "この漢字の読み方は？「大特価」", answer: "だいとっか" },
+                { question: "この漢字の読み方は？「食中毒」", answer: "しょくちゅうどく" },
+                { question: "この漢字の読み方は？「外交官」", answer: "がいこうかん" },
+                { question: "この漢字の読み方は？「外国産」", answer: "がいこくさん" },
+                { question: "この漢字の読み方は？「新記録」", answer: "しんきろく" },
+                { question: "この漢字の読み方は？「京都府」", answer: "きょうとふ" },
+                { question: "この漢字の読み方は？「今世紀」", answer: "こんせいき" },
+                { question: "この漢字の読み方は？「食塩水」", answer: "しょくえんすい" },
+                { question: "この漢字の読み方は？「記念日」", answer: "きねんび" },
+                { question: "この漢字の読み方は？「雪景色」", answer: "ゆきげしき" },
+                { question: "この漢字の読み方は？「会議室」", answer: "かいぎしつ" },
+                { question: "この漢字の読み方は？「朝飯前」", answer: "あさめしまえ" },
+                { question: "この漢字の読み方は？「市街地」", answer: "しがいち" },
+                { question: "この漢字の読み方は？「記念品」", answer: "きねんひん" },
+                { question: "この漢字の読み方は？「合唱曲」", answer: "がっしょうきょく" }
+            ],
+            5: [
+                { question: "この漢字の読み方は？「輸送」", answer: "ゆそう" },
+                { question: "この漢字の読み方は？「情熱」", answer: "じょうねつ" },
+                { question: "この漢字の読み方は？「回復」", answer: "かいふく" },
+                { question: "この漢字の読み方は？「液体」", answer: "えきたい" },
+                { question: "この漢字の読み方は？「習慣」", answer: "しゅうかん" },
+                { question: "この漢字の読み方は？「格安」", answer: "かくやす" },
+                { question: "この漢字の読み方は？「禁物」", answer: "きんもつ" },
+                { question: "この漢字の読み方は？「独特」", answer: "どくとく" },
+                { question: "この漢字の読み方は？「賛成」", answer: "さんせい" },
+                { question: "この漢字の読み方は？「家財」", answer: "かざい" },
+                { question: "この漢字の読み方は？「反則」", answer: "はんそく" },
+                { question: "この漢字の読み方は？「確定」", answer: "かくてい" },
+                { question: "この漢字の読み方は？「犯行」", answer: "はんこう" },
+                { question: "この漢字の読み方は？「河口」", answer: "かこう" },
+                { question: "この漢字の読み方は？「正確」", answer: "せいかく" },
+                { question: "この漢字の読み方は？「酸味」", answer: "さんみ" },
+                { question: "この漢字の読み方は？「情報」", answer: "じょうほう" },
+                { question: "この漢字の読み方は？「原因」", answer: "げんいん" },
+                { question: "この漢字の読み方は？「版画」", answer: "はんが" },
+                { question: "この漢字の読み方は？「効能」", answer: "こうのう" },
+                { question: "この漢字の読み方は？「内容」", answer: "ないよう" },
+                { question: "この漢字の読み方は？「証明」", answer: "しょうめい" },
+                { question: "この漢字の読み方は？「経路」", answer: "けいろ" },
+                { question: "この漢字の読み方は？「講習」", answer: "こうしゅう" },
+                { question: "この漢字の読み方は？「接続」", answer: "せつぞく" },
+                { question: "この漢字の読み方は？「引退」", answer: "いんたい" },
+                { question: "この漢字の読み方は？「成績」", answer: "せいせき" },
+                { question: "この漢字の読み方は？「対応」", answer: "たいおう" },
+                { question: "この漢字の読み方は？「経験」", answer: "けいけん" },
+                { question: "この漢字の読み方は？「先祖」", answer: "せんぞ" },
+                { question: "この漢字の読み方は？「表情」", answer: "ひょうじょう" },
+                { question: "この漢字の読み方は？「複数」", answer: "ふくすう" },
+                { question: "この漢字の読み方は？「念仏」", answer: "ねんぶつ" },
+                { question: "この漢字の読み方は？「預金」", answer: "よきん" },
+                { question: "この漢字の読み方は？「適度」", answer: "てきど" },
+                { question: "この漢字の読み方は？「快復」", answer: "かいふく" },
+                { question: "この漢字の読み方は？「価格」", answer: "かかく" },
+                { question: "この漢字の読み方は？「米俵」", answer: "こめだわら" },
+                { question: "この漢字の読み方は？「暴力」", answer: "ぼうりょく" },
+                { question: "この漢字の読み方は？「往復」", answer: "おうふく" },
+                { question: "この漢字の読み方は？「提示」", answer: "ていじ" },
+                { question: "この漢字の読み方は？「独学」", answer: "どくがく" },
+                { question: "この漢字の読み方は？「適当」", answer: "てきとう" },
+                { question: "この漢字の読み方は？「人情」", answer: "にんじょう" },
+                { question: "この漢字の読み方は？「強敵」", answer: "きょうてき" },
+                { question: "この漢字の読み方は？「主婦」", answer: "しゅふ" },
+                { question: "この漢字の読み方は？「規制」", answer: "きせい" },
+                { question: "この漢字の読み方は？「住居」", answer: "じゅうきょ" },
+                { question: "この漢字の読み方は？「倍率」", answer: "ばいりつ" },
+                { question: "この漢字の読み方は？「祖父」", answer: "そふ" },
+                { question: "この漢字の読み方は？「表示」", answer: "ひょうじ" },
+                { question: "この漢字の読み方は？「旧友」", answer: "きゅうゆう" },
+                { question: "この漢字の読み方は？「業績」", answer: "ぎょうせき" },
+                { question: "この漢字の読み方は？「減速」", answer: "げんそく" },
+                { question: "この漢字の読み方は？「清潔」", answer: "せいけつ" },
+                { question: "この漢字の読み方は？「採点」", answer: "さいてん" },
+                { question: "この漢字の読み方は？「同居」", answer: "どうきょ" },
+                { question: "この漢字の読み方は？「増築」", answer: "ぞうちく" },
+                { question: "この漢字の読み方は？「勢力」", answer: "せいりょく" },
+                { question: "この漢字の読み方は？「現場」", answer: "げんば" },
+                { question: "この漢字の読み方は？「採取」", answer: "さいしゅ" },
+                { question: "この漢字の読み方は？「絶賛」", answer: "ぜっさん" },
+                { question: "この漢字の読み方は？「校舎」", answer: "こうしゃ" },
+                { question: "この漢字の読み方は？「絶対」", answer: "ぜったい" },
+                { question: "この漢字の読み方は？「精米」", answer: "せいまい" },
+                { question: "この漢字の読み方は？「画像」", answer: "がぞう" },
+                { question: "この漢字の読み方は？「義理」", answer: "ぎり" },
+                { question: "この漢字の読み方は？「枝豆」", answer: "えだまめ" },
+                { question: "この漢字の読み方は？「均等」", answer: "きんとう" },
+                { question: "この漢字の読み方は？「記述」", answer: "きじゅつ" },
+                { question: "この漢字の読み方は？「水質」", answer: "すいしつ" },
+                { question: "この漢字の読み方は？「常識」", answer: "じょうしき" },
+                { question: "この漢字の読み方は？「文句」", answer: "もんく" },
+                { question: "この漢字の読み方は？「個体」", answer: "こたい" },
+                { question: "この漢字の読み方は？「税金」", answer: "ぜいきん" },
+                { question: "この漢字の読み方は？「防犯」", answer: "ぼうはん" },
+                { question: "この漢字の読み方は？「天敵」", answer: "てんてき" },
+                { question: "この漢字の読み方は？「雑草」", answer: "ざっそう" },
+                { question: "この漢字の読み方は？「所属」", answer: "しょぞく" },
+                { question: "この漢字の読み方は？「眼科」", answer: "がんか" },
+                { question: "この漢字の読み方は？「退院」", answer: "たいいん" },
+                { question: "この漢字の読み方は？「豊富」", answer: "ほうふ" },
+                { question: "この漢字の読み方は？「災害」", answer: "さいがい" },
+                { question: "この漢字の読み方は？「評価」", answer: "ひょうか" },
+                { question: "この漢字の読み方は？「支店」", answer: "してん" },
+                { question: "この漢字の読み方は？「提案」", answer: "ていあん" },
+                { question: "この漢字の読み方は？「逆境」", answer: "ぎゃっきょう" },
+                { question: "この漢字の読み方は？「混雑」", answer: "こんざつ" },
+                { question: "この漢字の読み方は？「性質」", answer: "せいしつ" },
+                { question: "この漢字の読み方は？「述語」", answer: "じゅつご" },
+                { question: "この漢字の読み方は？「資格」", answer: "しかく" },
+                { question: "この漢字の読み方は？「理解」", answer: "りかい" },
+                { question: "この漢字の読み方は？「構成」", answer: "こうせい" },
+                { question: "この漢字の読み方は？「事情」", answer: "じじょう" },
+                { question: "この漢字の読み方は？「炭鉱」", answer: "たんこう" },
+                { question: "この漢字の読み方は？「音程」", answer: "おんてい" },
+                { question: "この漢字の読み方は？「留学」", answer: "りゅうがく" },
+                { question: "この漢字の読み方は？「気圧」", answer: "きあつ" },
+                { question: "この漢字の読み方は？「移動」", answer: "いどう" },
+                { question: "この漢字の読み方は？「事故」", answer: "じこ" },
+                 { question: "この漢字の読み方は？「大統領」", answer: "だいとうりょう" },
+  { question: "この漢字の読み方は？「国際的」", answer: "こくさいてき" },
+  { question: "この漢字の読み方は？「金属製」", answer: "きんぞくせい" },
+  { question: "この漢字の読み方は？「年賀状」", answer: "ねんがじょう" },
+  { question: "この漢字の読み方は？「正義感」", answer: "せいぎかん" },
+  { question: "この漢字の読み方は？「手術後」", answer: "しゅじゅつご" },
+  { question: "この漢字の読み方は？「出版社」", answer: "しゅっぱんしゃ" },
+  { question: "この漢字の読み方は？「休刊日」", answer: "きゅうかんび" },
+  { question: "この漢字の読み方は？「大特価」", answer: "だいとっか" },
+  { question: "この漢字の読み方は？「新製品」", answer: "しんせいひん" },
+  { question: "この漢字の読み方は？「新幹線」", answer: "しんかんせん" },
+  { question: "この漢字の読み方は？「新機能」", answer: "しんきのう" },
+  { question: "この漢字の読み方は？「高血圧」", answer: "こうけつあつ" },
+  { question: "この漢字の読み方は？「高品質」", answer: "こうひんしつ" },
+  { question: "この漢字の読み方は？「回数券」", answer: "かいすうけん" },
+  { question: "この漢字の読み方は？「消毒液」", answer: "しょうどくえき" },
+  { question: "この漢字の読み方は？「商品券」", answer: "しょうひんけん" },
+  { question: "この漢字の読み方は？「調理師」", answer: "ちょうりし" },
+  { question: "この漢字の読み方は？「整理券」", answer: "せいりけん" },
+  { question: "この漢字の読み方は？「週刊誌」", answer: "しゅうかんし" },
+  { question: "この漢字の読み方は？「形容詞」", answer: "けいようし" },
+  { question: "この漢字の読み方は？「活断層」", answer: "かつだんそう" },
+  { question: "この漢字の読み方は？「美術品」", answer: "びじゅつひん" },
+  { question: "この漢字の読み方は？「所在地」", answer: "しょざいち" },
+  { question: "この漢字の読み方は？「業務用」", answer: "ぎょうむよう" },
+  { question: "この漢字の読み方は？「農耕用」", answer: "のうこうよう" },
+  { question: "この漢字の読み方は？「持久力」", answer: "じきゅうりょく" },
+  { question: "この漢字の読み方は？「鉄鉱石」", answer: "てっこうせき" },
+  { question: "この漢字の読み方は？「真犯人」", answer: "しんはんにん" },
+  { question: "この漢字の読み方は？「消防署」", answer: "しょうぼうしょ" },
+  { question: "この漢字の読み方は？「感謝状」", answer: "かんしゃじょう" },
+  { question: "この漢字の読み方は？「消防団」", answer: "しょうぼうだん" },
+  { question: "この漢字の読み方は？「委任状」", answer: "いにんじょう" },
+  { question: "この漢字の読み方は？「全財産」", answer: "ぜんざいさん" },
+  { question: "この漢字の読み方は？「事務員」", answer: "じむいん" },
+  { question: "この漢字の読み方は？「指導者」", answer: "しどうしゃ" },
+  { question: "この漢字の読み方は？「自家製」", answer: "じかせい" },
+  { question: "この漢字の読み方は？「自衛隊」", answer: "じえいたい" },
+  { question: "この漢字の読み方は？「消費税」", answer: "しょうひぜい" },
+  { question: "この漢字の読み方は？「美容院」", answer: "びよういん" },
+  { question: "この漢字の読み方は？「付属品」", answer: "ふぞくひん" },
+  { question: "この漢字の読み方は？「富山県」", answer: "とやまけん" },
+  { question: "この漢字の読み方は？「不燃物」", answer: "ふねんぶつ" },
+  { question: "この漢字の読み方は？「芸術品」", answer: "げいじゅつひん" },
+  { question: "この漢字の読み方は？「祝賀会」", answer: "しゅくがかい" },
+  { question: "この漢字の読み方は？「英語版」", answer: "えいごばん" },
+  { question: "この漢字の読み方は？「案内状」", answer: "あんないじょう" },
+  { question: "この漢字の読み方は？「平均値」", answer: "へいきんち" },
+  { question: "この漢字の読み方は？「銀河系」", answer: "ぎんがけい" },
+  { question: "この漢字の読み方は？「輸出品」", answer: "ゆしゅつひん" },
+  { question: "この漢字の読み方は？「導火線」", answer: "どうかせん" },
+  { question: "この漢字の読み方は？「張本人」", answer: "ちょうほんにん" },
+  { question: "この漢字の読み方は？「雑木林」", answer: "ぞうきばやし" },
+  { question: "この漢字の読み方は？「不可能」", answer: "ふかのう" },
+  { question: "この漢字の読み方は？「老眼鏡」", answer: "ろうがんきょう" },
+  { question: "この漢字の読み方は？「群馬県」", answer: "ぐんまけん" },
+  { question: "この漢字の読み方は？「似顔絵」", answer: "にがおえ" },
+  { question: "この漢字の読み方は？「祖父母」", answer: "そふぼ" },
+  { question: "この漢字の読み方は？「桜前線」", answer: "さくらぜんせん" },
+  { question: "この漢字の読み方は？「防風林」", answer: "ぼうふうりん" },
+  { question: "この漢字の読み方は？「基本的」", answer: "きほんてき" },
+  { question: "この漢字の読み方は？「個人差」", answer: "こじんさ" },
+  { question: "この漢字の読み方は？「飼育係」", answer: "しいくがかり" },
+  { question: "この漢字の読み方は？「境界線」", answer: "きょうかいせん" },
+  { question: "この漢字の読み方は？「留守番」", answer: "るすばん" },
+  { question: "この漢字の読み方は？「職員室」", answer: "しょくいんしつ" },
+  { question: "この漢字の読み方は？「授業中」", answer: "じゅぎょうちゅう" },
+  { question: "この漢字の読み方は？「慣用句」", answer: "かんようく" },
+  { question: "この漢字の読み方は？「税理士」", answer: "ぜいりし" },
+  { question: "この漢字の読み方は？「支持率」", answer: "しじりつ" },
+  { question: "この漢字の読み方は？「招待券」", answer: "しょうたいけん" },
+  { question: "この漢字の読み方は？「招待状」", answer: "しょうたいじょう" },
+  { question: "この漢字の読み方は？「授業料」", answer: "じゅぎょうりょう" },
+  { question: "この漢字の読み方は？「保育士」", answer: "ほいくし" },
+  { question: "この漢字の読み方は？「罪悪感」", answer: "ざいあくかん" },
+  { question: "この漢字の読み方は？「徳島県」", answer: "とくしまけん" },
+  { question: "この漢字の読み方は？「停留所」", answer: "ていりゅうじょ" },
+  { question: "この漢字の読み方は？「婦人服」", answer: "ふじんふく" },
+  { question: "この漢字の読み方は？「非公開」", answer: "ひこうかい" },
+  { question: "この漢字の読み方は？「再放送」", answer: "さいほうそう" },
+  { question: "この漢字の読み方は？「永久歯」", answer: "えいきゅうし" },
+  { question: "この漢字の読み方は？「可能性」", answer: "かのうせい" },
+  { question: "この漢字の読み方は？「責任者」", answer: "せきにんしゃ" },
+  { question: "この漢字の読み方は？「許可書」", answer: "きょかしょ" },
+  { question: "この漢字の読み方は？「講演会」", answer: "こうえんかい" },
+  { question: "この漢字の読み方は？「防衛力」", answer: "ぼうえいりょく" },
+  { question: "この漢字の読み方は？「往復券」", answer: "おうふくけん" },
+  { question: "この漢字の読み方は？「弁護士」", answer: "べんごし" },
+  { question: "この漢字の読み方は？「増刊号」", answer: "ぞうかんごう" },
+  { question: "この漢字の読み方は？「容疑者」", answer: "ようぎしゃ" },
+  { question: "この漢字の読み方は？「税務署」", answer: "ぜいむしょ" },
+  { question: "この漢字の読み方は？「貿易額」", answer: "ぼうえきがく" },
+  { question: "この漢字の読み方は？「非常識」", answer: "ひじょうしき" },
+  { question: "この漢字の読み方は？「授賞式」", answer: "じゅしょうしき" },
+  { question: "この漢字の読み方は？「政治家」", answer: "せいじか" },
+  { question: "この漢字の読み方は？「寄付金」", answer: "きふきん" },
+  { question: "この漢字の読み方は？「犯罪者」", answer: "はんざいしゃ" },
+  { question: "この漢字の読み方は？「綿織物」", answer: "めんおりもの" },
+  { question: "この漢字の読み方は？「可燃物」", answer: "かねんぶつ" },
+  { question: "この漢字の読み方は？「綿製品」", answer: "めんせいひん" },
+  { question: "この漢字の読み方は？「許可証」", answer: "きょかしょう" }
+            ],
+            6: [
+                { question: "この漢字の読み方は？「砂鉄」", answer: "さてつ" },
+                { question: "この漢字の読み方は？「裁判」", answer: "さいばん" },
+                { question: "この漢字の読み方は？「秘蔵」", answer: "ひぞう" },
+                { question: "この漢字の読み方は？「破片」", answer: "はへん" },
+                { question: "この漢字の読み方は？「除去」", answer: "じょきょ" },
+                { question: "この漢字の読み方は？「忠実」", answer: "ちゅうじつ" },
+                { question: "この漢字の読み方は？「模型」", answer: "もけい" },
+                { question: "この漢字の読み方は？「尊敬」", answer: "そんけい" },
+                { question: "この漢字の読み方は？「深刻」", answer: "しんこく" },
+                { question: "この漢字の読み方は？「骨折」", answer: "こっせつ" },
+                { question: "この漢字の読み方は？「三冊」", answer: "さんさつ" },
+                { question: "この漢字の読み方は？「翌日」", answer: "よくじつ" },
+                { question: "この漢字の読み方は？「収集」", answer: "しゅうしゅう" },
+                { question: "この漢字の読み方は？「心臓」", answer: "しんぞう" },
+                { question: "この漢字の読み方は？「訪問」", answer: "ほうもん" },
+                { question: "この漢字の読み方は？「将軍」", answer: "しょうぐん" },
+                { question: "この漢字の読み方は？「腹痛」", answer: "ふくつう" },
+                { question: "この漢字の読み方は？「推理」", answer: "すいり" },
+                { question: "この漢字の読み方は？「縮尺」", answer: "しゅくしゃく" },
+                { question: "この漢字の読み方は？「縮小」", answer: "しゅくしょう" },
+                { question: "この漢字の読み方は？「首脳」", answer: "しゅのう" },
+                { question: "この漢字の読み方は？「死亡」", answer: "しぼう" },
+                { question: "この漢字の読み方は？「灰色」", answer: "はいいろ" },
+                { question: "この漢字の読み方は？「装置」", answer: "そうち" },
+                { question: "この漢字の読み方は？「鋼材」", answer: "こうざい" },
+                { question: "この漢字の読み方は？「俳句」", answer: "はいく" },
+                { question: "この漢字の読み方は？「提供」", answer: "ていきょう" },
+                { question: "この漢字の読み方は？「朗読」", answer: "ろうどく" },
+                { question: "この漢字の読み方は？「担任」", answer: "たんにん" },
+                { question: "この漢字の読み方は？「警備」", answer: "けいび" },
+                { question: "この漢字の読み方は？「単純」", answer: "たんじゅん" },
+                { question: "この漢字の読み方は？「貴重」", answer: "きちょう" },
+                { question: "この漢字の読み方は？「視点」", answer: "してん" },
+                { question: "この漢字の読み方は？「担当」", answer: "たんとう" },
+                { question: "この漢字の読み方は？「就任」", answer: "しゅうにん" },
+                { question: "この漢字の読み方は？「自己」", answer: "じこ" },
+                { question: "この漢字の読み方は？「今晩」", answer: "こんばん" },
+                { question: "この漢字の読み方は？「忠告」", answer: "ちゅうこく" },
+                { question: "この漢字の読み方は？「厳重」", answer: "げんじゅう" },
+                { question: "この漢字の読み方は？「散乱」", answer: "さんらん" },
+                { question: "この漢字の読み方は？「値段」", answer: "ねだん" },
+                { question: "この漢字の読み方は？「首筋」", answer: "くびすじ" },
+                { question: "この漢字の読み方は？「批判」", answer: "ひはん" },
+                { question: "この漢字の読み方は？「宣告」", answer: "せんこく" },
+                { question: "この漢字の読み方は？「精密」", answer: "せいみつ" },
+                { question: "この漢字の読み方は？「感激」", answer: "かんげき" },
+                { question: "この漢字の読み方は？「解除」", answer: "かいじょ" },
+                { question: "この漢字の読み方は？「推移」", answer: "すいい" },
+                { question: "この漢字の読み方は？「悪党」", answer: "あくとう" },
+                { question: "この漢字の読み方は？「俳優」", answer: "はいゆう" },
+                { question: "この漢字の読み方は？「革命」", answer: "かくめい" },
+                { question: "この漢字の読み方は？「頂上」", answer: "ちょうじょう" },
+                { question: "この漢字の読み方は？「賃金」", answer: "ちんぎん" },
+                { question: "この漢字の読み方は？「操縦」", answer: "そうじゅう" },
+                { question: "この漢字の読み方は？「蒸気」", answer: "じょうき" },
+                { question: "この漢字の読み方は？「沿岸」", answer: "えんがん" },
+                { question: "この漢字の読み方は？「収納」", answer: "しゅうのう" },
+                { question: "この漢字の読み方は？「皇居」", answer: "こうきょ" },
+                { question: "この漢字の読み方は？「窓口」", answer: "まどぐち" },
+                { question: "この漢字の読み方は？「規律」", answer: "きりつ" },
+                { question: "この漢字の読み方は？「班長」", answer: "はんちょう" },
+                { question: "この漢字の読み方は？「宝物」", answer: "たからもの" },
+                { question: "この漢字の読み方は？「傷口」", answer: "きずぐち" },
+                { question: "この漢字の読み方は？「著者」", answer: "ちょしゃ" },
+                { question: "この漢字の読み方は？「食欲」", answer: "しょくよく" },
+                { question: "この漢字の読み方は？「干潮」", answer: "かんちょう" },
+                { question: "この漢字の読み方は？「誤解」", answer: "ごかい" },
+                { question: "この漢字の読み方は？「字幕」", answer: "じまく" },
+                { question: "この漢字の読み方は？「降参」", answer: "こうさん" },
+                { question: "この漢字の読み方は？「財宝」", answer: "ざいほう" },
+                { question: "この漢字の読み方は？「山頂」", answer: "さんちょう" },
+                { question: "この漢字の読み方は？「度胸」", answer: "どきょう" },
+                { question: "この漢字の読み方は？「巻物」", answer: "まきもの" },
+                { question: "この漢字の読み方は？「権限」", answer: "けんげん" },
+                { question: "この漢字の読み方は？「私語」", answer: "しご" },
+                { question: "この漢字の読み方は？「砂金」", answer: "さきん" },
+                { question: "この漢字の読み方は？「時刻」", answer: "じこく" },
+                { question: "この漢字の読み方は？「寸法」", answer: "すんぽう" },
+                { question: "この漢字の読み方は？「憲法」", answer: "けんぽう" },
+                { question: "この漢字の読み方は？「返済」", answer: "へんさい" },
+                { question: "この漢字の読み方は？「映像」", answer: "えいぞう" },
+                { question: "この漢字の読み方は？「善悪」", answer: "ぜんあく" },
+                { question: "この漢字の読み方は？「確認」", answer: "かくにん" },
+                { question: "この漢字の読み方は？「否決」", answer: "ひけつ" },
+                { question: "この漢字の読み方は？「視線」", answer: "しせん" },
+                { question: "この漢字の読み方は？「勤務」", answer: "きんむ" },
+                { question: "この漢字の読み方は？「背面」", answer: "はいめん" },
+                { question: "この漢字の読み方は？「砂場」", answer: "すなば" },
+                { question: "この漢字の読み方は？「対策」", answer: "たいさく" },
+                { question: "この漢字の読み方は？「主将」", answer: "しゅしょう" },
+                { question: "この漢字の読み方は？「疑問」", answer: "ぎもん" },
+                { question: "この漢字の読み方は？「敬語」", answer: "けいご" },
+                { question: "この漢字の読み方は？「翌年」", answer: "よくねん" },
+                { question: "この漢字の読み方は？「危険」", answer: "きけん" },
+                { question: "この漢字の読み方は？「仁愛」", answer: "じんあい" },
+                { question: "この漢字の読み方は？「将来」", answer: "しょうらい" },
+                { question: "この漢字の読み方は？「石段」", answer: "いしだん" },
+                { question: "この漢字の読み方は？「役割」", answer: "やくわり" },
+                { question: "この漢字の読み方は？「牛乳」", answer: "ぎゅうにゅう" },
+                { question: "この漢字の読み方は？「綿棒」", answer: "めんぼう" },
+                { question: "この漢字の読み方は？「親不孝」", answer: "おやふこう" },
+  { question: "この漢字の読み方は？「家系図」", answer: "かけいず" },
+  { question: "この漢字の読み方は？「一覧表」", answer: "いちらんひょう" },
+  { question: "この漢字の読み方は？「生存者」", answer: "せいぞんしゃ" },
+  { question: "この漢字の読み方は？「下処理」", answer: "したしょり" },
+  { question: "この漢字の読み方は？「金閣寺」", answer: "きんかくじ" },
+  { question: "この漢字の読み方は？「水蒸気」", answer: "すいじょうき" },
+  { question: "この漢字の読み方は？「人形劇」", answer: "にんぎょうげき" },
+  { question: "この漢字の読み方は？「火山灰」", answer: "かざんばい" },
+  { question: "この漢字の読み方は？「作詞家」", answer: "さくしか" },
+  { question: "この漢字の読み方は？「親孝行」", answer: "おやこうこう" },
+  { question: "この漢字の読み方は？「合衆国」", answer: "がっしゅうこく" },
+  { question: "この漢字の読み方は？「原寸大」", answer: "げんすんだい" },
+  { question: "この漢字の読み方は？「週刊誌」", answer: "しゅうかんし" },
+  { question: "この漢字の読み方は？「形容詞」", answer: "けいようし" },
+  { question: "この漢字の読み方は？「銀河系」", answer: "ぎんがけい" },
+  { question: "この漢字の読み方は？「消防署」", answer: "しょうぼうしょ" },
+  { question: "この漢字の読み方は？「路地裏」", answer: "ろじうら" },
+  { question: "この漢字の読み方は？「具体策」", answer: "ぐたいさく" },
+  { question: "この漢字の読み方は？「登校班」", answer: "とうこうはん" },
+  { question: "この漢字の読み方は？「角砂糖」", answer: "かくざとう" },
+  { question: "この漢字の読み方は？「同盟国」", answer: "どうめいこく" },
+  { question: "この漢字の読み方は？「温泉街」", answer: "おんせんがい" },
+  { question: "この漢字の読み方は？「指揮者」", answer: "しきしゃ" },
+  { question: "この漢字の読み方は？「急展開」", answer: "きゅうてんかい" },
+  { question: "この漢字の読み方は？「住宅地」", answer: "じゅうたくち" },
+  { question: "この漢字の読み方は？「遊覧船」", answer: "ゆうらんせん" },
+  { question: "この漢字の読み方は？「放射線」", answer: "ほうしゃせん" },
+  { question: "この漢字の読み方は？「両陛下」", answer: "りょうへいか" },
+  { question: "この漢字の読み方は？「果樹園」", answer: "かじゅえん" },
+  { question: "この漢字の読み方は？「観覧車」", answer: "かんらんしゃ" },
+  { question: "この漢字の読み方は？「街路樹」", answer: "がいろじゅ" },
+  { question: "この漢字の読み方は？「注射針」", answer: "ちゅうしゃばり" },
+  { question: "この漢字の読み方は？「温泉卵」", answer: "おんせんたまご" },
+  { question: "この漢字の読み方は？「深呼吸」", answer: "しんこきゅう" },
+  { question: "この漢字の読み方は？「神秘的」", answer: "しんぴてき" },
+  { question: "この漢字の読み方は？「活断層」", answer: "かつだんそう" },
+  { question: "この漢字の読み方は？「同窓会」", answer: "どうそうかい" },
+  { question: "この漢字の読み方は？「平均値」", answer: "へいきんち" },
+  { question: "この漢字の読み方は？「意欲的」", answer: "いよくてき" },
+  { question: "この漢字の読み方は？「聖火台」", answer: "せいかだい" },
+  { question: "この漢字の読み方は？「探知機」", answer: "たんちき" },
+  { question: "この漢字の読み方は？「著名人」", answer: "ちょめいじん" },
+  { question: "この漢字の読み方は？「城下町」", answer: "じょうかまち" },
+  { question: "この漢字の読み方は？「誕生日」", answer: "たんじょうび" },
+  { question: "この漢字の読み方は？「容疑者」", answer: "ようぎしゃ" },
+  { question: "この漢字の読み方は？「税務署」", answer: "ぜいむしょ" },
+  { question: "この漢字の読み方は？「冷蔵庫」", answer: "れいぞうこ" },
+  { question: "この漢字の読み方は？「博覧会」", answer: "はくらんかい" },
+  { question: "この漢字の読み方は？「革新的」", answer: "かくしんてき" },
+  { question: "この漢字の読み方は？「肺活量」", answer: "はいかつりょう" },
+  { question: "この漢字の読み方は？「聖歌隊」", answer: "せいかたい" },
+  { question: "この漢字の読み方は？「宗教家」", answer: "しゅうきょうか" },
+  { question: "この漢字の読み方は？「貴金属」", answer: "ききんぞく" },
+  { question: "この漢字の読み方は？「派出所」", answer: "はしゅつじょ" },
+  { question: "この漢字の読み方は？「展望台」", answer: "てんぼうだい" },
+  { question: "この漢字の読み方は？「鋼鉄所」", answer: "こうてつじょ" },
+  { question: "この漢字の読み方は？「亡命者」", answer: "ぼうめいしゃ" },
+  { question: "この漢字の読み方は？「従業員」", answer: "じゅうぎょういん" },
+  { question: "この漢字の読み方は？「洗面所」", answer: "せんめんじょ" },
+  { question: "この漢字の読み方は？「著作権」", answer: "ちょさくけん" },
+  { question: "この漢字の読み方は？「割引券」", answer: "わりびきけん" },
+  { question: "この漢字の読み方は？「難易度」", answer: "なんいど" },
+  { question: "この漢字の読み方は？「絹織物」", answer: "きぬおりもの" },
+  { question: "この漢字の読み方は？「片仮名」", answer: "かたかな" },
+  { question: "この漢字の読み方は？「就職先」", answer: "しゅうしょくさき" },
+  { question: "この漢字の読み方は？「警察官」", answer: "けいさつかん" },
+  { question: "この漢字の読み方は？「郵便局」", answer: "ゆうびんきょく" },
+  { question: "この漢字の読み方は？「障害物」", answer: "しょうがいぶつ" },
+  { question: "この漢字の読み方は？「棒磁石」", answer: "ぼうじしゃく" },
+  { question: "この漢字の読み方は？「就職難」", answer: "しゅうしょくなん" },
+  { question: "この漢字の読み方は？「看護師」", answer: "かんごし" },
+  { question: "この漢字の読み方は？「裁判官」", answer: "さいばんかん" },
+  { question: "この漢字の読み方は？「探査機」", answer: "たんさき" },
+  { question: "この漢字の読み方は？「批判的」", answer: "ひはんてき" },
+  { question: "この漢字の読み方は？「乳製品」", answer: "にゅうせいひん" },
+  { question: "この漢字の読み方は？「拡大図」", answer: "かくだいず" },
+  { question: "この漢字の読み方は？「腹話術」", answer: "ふくわじゅつ" },
+  { question: "この漢字の読み方は？「郵便物」", answer: "ゆうびんぶつ" },
+  { question: "この漢字の読み方は？「存在感」", answer: "そんざいかん" },
+  { question: "この漢字の読み方は？「展覧会」", answer: "てんらんかい" },
+  { question: "この漢字の読み方は？「警視庁」", answer: "けいしちょう" },
+  { question: "この漢字の読み方は？「乳幼児」", answer: "にゅうようじ" },
+  { question: "この漢字の読み方は？「尊敬語」", answer: "そんけいご" },
+  { question: "この漢字の読み方は？「討論会」", answer: "とうろんかい" },
+  { question: "この漢字の読み方は？「忠誠心」", answer: "ちゅうせいしん" }
+           ],
+        };
+        
+        // カードの種類と出現割合
+        const cardTypes = [
+            { name: "🎲🎲 サイコロ2個", description: "2つのサイコロの合計で進める", type: "dice2", weight: 15 },
+            { name: "🎲🎲🎲 サイコロ3個", description: "3つのサイコロの合計で進める", type: "dice3", weight: 5 },
+            { name: "🍀 ラッキー6", description: "必ず6が出るサイコロ", type: "lucky6", weight: 10 },
+            { name: "💥 妨害カード", description: "相手を3マス戻す", type: "attack", weight: 10 },
+            { name: "🚀 ジャンプ", description: "3マス進む", type: "jump", weight: 10 },
+            { name: "🛡️ シールド", description: "攻撃を1回防ぐ", type: "shield", weight: 15 },
+            { name: "💣 爆発", description: "2人ともスタートに戻る", type: "bomb", weight: 5 },
+            { name: "🚧 ストップ", description: "相手を1回休みにする", type: "stop", weight: 10 },
+            { name: "🪂 ランダム", description: "どこか別の場所にテレポートする", type: "random", weight: 10 },
+            { name: "🥷 泥棒", description: "相手のカードをランダムで1枚奪える", type: "steal", weight: 10 }
+        ];
+        
+        // 重み付きランダム選択でカードを取得
+        function getRandomCard() {
+            const totalWeight = cardTypes.reduce((sum, card) => sum + card.weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (const card of cardTypes) {
+                random -= card.weight;
+                if (random <= 0) {
+                    return { ...card };
+                }
+            }
+            return { ...cardTypes[0] }; // フォールバック
+        }
+        
+        // 入力ロック機能
+        function lockInputs() {
+            turnLocked = true;
+            document.getElementById('rollBtn').disabled = true;
+            document.getElementById('useCardBtn1').disabled = true;
+            document.getElementById('useCardBtn2').disabled = true;
+        }
+        
+        function unlockInputsForCurrentPlayer() {
+            turnLocked = false;
+            
+            if (isAIGame && currentPlayer === 2) {
+                // AIのターンは全て無効のまま
+                document.getElementById('rollBtn').disabled = true;
+                document.getElementById('useCardBtn1').disabled = true;
+                document.getElementById('useCardBtn2').disabled = true;
+            } else {
+                // 人間プレイヤーのターン
+                document.getElementById('rollBtn').disabled = false;
+                
+                // カードボタンは常に有効（メニュー内で使用可否を判定）
+                document.getElementById('useCardBtn1').disabled = false;
+                document.getElementById('useCardBtn2').disabled = false;
+            }
+        }
+        
+        // プレイヤー2入力欄の表示/非表示切り替え
+        function togglePlayer2Input() {
+            const playerCount = document.getElementById('playerCountSelect').value;
+            const player2Group = document.getElementById('player2Group');
+            
+            if (playerCount === '1') {
+                player2Group.style.display = 'none';
+            } else {
+                player2Group.style.display = 'block';
+            }
+        }
+        
+        // 初期設定画面の関数
+        function showInstructions() {
+            const player1Name = document.getElementById('player1Name').value.trim();
+            playerCount = parseInt(document.getElementById('playerCountSelect').value);
+            
+            if (!player1Name) {
+                alert('プレイヤー名を入力してください');
+                return;
+            }
+            
+            players[1].name = player1Name;
+            
+            if (playerCount === 1) {
+                isAIGame = true;
+                players[2].name = 'コンピューター';
+            } else {
+                const player2Name = document.getElementById('player2Name').value.trim();
+                if (!player2Name) {
+                    alert('プレイヤー2の名前を入力してください');
+                    return;
+                }
+                isAIGame = false;
+                players[2].name = player2Name;
+            }
+            
+            selectedGrade = parseInt(document.getElementById('gradeSelect').value);
+            
+            // 設定を保存
+            saveSettings();
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('instructionsScreen').style.display = 'flex';
+        }
+        
+        function startGame() {
+            // 説明画面を閉じて、まずはルーレットモーダルへ
+            document.getElementById('instructionsScreen').style.display = 'none';
+            
+            // 学年表示を追加（ゲーム画面のタイトルのみに）
+            const titleElement = document.querySelector('#gameContainer .title');
+            if (titleElement && !titleElement.querySelector('.grade-display')) {
+                titleElement.insertAdjacentHTML('beforeend', 
+                    ` <span class="grade-display" style="font-size:1rem;opacity:.8">（${selectedGrade}年生）</span>`);
+            }
+            
+            prepareFirstPlayerRoulette();
+            document.getElementById('firstPlayerModal').style.display = 'flex';
+        }
+        
+        // ルーレット準備（名前とアイコン反映）
+        function prepareFirstPlayerRoulette(){
+            // ここでゲーム画面はまだ表示しない
+            const p1 = players[1].name || 'プレイヤー1';
+            const p2 = isAIGame ? 'コンピューター' : (players[2].name || 'プレイヤー2');
+            document.getElementById('rouletteP1Name').textContent = p1;
+            document.getElementById('rouletteP2Name').textContent = p2;
+            document.getElementById('rouletteMsg').textContent = 'スタートを押すと抽選します！';
+            document.getElementById('rouletteProceedBtn').style.display = 'none';
+            document.getElementById('rouletteStartBtn').style.display = 'inline-block';
+            document.getElementById('rouletteP1').classList.remove('active');
+            document.getElementById('rouletteP2').classList.remove('active');
+            rouletteDecided = null;
+        }
+        
+        // ルーレット開始
+        function startFirstPlayerRoulette(){
+            const chip1 = document.getElementById('rouletteP1');
+            const chip2 = document.getElementById('rouletteP2');
+            const msg = document.getElementById('rouletteMsg');
+            document.getElementById('rouletteStartBtn').style.display = 'none';
+            msg.textContent = 'ぐるぐる〜…';
+
+            rouletteSpins = 0;
+            let highlight = 1;
+
+            // 高速で交互ハイライト → 最後にランダムで止める
+            rouletteInterval = setInterval(() => {
+                highlight = (highlight === 1 ? 2 : 1);
+                chip1.classList.toggle('active', highlight === 1);
+                chip2.classList.toggle('active', highlight === 2);
+                rouletteSpins++;
+                // 少しずつ遅くしていく演出（任意）
+                // ここでは簡単化のため一定速度
+                if (rouletteSpins > 20) {
+                    clearInterval(rouletteInterval);
+                    const winner = Math.random() < 0.5 ? 1 : 2;
+                    rouletteDecided = winner;
+                    chip1.classList.toggle('active', winner === 1);
+                    chip2.classList.toggle('active', winner === 2);
+                    const winnerIcon = (winner === 1) ? '👦' : (isAIGame ? '🤖' : '👧');
+                    const winnerName = (winner === 1)
+                      ? (players[1].name || 'プレイヤー1')
+                      : (isAIGame ? 'コンピューター' : (players[2].name || 'プレイヤー2'));
+                    msg.textContent = `🎉 先攻は ${winnerIcon} ${winnerName}！`;
+                    document.getElementById('rouletteProceedBtn').style.display = 'inline-block';
+                }
+            }, 120);
+        }
+        
+        // ルーレット後にゲーム開始
+        function proceedAfterRoulette(){
+            document.getElementById('firstPlayerModal').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            initializeBoard();
+            
+            // ルーレット結果を反映
+            currentPlayer = rouletteDecided || 1;
+            
+            turnLocked = false;
+            updateTurnDisplay();
+            startPlayerTurn();
+        }
+        
+        // ゲームボード初期化（S字型）
+        function initializeBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            // 30マスのS字型コースを作成
+            for (let i = 0; i < 30; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${i}`;
+                
+                // S字型の配置を計算
+                let row, col;
+                if (i <= 9) {
+                    // 1行目: 0-9 (左から右)
+                    row = 0;
+                    col = i;
+                } else if (i <= 19) {
+                    // 2行目: 10-19 (右から左)
+                    row = 1;
+                    col = 19 - i;
+                } else {
+                    // 3行目: 20-29 (左から右)
+                    row = 2;
+                    col = i - 20;
+                }
+                
+                cell.style.gridRow = row + 1;
+                cell.style.gridColumn = col + 1;
+                
+                if (i === 0) {
+                    cell.classList.add('start');
+                    cell.textContent = 'START';
+                } else if (i === 29) {
+                    cell.classList.add('goal');
+                    cell.textContent = 'GOAL';
+                } else {
+                    // カラフルな色をランダムに割り当て
+                    const colorClass = `color${Math.floor(Math.random() * 10) + 1}`;
+                    cell.classList.add(colorClass);
+                }
+                
+                // 進行方向の矢印を追加
+                if (i < 29) {
+                    const arrow = document.createElement('div');
+                    arrow.style.position = 'absolute';
+                    arrow.style.fontSize = '0.6rem';
+                    arrow.style.color = '#fff';
+                    arrow.style.fontWeight = 'bold';
+                    arrow.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)';
+                    
+                    if (i < 9) {
+                        arrow.textContent = '→';
+                        arrow.style.right = '-8px';
+                        arrow.style.top = '50%';
+                        arrow.style.transform = 'translateY(-50%)';
+                    } else if (i === 9) {
+                        arrow.textContent = '↓';
+                        arrow.style.bottom = '-8px';
+                        arrow.style.left = '50%';
+                        arrow.style.transform = 'translateX(-50%)';
+                    } else if (i >= 10 && i < 19) {
+                        arrow.textContent = '←';
+                        arrow.style.left = '-8px';
+                        arrow.style.top = '50%';
+                        arrow.style.transform = 'translateY(-50%)';
+                    } else if (i === 19) {
+                        arrow.textContent = '↓';
+                        arrow.style.bottom = '-8px';
+                        arrow.style.left = '50%';
+                        arrow.style.transform = 'translateX(-50%)';
+                    } else if (i >= 20 && i < 28) {
+                        arrow.textContent = '→';
+                        arrow.style.right = '-8px';
+                        arrow.style.top = '50%';
+                        arrow.style.transform = 'translateY(-50%)';
+                    }
+                    
+                    if (arrow.textContent) {
+                        cell.appendChild(arrow);
+                    }
+                }
+                
+                board.appendChild(cell);
+            }
+            
+            updatePlayerPositions();
+        }
+        
+        // プレイヤー位置更新
+        function updatePlayerPositions() {
+            // 全ての駒を削除
+            document.querySelectorAll('.player').forEach(p => p.remove());
+            
+            // プレイヤー1の駒を配置
+            const cell1 = document.getElementById(`cell-${players[1].position}`);
+            if (cell1) {
+                const player1 = document.createElement('div');
+                player1.className = 'player player1';
+                player1.textContent = '👦';
+                cell1.appendChild(player1);
+            }
+            
+            // プレイヤー2の駒を配置（人間かコンピューターかで区別）
+            const cell2 = document.getElementById(`cell-${players[2].position}`);
+            if (cell2) {
+                const player2 = document.createElement('div');
+                player2.className = 'player player2';
+                player2.textContent = isAIGame ? '🤖' : '👧';
+                cell2.appendChild(player2);
+            }
+            
+            // プレイヤー名表示を更新（現在位置も表示）
+            document.getElementById('player1NameDisplay').textContent = `👦 ${players[1].name} (${players[1].position}マス目)`;
+            const player2Icon = isAIGame ? '🤖' : '👧';
+            document.getElementById('player2NameDisplay').textContent = `${player2Icon} ${players[2].name} (${players[2].position}マス目)`;
+            
+            // カード表示更新
+            updatePlayerCards(1);
+            updatePlayerCards(2);
+            
+            // カードボタンの表示/非表示（カードを持っていれば常に表示）
+            document.getElementById('useCardBtn1').style.display = players[1].cards.length > 0 ? 'block' : 'none';
+            document.getElementById('useCardBtn2').style.display = players[2].cards.length > 0 ? 'block' : 'none';
+        }
+        
+        // プレイヤーのカード表示更新
+        function updatePlayerCards(playerNum) {
+            const cardsList = document.getElementById(`player${playerNum}CardsList`);
+            cardsList.innerHTML = '';
+            
+            players[playerNum].cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'mini-card';
+                cardElement.textContent = card.name.split(' ')[0]; // 絵文字部分のみ表示
+                cardElement.title = card.name + ': ' + card.description;
+                cardsList.appendChild(cardElement);
+            });
+        }
+        
+        // サイコロを振る
+        function rollDice() {
+            if (gameEnded || turnLocked) return;
+            
+            lockInputs();
+            
+            // ★変更: ターン所有者を記録（競合バグ修正）
+            pendingAnswerFor = currentPlayer;
+            
+            // スキップターンチェック
+            if (players[currentPlayer].skipTurn) {
+                players[currentPlayer].skipTurn = false;
+                alert(`プレイヤー${currentPlayer}は1回休みです！`);
+                const t = setTimeout(() => switchToNextPlayer(), 1000);
+                timers.push(t);
+                return;
+            }
+            
+            rollMultipleDice(1);
+        }
+        
+        // 複数サイコロを振る関数
+        function rollMultipleDice(diceCount) {
+            const diceArea = document.getElementById('diceArea');
+            const rollBtn = document.getElementById('rollBtn');
+            
+            // サイコロエリアをクリア
+            diceArea.innerHTML = '';
+            
+            // 指定された数のサイコロを作成
+            const diceElements = [];
+            for (let i = 0; i < diceCount; i++) {
+                const dice = document.createElement('div');
+                dice.className = 'dice';
+                dice.id = `dice-${i}`;
+                dice.textContent = '?';
+                diceArea.appendChild(dice);
+                diceElements.push(dice);
+            }
+            
+            rollBtn.disabled = true;
+            
+            // 全てのサイコロにアニメーションを追加
+            diceElements.forEach(dice => dice.classList.add('rolling'));
+            
+            // アニメーション中はランダムな数字を表示
+            let rollCount = 0;
+            const diceValues = [];
+            
+            const rollInterval = setInterval(() => {
+                diceElements.forEach(dice => {
+                    dice.textContent = Math.floor(Math.random() * 6) + 1;
+                });
+                rollCount++;
+                
+                if (rollCount > 10) {
+                    clearInterval(rollInterval);
+                    
+                    // 最終的な値を決定
+                    let total = 0;
+                    diceElements.forEach((dice, index) => {
+                        let value;
+                        if (lucky6Active) {
+                            value = 6; // ラッキー6効果で必ず6
+                        } else {
+                            value = Math.floor(Math.random() * 6) + 1;
+                        }
+                        dice.textContent = value;
+                        dice.classList.remove('rolling');
+                        diceValues.push(value);
+                        total += value;
+                    });
+                    
+                    diceValue = total;
+                    
+                    // ラッキー6効果をリセット
+                    if (lucky6Active) {
+                        lucky6Active = false;
+                        console.log('ラッキー6効果をリセット');
+                    }
+                    
+                    // 複数サイコロの場合は合計を表示（AIのときは非表示）
+                    if (diceCount > 1 && !(isAIGame && pendingAnswerFor === 2)) {
+                        setTimeout(() => {
+                            alert(`🎲 サイコロの合計: ${diceValues.join(' + ')} = ${total}`);
+                        }, 500);
+                    }
+                    
+                    // ★修正: AIのターン（特にAIがダイス系カード使用時）は人間用モーダルを出さずにAI回答へ
+                    const myTurn = turnId;
+                    const isAITurn = isAIGame && currentPlayer === 2 && pendingAnswerFor === 2;
+                    const nextStep = isAITurn ? aiAnswerQuestion : showQuestion;
+                    const t = setTimeout(() => {
+                        if (gameEnded || myTurn !== turnId) return;
+                        nextStep();
+                    }, diceCount > 1 ? 1500 : 500);
+                    timers.push(t);
+                }
+            }, 100);
+        }
+        
+        // 20秒タイマーを開始
+        function startAnswerTimer() {
+            timeLeft = 20;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = timeLeft;
+            timerDisplay.className = 'timer-display';
+            
+            answerTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                
+                // 色とアニメーションを変更
+                if (timeLeft <= 5) {
+                    timerDisplay.className = 'timer-display danger';
+                } else if (timeLeft <= 10) {
+                    timerDisplay.className = 'timer-display warning';
+                }
+                
+                // 時間切れ
+                if (timeLeft <= 0) {
+                    clearInterval(answerTimer);
+                    answerTimer = null;
+                    timeoutAnswer();
+                }
+            }, 1000);
+        }
+        
+        // タイマーを停止
+        function stopAnswerTimer() {
+            if (answerTimer) {
+                clearInterval(answerTimer);
+                answerTimer = null;
+            }
+        }
+        
+        // 時間切れ処理
+        function timeoutAnswer() {
+            lockInputs();
+            closeModal('questionModal');
+            
+            // 時間切れは不正解扱い
+            showAnswerPopup(false, 0, '時間切れです！');
+        }
+        
+        // 問題表示
+        function showQuestion() {
+            // ★保険: AIターンで誤って呼ばれたら即AI回答へ回す
+            if (isAIGame && currentPlayer === 2) {
+                const modal = document.getElementById('questionModal');
+                if (modal) modal.style.display = 'none';
+                aiAnswerQuestion();
+                return;
+            }
+            
+            const modal = document.getElementById('questionModal');
+            const questionText = document.getElementById('questionText');
+            const answerInput = document.getElementById('answerInput');
+            
+            currentQuestion = pickQuestion(selectedGrade);
+if (!currentQuestion) {
+  // あり得ない想定だが保険
+  alert('問題が見つかりませんでした');
+  closeModal('questionModal');
+  switchToNextPlayer();
+  return;
+}
+            
+            questionText.textContent = currentQuestion.question;
+            answerInput.value = '';
+            
+            openModal('questionModal', '#answerInput');
+            
+            // 15秒タイマーを開始
+            startAnswerTimer();
+            
+            // ★変更: 回答フェーズのみ入力許可（ロール/カードは不可のまま）
+            turnLocked = false;
+            document.getElementById('rollBtn').disabled = true;
+            document.getElementById('useCardBtn1').disabled = true;
+            document.getElementById('useCardBtn2').disabled = true;
+        }
+        
+        // 回答を送信
+        function submitAnswer() {
+            // ★変更: デバッグ用ログ追加
+            if (turnLocked) { 
+                console.warn('submit blocked by turnLocked'); 
+                return; 
+            }
+            
+            const answerInput = document.getElementById('answerInput');
+            const userAnswer = normalize(answerInput.value);
+            
+            if (!userAnswer) {
+                alert('答えを入力してください');
+                return;
+            }
+            
+            // タイマーを停止
+            stopAnswerTimer();
+            
+            lockInputs();
+            // ★変更: ターン所有者を渡す（競合バグ修正）
+            checkAnswer(userAnswer, pendingAnswerFor);
+        }
+        
+        // 答えをチェック
+        function checkAnswer(userAnswer, playerNum = null) {
+            closeModal('questionModal');
+            
+            // ★変更: pendingAnswerForを優先使用
+            const actualPlayer = playerNum ?? pendingAnswerFor;
+            
+            console.log(`プレイヤー${actualPlayer}の回答: ${userAnswer}`);
+            
+            const correct = normalize(currentQuestion.answer);
+            if (userAnswer === correct) {
+                console.log(`プレイヤー${actualPlayer}正解`);
+                // 正解のポップアップ表示
+                showAnswerPopup(true, diceValue);
+                
+                // 正解ポップアップを表示（手動で閉じるまで待機）
+                // ポップアップが閉じられた後の処理は closeAnswerPopup() で実行
+            } else {
+                console.log(`プレイヤー${actualPlayer}不正解`);
+                // 不正解のポップアップ表示
+                showAnswerPopup(false, 0, currentQuestion.answer);
+                
+                // 不正解ポップアップを表示（手動で閉じるまで待機）
+                // ポップアップが閉じられた後の処理は closeAnswerPopup() で実行
+            }
+        }
+        
+        // 新しいターン交代関数（シンプル版）
+        function switchToNextPlayer() {
+            if (gameEnded || isSwitchingTurn) return; // 二重ターン切り替え防止
+            isSwitchingTurn = true;
+            
+            // ★タイマーの取りこぼしをキャンセル
+            timers.forEach(id => {
+                clearTimeout(id);
+                clearInterval(id);
+            });
+            timers.length = 0;
+            
+            // ★任意だが強力な保険：開いているモーダル/ポップアップを全部閉じる
+            closeAllPopups();
+            
+            // ★AI再入防止フラグをリセット
+            aiBusy = false;
+            
+            // ★任意: ターン所有フラグをクリア
+            pendingAnswerFor = null;
+            
+            console.log(`=== ターン交代開始: プレイヤー${currentPlayer} ===`);
+            
+            // 入力をロック
+            lockInputs();
+            
+            // 現在のプレイヤーを記録
+            const previousPlayer = currentPlayer;
+            
+            // プレイヤーを確実に交代
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            turnId++; // 新しいターンIDを発行
+            console.log(`プレイヤー${previousPlayer} → プレイヤー${currentPlayer}に交代 (turnId=${turnId})`);
+            
+            // UI更新
+            updateTurnDisplay();
+            
+            // 短い遅延後に次のプレイヤーのターン開始
+            const t = setTimeout(() => {
+                if (!gameEnded) {
+                    startPlayerTurn();
+                }
+                // ターン切り替えフラグをリセット
+                setTimeout(() => { isSwitchingTurn = false; }, 100);
+            }, 300);
+            timers.push(t);
+        }
+        
+        // ターン表示を更新
+        function updateTurnDisplay() {
+            // アクティブ表示を更新
+            document.getElementById('player1Info').classList.remove('active');
+            document.getElementById('player2Info').classList.remove('active');
+            document.getElementById(`player${currentPlayer}Info`).classList.add('active');
+            
+            // 全てのボタンを無効化
+            document.getElementById('rollBtn').disabled = true;
+            document.getElementById('useCardBtn1').disabled = true;
+            document.getElementById('useCardBtn2').disabled = true;
+            
+            // サイコロボタンのテキストを更新
+            const rollBtn = document.getElementById('rollBtn');
+            const name = players[currentPlayer].name || `プレイヤー${currentPlayer}`;
+            const icon = (currentPlayer === 1) ? "👦" : (isAIGame ? "🤖" : "👧");
+            rollBtn.textContent = `${icon} ${name} の番`;
+        }
+        
+        // プレイヤーのターンを開始
+        function startPlayerTurn() {
+            const rollBtn = document.getElementById('rollBtn');
+            const diceArea = document.getElementById('diceArea');
+            
+            // サイコロ表示を常に ? に戻す
+            diceArea.innerHTML = '<div class="dice" id="dice">?</div>';
+            
+            if (isAIGame && currentPlayer === 2) {
+                // ★AI再入防止チェック
+                if (aiBusy) return;
+                
+                // AIのターン
+                rollBtn.textContent = 'コンピューターの番';
+                rollBtn.style.cursor = 'not-allowed';
+                rollBtn.title = 'コンピューターが考え中です';
+                console.log('AIターン開始');
+                
+                const myTurn = turnId; // この時点のターンIDを捕まえる
+                const t = setTimeout(() => {
+                    if (!gameEnded && currentPlayer === 2 && myTurn === turnId) {
+                        aiTurn();
+                    }
+                }, 1500);
+                timers.push(t);
+            } else {
+                // 人間プレイヤーのターン
+                rollBtn.textContent = 'サイコロ';
+                rollBtn.style.cursor = 'pointer';
+                rollBtn.title = 'クリックしてサイコロを振る';
+                console.log(`プレイヤー${currentPlayer}のターン開始`);
+                
+                // 現在のプレイヤーの入力を有効化
+                unlockInputsForCurrentPlayer();
+            }
+        }
+        
+        // 現在のプレイヤーのターンを終了する統一関数（旧版、互換性のため残す）
+        function endCurrentPlayerTurn() {
+            switchToNextPlayer();
+        }
+        
+        // 正解・不正解ポップアップ表示
+        function showAnswerPopup(isCorrect, steps, info = '') {
+            const popup = document.getElementById('answerPopup');
+            const content = document.getElementById('answerPopupContent');
+            const title = document.getElementById('answerResultTitle');
+            const message = document.getElementById('answerResultMessage');
+
+            // フラグに正誤を保存（close側で参照）
+            lastAnswerCorrect = !!isCorrect;
+
+            if (isCorrect) {
+                content.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+                title.textContent = '🎉 正解！ 🎉';
+                message.textContent = `${steps}マス進みます！`;
+            } else {
+                content.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+                title.textContent = '❌ 不正解... ❌';
+                // info が currentQuestion.answer と違う場合はカスタム文言としてそのまま表示
+                // （AI は「問題に間違えました」がそのまま出る）
+                if (info && info !== (currentQuestion?.answer ?? '')) {
+                    message.textContent = info;
+                } else if (info) {
+                    message.textContent = `正解は「${info}」でした`;
+                } else {
+                    message.textContent = '残念！';
+                }
+            }
+            
+            popup.style.display = 'flex';
+        }
+        
+        // 正解・不正解ポップアップを閉じる
+        function closeAnswerPopup() {
+            document.getElementById('answerPopup').style.display = 'none';
+            
+            // ポップアップが閉じられた後の処理を実行（文字列ではなくフラグで判定）
+            const isCorrect = !!lastAnswerCorrect;
+            lastAnswerCorrect = null; // 使い終わったらクリア
+            
+            if (isCorrect) {
+                // 正解の場合の処理
+                const actualPlayer = pendingAnswerFor || currentPlayer;
+                movePlayer(diceValue, actualPlayer);
+                if (gameEnded) return; // 勝利後の後続処理を中断
+                
+                // 移動完了後の処理
+                const t = setTimeout(() => {
+                    if (gameEnded) return;
+                    
+                    // ゴールした場合はカード獲得なし
+                    if (players[actualPlayer].position >= 29) {
+                        console.log('ゴール到達→カード獲得なし→ゲーム終了');
+                        return;
+                    }
+                    
+                    // 70%の確率でカードを獲得
+                    if (Math.random() < 0.7) {
+                        // 20%の確率で2枚獲得
+                        const cardCount = Math.random() < 0.2 ? 2 : 1;
+                        giveCards(actualPlayer, cardCount);
+                        // カード獲得ポップアップは手動で閉じるまで待機
+                    } else {
+                        // カード獲得なしの場合はターン切り替え
+                        console.log('正解→カード獲得なし→ターン終了');
+                        switchToNextPlayer();
+                    }
+                }, 1000);
+                timers.push(t);
+            } else {
+                // 不正解の場合はターン切り替え
+                console.log('不正解→ターン終了');
+                switchToNextPlayer();
+            }
+        }
+        
+        // プレイヤーを移動
+        function movePlayer(steps, playerNum = null) {
+            if (gameEnded) return;
+            
+            // ★変更: 所有者指定対応（競合バグ修正）
+            const targetPlayer = playerNum || currentPlayer;
+            const oldPosition = players[targetPlayer].position;
+            const newPosition = Math.min(oldPosition + steps, 29);
+            
+            console.log(`プレイヤー${targetPlayer}: ${oldPosition} → ${newPosition} (${steps}マス進む)`);
+            
+            // 移動アニメーション効果
+            animateMovement(oldPosition, newPosition, targetPlayer, () => {
+                players[targetPlayer].position = newPosition;
+                updatePlayerPositions();
+                
+                // ゴール判定（即時・同期）
+                if (newPosition >= 29) {
+                    if (!gameEnded) endGame(targetPlayer);
+                    return;
+                }
+            });
+        }
+        
+        // 移動アニメーション（requestAnimationFrame使用でカクつき低減）
+        function animateMovement(from, to, playerNum, callback) {
+            if (from === to) {
+                callback();
+                return;
+            }
+            
+            let current = from;
+            let lastTime = 0;
+            const stepDelay = 300; // ミリ秒
+            
+            const step = (currentTime) => {
+                if (gameEnded) return;
+                
+                if (currentTime - lastTime >= stepDelay) {
+                    if (current < to) {
+                        current++;
+                        players[playerNum].position = current;
+                        updatePlayerPositions();
+                        lastTime = currentTime;
+                    } else {
+                        callback();
+                        return;
+                    }
+                }
+                requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+        }
+        
+        // カードを与える（複数枚対応）
+        function giveCards(playerNum = null, count = 1) {
+            // ★変更: 所有者指定対応（競合バグ修正）
+            const targetPlayer = playerNum || currentPlayer;
+            const obtainedCards = [];
+            
+            for (let i = 0; i < count; i++) {
+                const randomCard = getRandomCard();
+                players[targetPlayer].cards.push(randomCard);
+                obtainedCards.push(randomCard);
+            }
+            
+            // カード獲得のポップアップ表示
+            const t = setTimeout(() => {
+                if (count === 1) {
+                    showCardPopup(obtainedCards[0]);
+                } else {
+                    showMultipleCardPopup(obtainedCards);
+                }
+                updatePlayerPositions();
+                
+                // AIの場合は自動でカードポップアップを閉じる
+                if (isAIGame && targetPlayer === 2) {
+                    const t2 = setTimeout(() => {
+                        closeCardPopup();
+                    }, 2000);
+                    timers.push(t2);
+                }
+            }, 500);
+            timers.push(t);
+        }
+        
+        // 複数カード獲得ポップアップ表示
+        function showMultipleCardPopup(cards) {
+            const cardNames = cards.map(card => card.name).join('、');
+            document.getElementById('popupCardName').textContent = `${cards.length}枚獲得！`;
+            document.getElementById('popupCardDesc').textContent = cardNames;
+            document.getElementById('cardPopup').style.display = 'flex';
+        }
+        
+        // カード獲得ポップアップ表示
+        function showCardPopup(card) {
+            document.getElementById('popupCardName').textContent = card.name;
+            document.getElementById('popupCardDesc').textContent = card.description;
+            document.getElementById('cardPopup').style.display = 'flex';
+        }
+        
+        // カード獲得ポップアップを閉じる
+        function closeCardPopup() {
+            if (isClosingCardPopup) return; // 二重実行防止
+            isClosingCardPopup = true;
+            
+            document.getElementById('cardPopup').style.display = 'none';
+            
+            // カード獲得後はターン切り替え
+            if (!gameEnded) {
+                console.log('カード獲得→ターン終了');
+                switchToNextPlayer();
+            }
+            
+            // フラグをリセット
+            setTimeout(() => { isClosingCardPopup = false; }, 100);
+        }
+        
+        // シールド発動ポップアップ表示
+        function showShieldPopup() {
+            const el = document.getElementById('shieldPopup');
+            el.style.display = 'flex';
+            // 1.2秒で自動で閉じる（手動でもOK）
+            setTimeout(() => {
+                if (el.style.display === 'flex') closeShieldPopup();
+            }, 1200);
+        }
+        
+        // シールド発動ポップアップを閉じる
+        function closeShieldPopup() {
+            document.getElementById('shieldPopup').style.display = 'none';
+        }
+        
+        // カード使用ポップアップ表示
+        function showCardUsePopup(card) {
+            document.getElementById('usedCardName').textContent = card.name;
+            document.getElementById('usedCardDesc').textContent = card.description;
+            document.getElementById('cardUsePopup').style.display = 'flex';
+        }
+        
+        // カード使用ポップアップを閉じる
+        function closeCardUsePopup() {
+            document.getElementById('cardUsePopup').style.display = 'none';
+            
+            // 人間プレイヤーの場合、保留されたカード効果を実行
+            if (window.pendingCardEffect) {
+                const { card, playerNum, cardIndex, opponent } = window.pendingCardEffect;
+                executeCardEffect(card, playerNum, cardIndex, opponent);
+                window.pendingCardEffect = null;
+            }
+        }
+        
+
+        
+        // AIのターン処理
+        function aiTurn() {
+            if (gameEnded || currentPlayer !== 2) return;
+            
+            // ★AI再入防止フラグを設定
+            if (aiBusy) return;
+            aiBusy = true;
+            const myTurn = turnId;
+            
+            console.log('AIのターン開始');
+            
+            // スキップターンチェック
+            if (players[2].skipTurn) {
+                players[2].skipTurn = false;
+                showAnswerPopup(false, 0, 'コンピューターは1回休みです');
+                const t = setTimeout(() => {
+                    closeAnswerPopup();
+                    switchToNextPlayer();
+                }, 2000);
+                timers.push(t);
+                return;
+            }
+            
+            // AIがカードを使用するか（90%）＋ シールド以外のみ抽出
+            const usableIdx = players[2].cards
+              .map((c, i) => ({ c, i }))
+              .filter(x => x.c.type !== 'shield')   // 手動使用不可は除外
+              .map(x => x.i);
+            if (usableIdx.length > 0 && Math.random() < 0.9) {
+                const cardIndex = usableIdx[Math.floor(Math.random() * usableIdx.length)];
+                console.log('AIがカードを使用');
+                useCard(2, cardIndex);
+                // フォールバックは不要。カード効果側で次の行動へ進む。
+                return;
+            }
+            
+            // AIのサイコロ処理
+            console.log('AIがサイコロを振る');
+            aiRollDice();
+        }
+        
+        // AI専用のサイコロ処理
+        function aiRollDice() {
+            const diceArea = document.getElementById('diceArea');
+            diceArea.innerHTML = '<div class="dice" id="dice">?</div>';
+            const dice = document.getElementById('dice');
+            
+            const myTurn = turnId;
+            dice.classList.add('rolling');
+            
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                dice.textContent = Math.floor(Math.random() * 6) + 1;
+                rollCount++;
+                
+                if (rollCount > 10) {
+                    clearInterval(rollInterval);
+                    
+                    if (lucky6Active) {
+                        diceValue = 6; // ラッキー6効果で必ず6
+                        lucky6Active = false;
+                        console.log('AI: ラッキー6効果でサイコロが6に');
+                    } else {
+                        diceValue = Math.floor(Math.random() * 6) + 1;
+                    }
+                    dice.textContent = diceValue;
+                    dice.classList.remove('rolling');
+                    
+                    // AIの問題処理
+                    const t = setTimeout(() => {
+                        if (gameEnded || currentPlayer !== 2 || myTurn !== turnId) return;
+                        aiAnswerQuestion();
+                    }, 500);
+                    timers.push(t);
+                }
+            }, 100);
+            timers.push(rollInterval);
+        }
+        
+        // AI専用の問題回答処理
+        function aiAnswerQuestion() {
+            if (gameEnded || currentPlayer !== 2) return;
+            
+            const myTurn = turnId;
+            console.log(`AI問題回答処理開始 - サイコロの目: ${diceValue}`);
+            
+            // ★変更: AIのターン所有者を記録（競合バグ修正）
+            pendingAnswerFor = 2;
+            
+            // 問題を生成（AIも同じ問題データを使用）
+            currentQuestion = pickQuestion(selectedGrade);
+if (!currentQuestion) {
+  // 念のための保険
+  console.warn('AI: 問題が見つからずスキップ');
+  switchToNextPlayer();
+  return;
+}
+            
+            // AIは95%の確率で正解
+            const isCorrect = Math.random() < 0.95;
+            
+            if (isCorrect) {
+                console.log(`AI正解 - ${diceValue}マス進む予定`);
+                
+                // AIの移動処理（人間と同じ流れ）
+                movePlayer(diceValue, 2);
+                if (gameEnded) return; // 勝利後の後続処理を中断
+                
+                // 移動完了後の処理
+                const t = setTimeout(() => {
+                    if (gameEnded || currentPlayer !== 2 || myTurn !== turnId) return;
+                    
+                    // ゴールした場合はカード獲得なし
+                    if (players[2].position >= 29) {
+                        console.log('AI ゴール到達→カード獲得なし→ゲーム終了');
+                        return;
+                    }
+                    
+                    // 70%の確率でカードを獲得（人間と同じ確率）
+                    if (Math.random() < 0.7) {
+                        // 20%の確率で2枚獲得
+                        const cardCount = Math.random() < 0.2 ? 2 : 1;
+                        console.log(`AI正解→${cardCount}枚カード獲得`);
+                        giveCards(2, cardCount);
+                        // AIの場合はカード獲得ポップアップが自動で閉じられる
+                    } else {
+                        // カード獲得なしの場合はターン切り替え
+                        console.log('AI正解→カード獲得なし→ターン終了');
+                        switchToNextPlayer();
+                    }
+                }, 1500);
+                timers.push(t);
+            } else {
+                console.log('AI不正解 - 進まない');
+                showAnswerPopup(false, 0, '問題に間違えました');
+                // AIの場合は自動でポップアップを閉じる
+                const t = setTimeout(() => {
+                    if (gameEnded || currentPlayer !== 2 || myTurn !== turnId) return;
+                    closeAnswerPopup();
+                }, 2000);
+                timers.push(t);
+            }
+        }
+        
+        // ゲーム終了
+        function endGame(winnerNum = null) {
+            gameEnded = true;
+            const winnerModal = document.getElementById('winnerModal');
+            const winnerText = document.getElementById('winnerText');
+            
+            const actualWinner = winnerNum || currentPlayer;
+            const icon = (actualWinner === 1) ? "👦" : (isAIGame ? "🤖" : "👧");
+            const name = players[actualWinner].name || `プレイヤー${actualWinner}`;
+            winnerText.textContent = `${icon} ${name} の勝利！`;
+            winnerModal.style.display = 'flex';
+        }
+        
+        // ゲームリセット
+        function resetGame() {
+            // ★タイマーをクリア
+            timers.forEach(clearTimeout);
+            timers.length = 0;
+            
+            // 回答タイマーもクリア
+            stopAnswerTimer();
+            
+            currentPlayer = 1;
+            players = {
+                1: { position: 0, cards: [], shields: 0, skipTurn: false, name: players[1].name },
+                2: { position: 0, cards: [], shields: 0, skipTurn: false, name: players[2].name }
+            };
+            gameEnded = false;
+            diceValue = 0;
+            turnLocked = false;
+            // ★変更: ターン所有者もリセット（競合バグ修正）
+            pendingAnswerFor = null;
+            // ラッキー6効果もリセット
+            lucky6Active = false;
+            // ★AI再入防止フラグもリセット
+            aiBusy = false;
+            // 二重実行防止フラグもリセット
+            isClosingCardPopup = false;
+            isSwitchingTurn = false;
+            // ターンIDもリセット
+            turnId = 0;
+            // タイマー関連もリセット
+            timeLeft = 20;
+　　　　　　// ★追加: 問題履歴を初期化
+questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+            
+            document.getElementById('winnerModal').style.display = 'none';
+            
+            // サイコロエリアを初期状態に戻す
+            const diceArea = document.getElementById('diceArea');
+            diceArea.innerHTML = '<div class="dice" id="dice">?</div>';
+            
+            updateTurnDisplay();
+            startPlayerTurn();
+            
+            // ボードを再初期化
+            initializeBoard();
+        }
+        
+        // カードメニュー表示
+        function showCardMenu(playerNum) {
+            // カードを持っていない場合は何もしない
+            if (players[playerNum].cards.length === 0) return;
+            
+            const modal = document.getElementById('cardModal');
+            const cardList = document.getElementById('cardList');
+            
+            cardList.innerHTML = '';
+            
+            players[playerNum].cards.forEach((card, index) => {
+                const cardItem = document.createElement('div');
+                cardItem.className = 'card-item';
+                
+                // カードの種類によって色分け
+                const turnEndCards = ['dice2', 'dice3', 'random', 'steal'];
+                const turnContinueCards = ['lucky6', 'attack', 'jump', 'bomb', 'stop'];
+                
+                if (turnEndCards.includes(card.type)) {
+                    cardItem.classList.add('turn-end');
+                } else if (turnContinueCards.includes(card.type)) {
+                    cardItem.classList.add('turn-continue');
+                }
+                
+                // 使用可能かどうかを判定
+                const canUse = (playerNum === currentPlayer && !turnLocked && card.type !== 'shield');
+                
+                let turnInfo = '';
+                if (turnEndCards.includes(card.type)) {
+                    turnInfo = '🔴 ターン終了';
+                } else if (turnContinueCards.includes(card.type)) {
+                    turnInfo = '🟢 ターン継続';
+                } else if (card.type === 'shield') {
+                    turnInfo = '🛡️ 自動発動';
+                }
+                
+                if (!canUse) {
+                    cardItem.style.opacity = '0.5';
+                    cardItem.style.cursor = 'not-allowed';
+                    
+                    let reason = '';
+                    if (card.type === 'shield') {
+                        reason = '自動発動（使用不可）';
+                    } else if (playerNum !== currentPlayer) {
+                        reason = '相手のターンです';
+                    } else if (turnLocked) {
+                        reason = '現在使用できません';
+                    }
+                    
+                    cardItem.innerHTML = `
+                        <div style="font-size: 1.2rem; margin-bottom: 5px;">${card.name}</div>
+                        <div class="card-description">${card.description}</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8; margin: 3px 0;">${turnInfo}</div>
+                        <div style="font-size: 0.8rem; color: #ff6b6b; margin-top: 5px;">${reason}</div>
+                    `;
+                } else {
+                    cardItem.innerHTML = `
+                        <div style="font-size: 1.2rem; margin-bottom: 5px;">${card.name}</div>
+                        <div class="card-description">${card.description}</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8; margin: 3px 0;">${turnInfo}</div>
+                        <div style="font-size: 0.8rem; color: #27ae60; margin-top: 5px;">クリックで使用</div>
+                    `;
+                    cardItem.onclick = () => useCard(playerNum, index);
+                }
+                
+                cardList.appendChild(cardItem);
+            });
+            
+            modal.style.display = 'flex';
+        }
+        
+        // カードメニューを閉じる
+        function closeCardMenu() {
+            document.getElementById('cardModal').style.display = 'none';
+        }
+        
+        // カードを使用
+        function useCard(playerNum, cardIndex) {
+            // 人間の誤操作はロックで防ぐが、AIはロック中でも使用を許可する
+            if (turnLocked && !(isAIGame && playerNum === 2)) return;
+            
+            lockInputs();
+            
+            const card = players[playerNum].cards[cardIndex];
+            const opponent = playerNum === 1 ? 2 : 1;
+            
+            closeCardMenu();
+            
+            // カード使用ポップアップを表示
+            showCardUsePopup(card);
+            
+            // AIの場合は自動でポップアップを閉じる、人間の場合は手動
+            if (isAIGame && playerNum === 2) {
+                const t = setTimeout(() => {
+                    closeCardUsePopup();
+                    executeCardEffect(card, playerNum, cardIndex, opponent);
+                }, 1500);
+                timers.push(t);
+            } else {
+                // 人間プレイヤーの場合は手動で閉じるまで待機
+                // カード効果は closeCardUsePopup() で実行される
+                window.pendingCardEffect = { card, playerNum, cardIndex, opponent };
+            }
+        }
+        
+        // カード効果を実行する関数
+        function executeCardEffect(card, playerNum, cardIndex, opponent) {
+            switch(card.type) {
+                case 'shield':
+                    console.log('🛡️ シールドは自動発動のため手動使用不可');
+                    // AIならそのまま次の行動へ、人間なら入力を戻す
+                    if (isAIGame && playerNum === 2) {
+                        setTimeout(() => { if (!gameEnded && currentPlayer === 2) aiRollDice(); }, 400);
+                    } else {
+                        unlockInputsForCurrentPlayer();
+                    }
+                    return;
+                    
+                case 'dice2':
+                    // ★変更: ダイス系カードのターン所有者を記録（競合バグ修正）
+                    pendingAnswerFor = playerNum;
+                    // 2個のサイコロを表示してから問題へ
+                    rollMultipleDice(2);
+                    // カードを消費
+                    players[playerNum].cards.splice(cardIndex, 1);
+                    updatePlayerPositions();
+                    return; // 早期リターンで以下の処理をスキップ
+                    
+                case 'dice3':
+                    // ★変更: ダイス系カードのターン所有者を記録（競合バグ修正）
+                    pendingAnswerFor = playerNum;
+                    // 3個のサイコロを表示してから問題へ
+                    rollMultipleDice(3);
+                    // カードを消費
+                    players[playerNum].cards.splice(cardIndex, 1);
+                    updatePlayerPositions();
+                    return; // 早期リターンで以下の処理をスキップ
+                    
+                case 'lucky6':
+                    lucky6Active = true;
+                    console.log('ラッキー6効果を有効化');
+                    alert('🍀 ラッキー6効果が有効になりました！次のサイコロで必ず6が出ます！');
+                    break;
+                    
+                case 'attack':
+                    if (hasShield(opponent)) {
+                        useShield(opponent);
+                        showShieldPopup();
+                    } else {
+                        players[opponent].position = Math.max(0, players[opponent].position - 3);
+                        alert(`💥 相手を3マス戻しました！`);
+                        updatePlayerPositions();
+                    }
+                    break;
+                    
+                case 'jump':
+                    alert('🚀 ジャンプ: 3マス進みます！');
+                    movePlayer(3, playerNum);
+                    break;
+                    
+
+                    
+                case 'bomb':
+                    if (hasShield(opponent)) {
+                        useShield(opponent);
+                        showShieldPopup();
+                    } else {
+                        players[1].position = 0;
+                        players[2].position = 0;
+                        alert('💣 爆発！両プレイヤーがスタートに戻りました！');
+                        updatePlayerPositions();
+                    }
+                    break;
+                    
+                case 'stop':
+                    if (hasShield(opponent)) {
+                        useShield(opponent);
+                        showShieldPopup();
+                    } else {
+                        players[opponent].skipTurn = true;
+                        alert(`🚧 相手を1回休みにしました！`);
+                    }
+                    break;
+                    
+                case 'random':
+                    const randomPos = Math.floor(Math.random() * 29); // 0..28（スタートからゴール手前まで）
+                    players[playerNum].position = randomPos;
+                    const positionText = randomPos === 0 ? 'スタート' : `${randomPos}番目のマス`;
+                    alert(`🪂 ランダムテレポート: ${positionText}に移動しました！`);
+                    updatePlayerPositions();
+                    break;
+                    
+                case 'steal':
+                    if (hasShield(opponent)) {
+                        useShield(opponent);
+                        showShieldPopup();
+                    } else if (players[opponent].cards.length > 0) {
+                        const stolenIndex = Math.floor(Math.random() * players[opponent].cards.length);
+                        const stolenCard = players[opponent].cards.splice(stolenIndex, 1)[0];
+                        players[playerNum].cards.push(stolenCard);
+                        alert(`🥷 相手から「${stolenCard.name}」を奪いました！`);
+                        updatePlayerPositions();
+                    } else {
+                        alert('🥷 相手はカードを持っていません...');
+                    }
+                    break;
+            }
+            
+            // カードを消費
+            players[playerNum].cards.splice(cardIndex, 1);
+            updatePlayerPositions();
+            
+            // ゴール判定
+            if (players[playerNum].position >= 29) {
+                endGame(playerNum);
+                return;
+            }
+            
+            // カード使用後のターン処理
+            console.log(`プレイヤー${playerNum}がカード「${card.name}」を使用完了`);
+            
+            // dice2, dice3カードは問題回答後にターン終了するため、ここではターン交代しない
+            if (['dice2', 'dice3'].includes(card.type)) {
+                // これらのカードは rollMultipleDice → 問題回答 → switchToNextPlayer の流れで処理される
+                console.log(`${card.name}カード使用、問題回答後にターン終了予定`);
+                return;
+            }
+            
+            // ランダムと泥棒カードはターン終了
+            if (['random', 'steal'].includes(card.type)) {
+                console.log(`${card.name}カード使用、ターン終了`);
+                const t = setTimeout(() => {
+                    if (!gameEnded) switchToNextPlayer();
+                }, 800);
+                timers.push(t);
+                return;
+            }
+            
+            // その他のカード：人間は継続、AIは自動で次アクションへ
+            if (!gameEnded) {
+              if (isAIGame && playerNum === 2) {
+                console.log(`AIが「${card.name}」使用 → 自動でサイコロへ`);
+                const t = setTimeout(() => {
+                  if (!gameEnded && currentPlayer === 2) aiRollDice();
+                }, 800);
+                timers.push(t);
+              } else {
+                console.log(`カード「${card.name}」使用、ターン継続（人間）`);
+                const t = setTimeout(() => { if (!gameEnded) unlockInputsForCurrentPlayer(); }, 300);
+                timers.push(t);
+              }
+            }
+        }
+        
+        // シールド関連の関数
+        function hasShield(playerNum) {
+            return players[playerNum].cards.some(card => card.type === 'shield');
+        }
+        
+        function useShield(playerNum) {
+            const shieldIndex = players[playerNum].cards.findIndex(card => card.type === 'shield');
+            if (shieldIndex !== -1) {
+                players[playerNum].cards.splice(shieldIndex, 1);
+                updatePlayerPositions();
+            }
+        }
+        
+        // 初期化時にプレイヤー2入力欄を非表示にし、設定を読み込む
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            togglePlayer2Input();
+            
+            // モーダルのアクセシビリティ設定
+            ['questionModal','cardModal','cardPopup','shieldPopup','answerPopup','cardUsePopup','winnerModal','quitModal','firstPlayerModal']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { 
+                        el.setAttribute('role','dialog'); 
+                        el.setAttribute('aria-modal','true'); 
+                        el.setAttribute('aria-hidden','true'); 
+                    }
+                });
+        });
+        
+        // キーボードイベントリスナー
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // ゲーム開始前の画面では何もしない
+                if (document.getElementById('setupScreen').style.display === 'flex' || 
+                    document.getElementById('instructionsScreen').style.display === 'flex' ||
+                    document.getElementById('firstPlayerModal').style.display === 'flex') {
+                    return;
+                }
+                
+                // 問題モーダルが開いている場合
+                if (document.getElementById('questionModal').style.display === 'flex') {
+                    submitAnswer();
+                    return;
+                }
+                
+                // カード獲得ポップアップが開いている場合
+                if (document.getElementById('cardPopup').style.display === 'flex') {
+                    closeCardPopup();
+                    return;
+                }
+                
+                // カード使用ポップアップが開いている場合
+                if (document.getElementById('cardUsePopup').style.display === 'flex') {
+                    closeCardUsePopup();
+                    return;
+                }
+                
+                // シールドポップアップが開いている場合
+                if (document.getElementById('shieldPopup').style.display === 'flex') {
+                    closeShieldPopup();
+                    return;
+                }
+                
+                // 正解・不正解ポップアップが開いている場合
+                if (document.getElementById('answerPopup').style.display === 'flex') {
+                    closeAnswerPopup();
+                    return;
+                }
+                
+                // 勝利モーダルが開いている場合
+                if (document.getElementById('winnerModal').style.display === 'flex') {
+                    resetGame();
+                    return;
+                }
+                
+                // ゲーム中のみサイコロボタンが有効な場合
+                if (document.getElementById('gameContainer').style.display === 'flex') {
+                    const rollBtn = document.getElementById('rollBtn');
+                    if (rollBtn && !rollBtn.disabled && rollBtn.style.display !== 'none') {
+                        rollDice();
+                        return;
+                    }
+                }
+            }
+        });
+        
+        // ゲーム終了確認表示
+        function showQuitConfirm() {
+            document.getElementById('quitModal').style.display = 'flex';
+        }
+        
+        // ゲーム終了確認を閉じる
+        function closeQuitConfirm() {
+            document.getElementById('quitModal').style.display = 'none';
+        }
+        
+        // ゲーム終了（最初の画面に戻る）
+        function quitGame() {
+            // 回答タイマーもクリア
+            stopAnswerTimer();
+            
+            // ゲーム状態をリセット
+            currentPlayer = 1;
+            players = {
+                1: { position: 0, cards: [], shields: 0, skipTurn: false, name: "" },
+                2: { position: 0, cards: [], shields: 0, skipTurn: false, name: "" }
+            };
+            gameEnded = false;
+            diceValue = 0;
+            isAIGame = false;
+            playerCount = 2;
+            turnLocked = false;
+            // ★変更: ターン所有者もリセット（競合バグ修正）
+            pendingAnswerFor = null;
+            // ラッキー6効果もリセット
+            lucky6Active = false;
+            // 二重実行防止フラグもリセット
+            isClosingCardPopup = false;
+            isSwitchingTurn = false;
+            // ターンIDもリセット
+            turnId = 0;
+            // タイマー関連もリセット
+            timeLeft = 15;
+
+            // ★追加: 問題履歴を初期化
+questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+            
+            // 全てのモーダルを閉じる
+            document.getElementById('quitModal').style.display = 'none';
+            document.getElementById('questionModal').style.display = 'none';
+            document.getElementById('cardModal').style.display = 'none';
+            document.getElementById('cardPopup').style.display = 'none';
+            document.getElementById('cardUsePopup').style.display = 'none';
+            document.getElementById('shieldPopup').style.display = 'none';
+            document.getElementById('answerPopup').style.display = 'none';
+            document.getElementById('winnerModal').style.display = 'none';
+            
+            // 画面を切り替え
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('instructionsScreen').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'flex';
+            
+            // 入力フィールドをリセット
+            document.getElementById('player1Name').value = 'プレイヤー1';
+            document.getElementById('player2Name').value = 'プレイヤー2';
+            document.getElementById('playerCountSelect').value = '2';
+            document.getElementById('gradeSelect').value = '4';
+            togglePlayer2Input();
+        }
+        
+        // 全ポップアップを閉じる関数
+        function closeAllPopups() {
+            // タイマーも停止
+            stopAnswerTimer();
+            
+            ['questionModal','cardModal','cardPopup','shieldPopup','answerPopup','winnerModal','quitModal','cardUsePopup','firstPlayerModal']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+        }
+        
+        // 設定保存（授業で繰り返し遊ぶ際の便利機能）
+        function saveSettings(){
+            try {
+                localStorage.setItem('kanjiSugorokuSettings', JSON.stringify({
+                    p1: players[1].name,
+                    p2: players[2].name,
+                    grade: selectedGrade,
+                    isAIGame: isAIGame
+                }));
+            } catch(e) {
+                console.warn('設定保存に失敗:', e);
+            }
+        }
+        
+        // 設定読み込み
+        function loadSettings(){
+            try{
+                const s = JSON.parse(localStorage.getItem('kanjiSugorokuSettings'));
+                if(!s) return;
+                document.getElementById('player1Name').value = s.p1 || 'プレイヤー1';
+                document.getElementById('player2Name').value = s.p2 || 'プレイヤー2';
+                document.getElementById('gradeSelect').value = String(s.grade || 4);
+                document.getElementById('playerCountSelect').value = s.isAIGame ? '1' : '2';
+                togglePlayer2Input();
+            }catch(e){
+                console.warn('設定読み込みに失敗:', e);
+            }
+        }
+        
+        // モーダル共通ユーティリティ
+        function openModal(id, focusSelector) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'flex';
+            el.setAttribute('aria-hidden', 'false');
+            requestAnimationFrame(() => {
+                const f = focusSelector ? document.querySelector(focusSelector) : el.querySelector('button, [tabindex], input, select, textarea');
+                if (f && typeof f.focus === 'function') f.focus();
+            });
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'none';
+            el.setAttribute('aria-hidden', 'true');
+        }
+        
+        // ゲーム初期化は proceedAfterRoulette() で実行されるため、ここでは不要
+    </script>
+    <script>
+function openModal(id, focusSel){
+  const el=document.getElementById(id); if(!el) return;
+  el.style.display='flex';
+  if(focusSel){ setTimeout(()=>{ const t=document.querySelector(focusSel); t&&t.focus(); },0); }
+}
+function closeModal(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+function closeAllPopups(){
+  ['questionModal','cardModal','cardPopup','shieldPopup','answerPopup','cardUsePopup','winnerModal','quitModal','firstPlayerModal']
+    .forEach(closeModal);
+}
+// 設定の保存/復元（ローカルストレージ）
+function saveSettings(){
+  try{
+    localStorage.setItem('kanji-sugoroku', JSON.stringify({
+      p1: players[1].name, p2: players[2].name,
+      grade: selectedGrade, isAIGame, playerCount
+    }));
+  }catch(e){}
+}
+(function loadSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('kanji-sugoroku')||'null'); if(!s) return;
+    document.getElementById('player1Name').value = s.p1||'プレイヤー1';
+    const p2=document.getElementById('player2Name'); if(p2) p2.value = s.p2||'プレイヤー2';
+    document.getElementById('gradeSelect').value = String(s.grade||4);
+    document.getElementById('playerCountSelect').value = String(s.isAIGame?1:(s.playerCount||2));
+    togglePlayer2Input();
+  }catch(e){}
+})();
+// 終了確認まわり
+function showQuitConfirm(){ openModal('quitModal'); }
+function closeQuitConfirm(){ closeModal('quitModal'); }
+function quitGame(){
+  closeQuitConfirm();
+  resetGame();
+  document.getElementById('gameContainer').style.display='none';
+  document.getElementById('setupScreen').style.display='flex';
+}
+// カードモーダルを閉じる（保険）— 既に定義がなければ作る
+if (typeof closeCardMenu !== 'function') {
+  function closeCardMenu() { closeModal('cardModal'); }
+}
+
+// カード機能が未実装でも落ちないようにする保険
+if (typeof useCard !== 'function') {
+  function useCard(playerNum, idx){
+    closeCardMenu();
+    toast('この版ではカード使用は未実装です');
+    unlockInputsForCurrentPlayer();
+  }
+    
+</script>
+</body>
+</html>
