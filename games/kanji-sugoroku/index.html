@@ -664,6 +664,67 @@
           box-shadow:0 12px 26px rgba(230,126,34,.45);
           border-color:#e74c3c;
         }
+
+        /* 書き問題スタイル */
+        .writing-sentence {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin: 15px 0 10px;
+            line-height: 2;
+            font-weight: bold;
+            text-align: center;
+        }
+        .blank-mark {
+            display: inline-block;
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+            min-width: 64px;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 0 6px;
+            letter-spacing: 2px;
+        }
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 14px 0 4px;
+        }
+        .choice-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 20px 10px;
+            border-radius: 16px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 5px 12px rgba(52,152,219,0.35);
+            min-height: 70px;
+            font-family: inherit;
+        }
+        .choice-btn:active { transform: scale(0.95); }
+        .choice-btn.correct {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            box-shadow: 0 5px 15px rgba(39,174,96,0.5);
+        }
+        .choice-btn.wrong {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 5px 15px rgba(231,76,60,0.5);
+        }
+        .question-type-badge {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .badge-reading { background:#3498db; color:#fff; }
+        .badge-writing { background:#9b59b6; color:#fff; }
+        .badge-bonus   { background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; }
     </style>
 </head>
 <body>
@@ -768,10 +829,18 @@
     <div class="question-modal" id="questionModal">
         <div class="question-content">
             <div class="timer-display" id="timerDisplay">20</div>
-            <h3>漢字問題</h3>
-            <div class="question-text" id="questionText"></div>
-            <input type="text" class="answer-input" id="answerInput" placeholder="ひらがなで答えを入力してください" onkeypress="if(event.key==='Enter') submitAnswer()">
-            <button class="submit-answer" onclick="submitAnswer()">回答する</button>
+            <div id="questionTypeBadge"></div>
+            <!-- 読み問題セクション -->
+            <div id="readingSection">
+                <div class="question-text" id="questionText"></div>
+                <input type="text" class="answer-input" id="answerInput" placeholder="ひらがなで答えを入力してください" onkeypress="if(event.key==='Enter') submitAnswer()">
+                <button class="submit-answer" onclick="submitAnswer()">回答する</button>
+            </div>
+            <!-- 書き問題セクション -->
+            <div id="writingSection" style="display:none;">
+                <div class="writing-sentence" id="writingSentence"></div>
+                <div class="choices-grid" id="choicesGrid"></div>
+            </div>
         </div>
     </div>
     
@@ -925,6 +994,52 @@
         // 学年別漢字問題データ
         // 追加：問題重複防止の履歴（学年ごとに既出インデックスを記録）
 let questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+let writingHistory  = { 4: new Set(), 5: new Set(), 6: new Set() };
+
+        // ボーナスカード関連フラグ
+        let bonusMode = false;
+        let bonusPlayerNum = null;
+        let bonusUsedThisTurn = false;
+
+        // 書き問題データ（各学年10問）
+        const writingQuestions = {
+            4: [
+                { sentence: "友達と___して問題を解いた。",       answer: "協力",   choices: ["協力","強力","共力","挟力"] },
+                { sentence: "理科の時間に植物を___した。",       answer: "観察",   choices: ["観察","管察","感察","官察"] },
+                { sentence: "赤い___が青に変わった。",           answer: "信号",   choices: ["信号","新号","真号","振号"] },
+                { sentence: "テストで___をとって喜んだ。",       answer: "満点",   choices: ["満点","万点","蔓点","漫点"] },
+                { sentence: "___のために野菜を毎日食べる。",     answer: "健康",   choices: ["健康","建康","肩康","健航"] },
+                { sentence: "先生が難しい問題を___した。",       answer: "説明",   choices: ["説明","節明","訴明","折明"] },
+                { sentence: "試合に向けて毎日___した。",         answer: "努力",   choices: ["努力","助力","怒力","奴力"] },
+                { sentence: "目指す___に向かって走った。",       answer: "目標",   choices: ["目標","目票","木標","目漂"] },
+                { sentence: "夏に家族で___に行った。",           answer: "海水浴", choices: ["海水浴","海水欲","海水格","海水洛"] },
+                { sentence: "彼には___の才能がある。",           answer: "特別",   choices: ["特別","独別","得別","特列"] },
+            ],
+            5: [
+                { sentence: "買い物で消費___を払った。",                 answer: "税",   choices: ["税","製","政","勢"] },
+                { sentence: "地震の___に家族で備えた。",                 answer: "災害", choices: ["災害","才害","彩害","再害"] },
+                { sentence: "大会でとうとう___した。",                   answer: "優勝", choices: ["優勝","有勝","勇勝","友勝"] },
+                { sentence: "昆虫を___して標本を作った。",               answer: "採集", choices: ["採集","最集","彩集","再集"] },
+                { sentence: "___になって道がわからなくなった。",         answer: "迷子", choices: ["迷子","謎子","惑子","逸子"] },
+                { sentence: "工場でたくさんの___が作られる。",           answer: "製品", choices: ["製品","政品","制品","税品"] },
+                { sentence: "蛇が体から___を出した。",                   answer: "毒",   choices: ["毒","独","読","督"] },
+                { sentence: "良い___をつくるために毎日本を読む。",       answer: "習慣", choices: ["習慣","習感","習観","習寛"] },
+                { sentence: "バスが___で10分待った。",                   answer: "停車", choices: ["停車","亭車","定車","庭車"] },
+                { sentence: "この問題は___に難しい。",                   answer: "非常", choices: ["非常","悲常","非情","菲常"] },
+            ],
+            6: [
+                { sentence: "先生を___する気持ちを大切にする。",   answer: "尊敬", choices: ["尊敬","存敬","専敬","尊鏡"] },
+                { sentence: "国の___を守ることが大切だ。",         answer: "憲法", choices: ["憲法","建法","権法","憲方"] },
+                { sentence: "映画館で映画の___を読んだ。",         answer: "字幕", choices: ["字幕","字目","時幕","字牧"] },
+                { sentence: "山の___から景色を楽しんだ。",         answer: "頂上", choices: ["頂上","丁上","頂城","頂仕"] },
+                { sentence: "___のある態度で人に接する。",         answer: "誠実", choices: ["誠実","政実","清実","誠失"] },
+                { sentence: "力を全部___して勝った。",             answer: "発揮", choices: ["発揮","発輝","発気","発煌"] },
+                { sentence: "たき火の___を集めてゴミ箱に入れた。", answer: "灰",   choices: ["灰","灸","灯","炭"] },
+                { sentence: "工場の煙突から___が出た。",           answer: "蒸気", choices: ["蒸気","証気","乗気","丞気"] },
+                { sentence: "仕事の___として毎月給料をもらう。",   answer: "賃金", choices: ["賃金","賃今","俸金","賃近"] },
+                { sentence: "歴史に___を残す大発見をした。",       answer: "記録", choices: ["記録","記緑","記禄","記路"] },
+            ],
+        };
 
 function pickQuestion(grade){
   const pool = questionsByGrade[grade];
@@ -939,6 +1054,23 @@ function pickQuestion(grade){
   questionHistory[grade].add(idx);
   return pool[idx];
 }
+
+        // 8:2の割合で読み問題/書き問題を選ぶ
+        function pickQuestionWithType(grade) {
+            const useWriting = writingQuestions[grade] && writingQuestions[grade].length > 0 && Math.random() < 0.2;
+            if (useWriting) {
+                const pool = writingQuestions[grade];
+                if (writingHistory[grade].size >= pool.length) writingHistory[grade].clear();
+                let idx, attempts = 0;
+                do { idx = Math.floor(Math.random() * pool.length); attempts++; }
+                while (writingHistory[grade].has(idx) && attempts < pool.length);
+                writingHistory[grade].add(idx);
+                return { ...pool[idx], type: 'writing', grade };
+            } else {
+                const q = pickQuestion(grade);
+                return q ? { ...q, type: 'reading' } : null;
+            }
+        }
 
         const questionsByGrade = {
             4: [
@@ -1478,10 +1610,10 @@ function pickQuestion(grade){
             { name: "💥 妨害カード", description: "相手を3マス戻す", type: "attack", weight: 10 },
             { name: "🚀 ジャンプ", description: "3マス進む", type: "jump", weight: 10 },
             { name: "🛡️ シールド", description: "攻撃を1回防ぐ", type: "shield", weight: 15 },
-            { name: "💣 爆発", description: "2人ともスタートに戻る", type: "bomb", weight: 5 },
+            { name: "💣 爆発", description: "全員5マス戻る", type: "bomb", weight: 5 },
             { name: "🚧 ストップ", description: "相手を1回休みにする", type: "stop", weight: 10 },
-            { name: "🪂 ランダム", description: "どこか別の場所にテレポートする", type: "random", weight: 10 },
-            { name: "🥷 泥棒", description: "相手のカードをランダムで1枚奪える", type: "steal", weight: 10 }
+            { name: "📖 ボーナス", description: "追加で1問出題！正解で3マス進む（1ターン1枚まで）", type: "bonus", weight: 12 },
+            { name: "🥷 泥棒", description: "相手のカードをランダムで1枚奪える", type: "steal", weight: 8 }
         ];
         
         // 重み付きランダム選択でカードを取得
@@ -1943,29 +2075,61 @@ function pickQuestion(grade){
                 aiAnswerQuestion();
                 return;
             }
-            
-            const modal = document.getElementById('questionModal');
-            const questionText = document.getElementById('questionText');
-            const answerInput = document.getElementById('answerInput');
-            
-            currentQuestion = pickQuestion(selectedGrade);
-if (!currentQuestion) {
-  // あり得ない想定だが保険
-  alert('問題が見つかりませんでした');
-  closeModal('questionModal');
-  switchToNextPlayer();
-  return;
-}
-            
-            questionText.textContent = currentQuestion.question;
-            answerInput.value = '';
-            
-            openModal('questionModal', '#answerInput');
-            
-            // 15秒タイマーを開始
+
+            if (!bonusMode) {
+                currentQuestion = pickQuestionWithType(selectedGrade);
+                if (!currentQuestion) {
+                    alert('問題が見つかりませんでした');
+                    closeModal('questionModal');
+                    switchToNextPlayer();
+                    return;
+                }
+            }
+
+            _renderQuestionModal();
+        }
+
+        // 問題モーダルのUI描画（読み/書き/ボーナス共通）
+        function _renderQuestionModal() {
+            const badge = document.getElementById('questionTypeBadge');
+
+            if (bonusMode) {
+                badge.innerHTML = '<span class="question-type-badge badge-bonus">📖 ボーナス問題！正解で3マス進む</span>';
+            } else if (currentQuestion.type === 'writing') {
+                badge.innerHTML = '<span class="question-type-badge badge-writing">✍️ 書き問題</span>';
+            } else {
+                badge.innerHTML = '<span class="question-type-badge badge-reading">📖 読み問題</span>';
+            }
+
+            if (currentQuestion.type === 'writing') {
+                document.getElementById('readingSection').style.display = 'none';
+                document.getElementById('writingSection').style.display = 'block';
+
+                const sentenceHTML = currentQuestion.sentence.replace('___', '<span class="blank-mark">＿＿＿</span>');
+                document.getElementById('writingSentence').innerHTML = sentenceHTML;
+
+                const grid = document.getElementById('choicesGrid');
+                grid.innerHTML = '';
+                const shuffled = [...currentQuestion.choices].sort(() => Math.random() - 0.5);
+                shuffled.forEach(choice => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice;
+                    btn.onclick = () => submitWritingAnswer(choice);
+                    grid.appendChild(btn);
+                });
+
+                openModal('questionModal', null);
+            } else {
+                document.getElementById('readingSection').style.display = 'block';
+                document.getElementById('writingSection').style.display = 'none';
+                document.getElementById('questionText').textContent = currentQuestion.question;
+                document.getElementById('answerInput').value = '';
+                openModal('questionModal', '#answerInput');
+            }
+
             startAnswerTimer();
-            
-            // ★変更: 回答フェーズのみ入力許可（ロール/カードは不可のまま）
+
             turnLocked = false;
             document.getElementById('rollBtn').disabled = true;
             document.getElementById('useCardBtn1').disabled = true;
@@ -1996,30 +2160,51 @@ if (!currentQuestion) {
             checkAnswer(userAnswer, pendingAnswerFor);
         }
         
+        // 書き問題：選択肢ボタンを押したとき
+        function submitWritingAnswer(choice) {
+            if (turnLocked) return;
+
+            stopAnswerTimer();
+            lockInputs();
+
+            // 正解/不正解をボタンに色付け
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === currentQuestion.answer) {
+                    btn.classList.add('correct');
+                } else if (btn.textContent === choice && choice !== currentQuestion.answer) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            const t = setTimeout(() => {
+                closeModal('questionModal');
+                checkAnswer(choice, pendingAnswerFor);
+            }, 700);
+            timers.push(t);
+        }
+
         // 答えをチェック
         function checkAnswer(userAnswer, playerNum = null) {
             closeModal('questionModal');
-            
-            // ★変更: pendingAnswerForを優先使用
+
             const actualPlayer = playerNum ?? pendingAnswerFor;
-            
             console.log(`プレイヤー${actualPlayer}の回答: ${userAnswer}`);
-            
-            const correct = normalize(currentQuestion.answer);
-            if (userAnswer === correct) {
+
+            let isCorrect;
+            if (currentQuestion && currentQuestion.type === 'writing') {
+                isCorrect = (userAnswer === currentQuestion.answer);
+            } else {
+                isCorrect = (userAnswer === normalize(currentQuestion.answer));
+            }
+
+            if (isCorrect) {
                 console.log(`プレイヤー${actualPlayer}正解`);
-                // 正解のポップアップ表示
-                showAnswerPopup(true, diceValue);
-                
-                // 正解ポップアップを表示（手動で閉じるまで待機）
-                // ポップアップが閉じられた後の処理は closeAnswerPopup() で実行
+                const steps = bonusMode ? 3 : diceValue;
+                showAnswerPopup(true, steps);
             } else {
                 console.log(`プレイヤー${actualPlayer}不正解`);
-                // 不正解のポップアップ表示
                 showAnswerPopup(false, 0, currentQuestion.answer);
-                
-                // 不正解ポップアップを表示（手動で閉じるまで待機）
-                // ポップアップが閉じられた後の処理は closeAnswerPopup() で実行
             }
         }
         
@@ -2027,6 +2212,9 @@ if (!currentQuestion) {
         function switchToNextPlayer() {
             if (gameEnded || isSwitchingTurn) return; // 二重ターン切り替え防止
             isSwitchingTurn = true;
+            bonusUsedThisTurn = false; // ボーナス使用フラグをリセット
+            bonusMode = false;
+            bonusPlayerNum = null;
             
             // ★タイマーの取りこぼしをキャンセル
             timers.forEach(id => {
@@ -2166,11 +2354,32 @@ if (!currentQuestion) {
         // 正解・不正解ポップアップを閉じる
         function closeAnswerPopup() {
             document.getElementById('answerPopup').style.display = 'none';
-            
-            // ポップアップが閉じられた後の処理を実行（文字列ではなくフラグで判定）
+
             const isCorrect = !!lastAnswerCorrect;
-            lastAnswerCorrect = null; // 使い終わったらクリア
-            
+            lastAnswerCorrect = null;
+
+            // ボーナス問題モード：正解なら3マス進んでターン継続
+            if (bonusMode) {
+                bonusMode = false;
+                const bPlayer = bonusPlayerNum || currentPlayer;
+                bonusPlayerNum = null;
+
+                if (isCorrect) {
+                    movePlayer(3, bPlayer);
+                    if (gameEnded) return;
+                }
+
+                if (!gameEnded) {
+                    if (isAIGame && currentPlayer === 2) {
+                        const t = setTimeout(() => { if (!gameEnded && currentPlayer === 2) aiRollDice(); }, 600);
+                        timers.push(t);
+                    } else {
+                        unlockInputsForCurrentPlayer();
+                    }
+                }
+                return;
+            }
+
             if (isCorrect) {
                 // 正解の場合の処理
                 const actualPlayer = pendingAnswerFor || currentPlayer;
@@ -2361,6 +2570,53 @@ if (!currentQuestion) {
         
 
         
+        // ボーナスカード：問題を出題してターン継続
+        function showBonusQuestion(playerNum) {
+            bonusMode = true;
+            bonusPlayerNum = playerNum;
+            pendingAnswerFor = playerNum;
+
+            currentQuestion = pickQuestionWithType(selectedGrade);
+            if (!currentQuestion) {
+                bonusMode = false;
+                bonusPlayerNum = null;
+                toast('問題が見つかりませんでした');
+                if (isAIGame && playerNum === 2) {
+                    const t = setTimeout(() => { if (!gameEnded && currentPlayer === 2) aiRollDice(); }, 500);
+                    timers.push(t);
+                } else {
+                    unlockInputsForCurrentPlayer();
+                }
+                return;
+            }
+
+            if (isAIGame && playerNum === 2) {
+                const myTurn = turnId;
+                const isCorrect = Math.random() < 0.95;
+                const t = setTimeout(() => {
+                    if (gameEnded || myTurn !== turnId) return;
+                    bonusMode = false;
+                    bonusPlayerNum = null;
+                    if (isCorrect) {
+                        toast('📖 ボーナス正解！3マス進む！');
+                        movePlayer(3, playerNum);
+                        if (gameEnded) return;
+                    } else {
+                        toast('📖 ボーナス不正解...');
+                    }
+                    const t2 = setTimeout(() => {
+                        if (!gameEnded && currentPlayer === 2 && myTurn === turnId) aiRollDice();
+                    }, 800);
+                    timers.push(t2);
+                }, 1200);
+                timers.push(t);
+                return;
+            }
+
+            // 人間プレイヤー：問題モーダルを表示
+            _renderQuestionModal();
+        }
+
         // AIのターン処理
         function aiTurn() {
             if (gameEnded || currentPlayer !== 2) return;
@@ -2450,14 +2706,13 @@ if (!currentQuestion) {
             // ★変更: AIのターン所有者を記録（競合バグ修正）
             pendingAnswerFor = 2;
             
-            // 問題を生成（AIも同じ問題データを使用）
-            currentQuestion = pickQuestion(selectedGrade);
-if (!currentQuestion) {
-  // 念のための保険
-  console.warn('AI: 問題が見つからずスキップ');
-  switchToNextPlayer();
-  return;
-}
+            // 問題を生成（AIも読み/書き混合）
+            currentQuestion = pickQuestionWithType(selectedGrade);
+            if (!currentQuestion) {
+                console.warn('AI: 問題が見つからずスキップ');
+                switchToNextPlayer();
+                return;
+            }
             
             // AIは95%の確率で正解
             const isCorrect = Math.random() < 0.95;
@@ -2548,9 +2803,13 @@ if (!currentQuestion) {
             turnId = 0;
             // タイマー関連もリセット
             timeLeft = 20;
-　　　　　　// ★追加: 問題履歴を初期化
-questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
-            
+            // ★追加: 問題履歴を初期化
+            questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+            writingHistory  = { 4: new Set(), 5: new Set(), 6: new Set() };
+            bonusMode = false;
+            bonusPlayerNum = null;
+            bonusUsedThisTurn = false;
+
             document.getElementById('winnerModal').style.display = 'none';
             
             // サイコロエリアを初期状態に戻す
@@ -2731,13 +2990,13 @@ questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
                         useShield(opponent);
                         showShieldPopup();
                     } else {
-                        players[1].position = 0;
-                        players[2].position = 0;
-                        alert('💣 爆発！両プレイヤーがスタートに戻りました！');
+                        players[1].position = Math.max(0, players[1].position - 5);
+                        players[2].position = Math.max(0, players[2].position - 5);
+                        alert('💣 爆発！全員5マス戻りました！');
                         updatePlayerPositions();
                     }
                     break;
-                    
+
                 case 'stop':
                     if (hasShield(opponent)) {
                         useShield(opponent);
@@ -2747,15 +3006,27 @@ questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
                         alert(`🚧 相手を1回休みにしました！`);
                     }
                     break;
-                    
-                case 'random':
-                    const randomPos = Math.floor(Math.random() * 29); // 0..28（スタートからゴール手前まで）
-                    players[playerNum].position = randomPos;
-                    const positionText = randomPos === 0 ? 'スタート' : `${randomPos}番目のマス`;
-                    alert(`🪂 ランダムテレポート: ${positionText}に移動しました！`);
+
+                case 'bonus':
+                    players[playerNum].cards.splice(cardIndex, 1);
                     updatePlayerPositions();
-                    break;
-                    
+                    if (bonusUsedThisTurn) {
+                        toast('📖 ボーナスはターンに1枚だけ使えます');
+                        if (!gameEnded) {
+                            if (isAIGame && playerNum === 2) {
+                                const t = setTimeout(() => { if (!gameEnded && currentPlayer === 2) aiRollDice(); }, 800);
+                                timers.push(t);
+                            } else {
+                                const t = setTimeout(() => { if (!gameEnded) unlockInputsForCurrentPlayer(); }, 300);
+                                timers.push(t);
+                            }
+                        }
+                    } else {
+                        bonusUsedThisTurn = true;
+                        showBonusQuestion(playerNum);
+                    }
+                    return; // 後続のspliceをスキップ
+
                 case 'steal':
                     if (hasShield(opponent)) {
                         useShield(opponent);
@@ -2792,8 +3063,8 @@ questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
                 return;
             }
             
-            // ランダムと泥棒カードはターン終了
-            if (['random', 'steal'].includes(card.type)) {
+            // 泥棒カードはターン終了
+            if (['steal'].includes(card.type)) {
                 console.log(`${card.name}カード使用、ターン終了`);
                 const t = setTimeout(() => {
                     if (!gameEnded) switchToNextPlayer();
@@ -2858,8 +3129,9 @@ questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
                     return;
                 }
                 
-                // 問題モーダルが開いている場合
+                // 問題モーダルが開いている場合（書き問題はボタン選択のためEnter無効）
                 if (document.getElementById('questionModal').style.display === 'flex') {
+                    if (currentQuestion && currentQuestion.type === 'writing') return;
                     submitAnswer();
                     return;
                 }
@@ -2944,8 +3216,12 @@ questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
             timeLeft = 15;
 
             // ★追加: 問題履歴を初期化
-questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
-            
+            questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
+            writingHistory  = { 4: new Set(), 5: new Set(), 6: new Set() };
+            bonusMode = false;
+            bonusPlayerNum = null;
+            bonusUsedThisTurn = false;
+
             // 全てのモーダルを閉じる
             document.getElementById('quitModal').style.display = 'none';
             document.getElementById('questionModal').style.display = 'none';
