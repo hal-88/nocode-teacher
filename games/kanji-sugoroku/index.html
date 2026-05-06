@@ -1055,10 +1055,28 @@ function pickQuestion(grade){
   return pool[idx];
 }
 
-        // 8:2の割合で読み問題/書き問題を選ぶ
+        // 出題比率デッキ（8読み:2書き を毎10問ごとに保証）
+        let questionDeck = [];
+
+        function refillDeck() {
+            // 8枚の読みと2枚の書きをシャッフルして詰め直す
+            questionDeck = [
+                'reading','reading','reading','reading',
+                'reading','reading','reading','reading',
+                'writing','writing'
+            ];
+            for (let i = questionDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = questionDeck[i]; questionDeck[i] = questionDeck[j]; questionDeck[j] = tmp;
+            }
+        }
+
+        // 8:2の割合で読み問題/書き問題を選ぶ（デッキ方式で比率を厳密保証）
         function pickQuestionWithType(grade) {
-            const useWriting = writingQuestions[grade] && writingQuestions[grade].length > 0 && Math.random() < 0.2;
-            if (useWriting) {
+            if (questionDeck.length === 0) refillDeck();
+            const type = questionDeck.pop();
+
+            if (type === 'writing' && writingQuestions[grade] && writingQuestions[grade].length > 0) {
                 const pool = writingQuestions[grade];
                 if (writingHistory[grade].size >= pool.length) writingHistory[grade].clear();
                 let idx, attempts = 0;
@@ -2806,6 +2824,7 @@ function pickQuestion(grade){
             // ★追加: 問題履歴を初期化
             questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
             writingHistory  = { 4: new Set(), 5: new Set(), 6: new Set() };
+            questionDeck    = [];
             bonusMode = false;
             bonusPlayerNum = null;
             bonusUsedThisTurn = false;
@@ -3218,6 +3237,7 @@ function pickQuestion(grade){
             // ★追加: 問題履歴を初期化
             questionHistory = { 4: new Set(), 5: new Set(), 6: new Set() };
             writingHistory  = { 4: new Set(), 5: new Set(), 6: new Set() };
+            questionDeck    = [];
             bonusMode = false;
             bonusPlayerNum = null;
             bonusUsedThisTurn = false;
