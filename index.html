@@ -379,17 +379,17 @@
     <div class="section-label">Works</div>
     <div class="game-grid">
 
-      <!-- Coming soon placeholders -->
-      <div class="game-card coming-soon">
+      <!-- Games -->
+      <a class="game-card" href="games/kanji-sugoroku/index.html">
         <div class="card-left">
           <span class="card-num">01</span>
           <div class="card-info">
-            <div class="card-title">準備中...</div>
-            <div class="card-meta">最初のゲームがもうすぐ登場</div>
+            <div class="card-title">漢字すごろく<span class="card-tag tag-game">GAME</span></div>
+            <div class="card-meta">小学4・5・6年生対応。読み・書き問題に答えながらゴールを目指そう！</div>
           </div>
         </div>
-        <span class="coming-label">COMING SOON</span>
-      </div>
+        <span class="card-arrow">→</span>
+      </a>
 
       <div class="game-card coming-soon">
         <div class="card-left">
@@ -463,7 +463,7 @@
   }
 
   // Day counter (starts from May 5, 2026)
-  const startDate = new Date('2026-05-05');
+  const startDate = new Date('2026-05-06');
   const today = new Date();
   const diff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
   const day = Math.max(1, Math.min(diff, 100));
