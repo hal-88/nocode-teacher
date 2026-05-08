@@ -274,9 +274,19 @@
     @keyframes statusBounce { from{transform:scale(1)} to{transform:scale(1.06)} }
 
     .divider-2p {
-      height:5px; flex-shrink:0; width:100%;
+      height:48px; flex-shrink:0; width:100%;
       background:linear-gradient(90deg,#ff4d6d,#9b5de5,#4361ee);
+      display:flex; align-items:center; justify-content:center;
     }
+
+    .divider-home-btn {
+      padding:6px 20px; font-size:16px; font-family:'Fredoka One',sans-serif;
+      background:rgba(255,255,255,.92); color:#444;
+      border:none; border-radius:20px; cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,.20);
+      transition:transform .1s, box-shadow .1s;
+    }
+    .divider-home-btn:active { transform:translateY(2px); box-shadow:0 1px 4px rgba(0,0,0,.15); }
 
     /* ── RESULT / 2P-RESULT ── */
     #resultScreen, #result2p { background:var(--bg); }
@@ -396,7 +406,9 @@
     </div>
   </div>
 
-  <div class="divider-2p"></div>
+  <div class="divider-2p">
+    <button class="divider-home-btn" onclick="showScreen('homeScreen')">🏠 ホーム</button>
+  </div>
 
   <!-- P1 bottom -->
   <div class="p-area p1" id="p1Area">
