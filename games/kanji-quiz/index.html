@@ -324,10 +324,10 @@ select:focus { border-color: #a055f0; outline: none; }
   display:grid; place-items:center; font-size:24px;
   color:#fff; font-weight:900; z-index:2; pointer-events:none;
 }
-.arrowBubble.top   { left:50%; top:9px;    transform:translate(-50%,0); background:var(--at); box-shadow:0 5px 0 var(--at-d); }
-.arrowBubble.bottom{ left:50%; bottom:9px; transform:translate(-50%,0); background:var(--ab); box-shadow:0 5px 0 var(--ab-d); }
-.arrowBubble.left  { left:9px; top:50%;    transform:translate(0,-50%); background:var(--al); box-shadow:0 5px 0 var(--al-d); }
-.arrowBubble.right { right:9px; top:50%;   transform:translate(0,-50%); background:var(--ar); box-shadow:0 5px 0 var(--ar-d); }
+.arrowBubble.top   { left:50%; top:-55px;    transform:translate(-50%,0); background:var(--at); box-shadow:0 5px 0 var(--at-d); }
+.arrowBubble.bottom{ left:50%; bottom:-55px; transform:translate(-50%,0); background:var(--ab); box-shadow:0 5px 0 var(--ab-d); }
+.arrowBubble.left  { left:-55px; top:50%;    transform:translate(0,-50%); background:var(--al); box-shadow:0 5px 0 var(--al-d); }
+.arrowBubble.right { right:-55px; top:50%;   transform:translate(0,-50%); background:var(--ar); box-shadow:0 5px 0 var(--ar-d); }
 
 /* ===== BUZZ BUTTONS ===== */
 .buzzBtn {
@@ -457,6 +457,10 @@ select:focus { border-color: #a055f0; outline: none; }
 }
 .miniWrap .centerWrap { width:50%; }
 .miniWrap .arrowBubble{ width:54px; height:54px; font-size:26px; }
+.miniWrap .arrowBubble.top    { top:9px; }
+.miniWrap .arrowBubble.bottom { bottom:9px; }
+.miniWrap .arrowBubble.left   { left:9px; }
+.miniWrap .arrowBubble.right  { right:9px; }
 .miniWrap .cell       { font-size:clamp(26px,6vw,48px); }
 
 .ansRow    { display:flex; gap:12px; align-items:center; justify-content:center; margin-top:14px; }
