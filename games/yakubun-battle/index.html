@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>約分RPGバトル</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+
+  body {
+    background: linear-gradient(135deg, #1a0033 0%, #0d0020 50%, #000510 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; width: 100vw; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ===== CHARACTER SELECT ===== */
+  #selectScreen {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .select-half {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .select-p1 {
+    transform: rotate(180deg);
+    background: linear-gradient(135deg, rgba(180,30,0,0.2), rgba(80,0,0,0.08));
+    border-right: 1px solid rgba(255,100,0,0.25);
+  }
+
+  .select-p2 {
+    background: linear-gradient(135deg, rgba(0,60,180,0.2), rgba(0,0,80,0.08));
+    border-left: 1px solid rgba(0,150,255,0.25);
+  }
+
+  .select-player-label {
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+
+  .select-center {
+    width: 72px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .select-vs-icon { font-size: 1.8em; opacity: 0.4; }
+
+  .select-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hint-p2 { font-size: 0.6em; color: #88bbff; text-align: center; line-height: 1.5; }
+  .hint-p1 { font-size: 0.6em; color: #ff8866; text-align: center; line-height: 1.5; transform: rotate(180deg); }
+
+  .countdown-big {
+    font-size: 3.5em;
+    font-weight: bold;
+    color: #ffdd00;
+    text-shadow: 0 0 20px #ffaa00;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .countdown-big.p1side { transform: rotate(180deg); }
+
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+
+  .char-card {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 6px 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    user-select: none;
+  }
+
+  .char-card:hover, .char-card.selected {
+    border-color: #ffaa00;
+    background: rgba(255,170,0,0.18);
+    transform: scale(1.05);
+    box-shadow: 0 0 14px rgba(255,170,0,0.45);
+  }
+
+  .char-card.locked { pointer-events: none; }
+
+  .char-card .emoji { font-size: 1.9em; display: block; margin-bottom: 2px; }
+  .char-card .name { font-size: 0.75em; font-weight: bold; color: #ffdd88; }
+  .char-card .stats { font-size: 0.6em; color: #aaa; margin-top: 3px; line-height: 1.5; }
+  .char-card .skill { font-size: 0.58em; color: #88ffcc; margin-top: 2px; }
+
+  .select-status {
+    font-size: 0.88em;
+    color: #ffaa00;
+    min-height: 1.3em;
+    text-align: center;
+  }
+
+  /* ===== BATTLE SCREEN ===== */
+  #battleScreen {
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Player panels */
+  .player-panel {
+    width: 42%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    position: relative;
+  }
+
+  #p1Panel {
+    background: linear-gradient(135deg, rgba(180,30,0,0.25), rgba(80,0,0,0.1));
+    border-right: 1px solid rgba(255,100,0,0.3);
+    transform: rotate(180deg);
+  }
+
+  #p2Panel {
+    background: linear-gradient(135deg, rgba(0,60,180,0.25), rgba(0,0,80,0.1));
+    border-left: 1px solid rgba(0,150,255,0.3);
+  }
+
+  /* HP bar */
+  .hp-area {
+    margin-bottom: 8px;
+  }
+
+  .hp-label {
+    font-size: 0.85em;
+    color: #ccc;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .hp-bar-outer {
+    height: 14px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .hp-bar-inner {
+    height: 100%;
+    border-radius: 7px;
+    transition: width 0.5s ease;
+  }
+
+  #p1HpBar { background: linear-gradient(90deg, #ff4400, #ff8800); }
+  #p2HpBar { background: linear-gradient(90deg, #0088ff, #00ddff); }
+
+  /* Character display */
+  .char-display {
+    font-size: 5em;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .char-display.damaged {
+    animation: shake 0.4s ease;
+    filter: brightness(2) saturate(0);
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+  }
+
+  /* Tenkey */
+  .tenkey-area {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .input-display {
+    background: rgba(0,0,0,0.6);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .input-display .frac-num { color: #ffdd88; font-size: 1.2em; }
+  .input-display .frac-sep { color: #aaa; margin: 0 4px; }
+
+  .tenkey-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .tk-btn {
+    padding: 10px 0;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.1s;
+    user-select: none;
+  }
+
+  .tk-btn:active { transform: scale(0.9); }
+
+  .tk-num { background: rgba(255,255,255,0.12); color: #fff; }
+  .tk-num:hover { background: rgba(255,255,255,0.22); }
+
+  #p1Panel .tk-confirm { background: linear-gradient(135deg, #ff8800, #ff4400); color: #fff; }
+  #p1Panel .tk-answer  { background: linear-gradient(135deg, #ffcc00, #ff8800); color: #000; }
+  #p1Panel .tk-del     { background: rgba(255,80,80,0.4); color: #fff; }
+  #p1Panel .tk-special { background: linear-gradient(135deg, #cc00ff, #8800cc); color: #fff; }
+
+  #p2Panel .tk-confirm { background: linear-gradient(135deg, #0088ff, #0044cc); color: #fff; }
+  #p2Panel .tk-answer  { background: linear-gradient(135deg, #00ddff, #0088ff); color: #000; }
+  #p2Panel .tk-del     { background: rgba(80,80,255,0.4); color: #fff; }
+  #p2Panel .tk-special { background: linear-gradient(135deg, #cc00ff, #8800cc); color: #fff; }
+
+  .tk-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .phase-label {
+    font-size: 0.75em;
+    text-align: center;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .special-used { text-decoration: line-through; opacity: 0.4; }
+  .special-ready { animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 rgba(200,0,255,0.4); }
+    50% { box-shadow: 0 0 12px rgba(200,0,255,0.8); }
+  }
+
+  /* Center panel */
+  .center-panel {
+    width: 16%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .problem-box {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 16px 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .problem-label { font-size: 0.8em; color: #aaa; margin-bottom: 6px; }
+
+  .fraction-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2em;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .frac-line {
+    width: 2.5em;
+    height: 3px;
+    background: #fff;
+    margin: 4px 0;
+    border-radius: 2px;
+  }
+
+  .round-label {
+    font-size: 0.8em;
+    color: #ffaa44;
+    font-weight: bold;
+  }
+
+  /* Feedback flash */
+  .feedback-flash {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5em;
+    font-weight: bold;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 100;
+    white-space: nowrap;
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .feedback-flash.show {
+    animation: flashIn 1.2s ease forwards;
+  }
+
+  @keyframes flashIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+  }
+
+  /* Special announcement */
+  .special-announce {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(100,0,200,0.5);
+    z-index: 200;
+    font-size: 3em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 30px #ff00ff;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .special-announce.show { opacity: 1; }
+
+  /* ===== RESULT SCREEN ===== */
+  #resultScreen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #resultScreen h1 {
+    font-size: 3em;
+    text-shadow: 0 0 20px #ffaa00;
+  }
+
+  .winner-display { font-size: 6em; }
+  .winner-name { font-size: 1.8em; color: #ffdd88; }
+
+  .result-btn {
+    padding: 14px 40px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ff6600, #cc0000);
+    color: #fff;
+    font-weight: bold;
+    margin: 6px;
+    box-shadow: 0 4px 20px rgba(255,100,0,0.5);
+  }
+
+  /* Status / skill active */
+  .skill-active-badge {
+    background: rgba(200,0,255,0.3);
+    border: 1px solid #cc00ff;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 0.72em;
+    color: #ff88ff;
+    text-align: center;
+    animation: pulse 1s infinite;
+  }
+
+  /* In-panel problem display */
+  .panel-problem {
+    background: rgba(0,0,0,0.45);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 14px;
+    padding: 10px 8px 8px;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .panel-problem-label {
+    font-size: 0.72em;
+    color: #aaa;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .panel-fraction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2em;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.1;
+    text-shadow: 0 0 8px rgba(255,255,255,0.3);
+  }
+
+  .panel-frac-line {
+    width: 2em;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+    margin: 3px 0;
+  }
+
+  /* Extra questions indicator */
+  .extra-q-badge {
+    background: rgba(255,50,50,0.3);
+    border: 1px solid #ff3333;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 0.72em;
+    color: #ff8888;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN 1: CHARACTER SELECT ===== -->
+<div id="selectScreen" class="screen active">
+
+  <!-- P1 側（180度回転） -->
+  <div class="select-half select-p1">
+    <div class="select-player-label">🔴 P1</div>
+    <div class="char-grid" id="charGrid1"></div>
+    <div class="select-status" id="p1Selected">タップして選ぼう！</div>
+  </div>
+
+  <!-- 中央 -->
+  <div class="select-center">
+    <div class="select-vs-icon">⚔️</div>
+    <div class="select-hint" id="selectHint">
+      <div class="hint-p2">両者<br>選択で<br>スタート</div>
+      <div class="hint-p1">両者<br>選択で<br>スタート</div>
+    </div>
+  </div>
+
+  <!-- P2 側 -->
+  <div class="select-half select-p2">
+    <div class="select-player-label">🔵 P2</div>
+    <div class="char-grid" id="charGrid2"></div>
+    <div class="select-status" id="p2Selected">タップして選ぼう！</div>
+  </div>
+
+</div>
+
+<!-- ===== SCREEN 2: BATTLE ===== -->
+<div id="battleScreen" class="screen">
+
+  <!-- P1 Panel (rotated 180°) -->
+  <div class="player-panel" id="p1Panel">
+    <div class="hp-area">
+      <div class="hp-label">
+        <span id="p1Name">P1</span>
+        <span id="p1HpText">150/150</span>
+      </div>
+      <div class="hp-bar-outer"><div class="hp-bar-inner" id="p1HpBar" style="width:100%"></div></div>
+    </div>
+    <div class="panel-problem">
+      <div class="panel-problem-label">約分せよ</div>
+      <div class="panel-fraction">
+        <span id="p1FracNumer">?</span>
+        <div class="panel-frac-line"></div>
+        <span id="p1FracDenom">?</span>
+      </div>
+    </div>
+    <div class="skill-active-badge" id="p1SkillBadge" style="display:none"></div>
+    <div class="extra-q-badge" id="p1ExtraQ" style="display:none">追加問題あり！</div>
+    <div class="char-display" id="p1Char">🛡️</div>
+    <div class="tenkey-area">
+      <div class="input-display" id="p1Display">入力待ち</div>
+      <div class="phase-label" id="p1Phase">分母を入力</div>
+      <div class="tenkey-grid">
+        <button class="tk-btn tk-num" onclick="tkInput(1,'7')">7</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'8')">8</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'9')">9</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'4')">4</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'5')">5</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'6')">6</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'1')">1</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'2')">2</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'3')">3</button>
+        <button class="tk-btn tk-del" onclick="tkDel(1)">⌫</button>
+        <button class="tk-btn tk-num" onclick="tkInput(1,'0')">0</button>
+        <button class="tk-btn tk-confirm" id="p1SlashBtn" onclick="tkSlash(1)">／</button>
+        <button class="tk-btn tk-answer" id="p1AnswerBtn" onclick="tkAnswer(1)" style="grid-column:span 2" disabled>答え合わせ</button>
+        <button class="tk-btn tk-special" id="p1SpecialBtn" onclick="tkSpecial(1)">必殺技</button>
+      </div>
+    </div>
+    <div class="feedback-flash" id="p1Feedback"></div>
+  </div>
+
+  <!-- Center -->
+  <div class="center-panel">
+    <div class="round-label" id="roundLabel">ROUND 1</div>
+    <div style="font-size:2em; opacity:0.25;">⚔️</div>
+  </div>
+
+  <!-- P2 Panel -->
+  <div class="player-panel" id="p2Panel">
+    <div class="hp-area">
+      <div class="hp-label">
+        <span id="p2Name">P2</span>
+        <span id="p2HpText">150/150</span>
+      </div>
+      <div class="hp-bar-outer"><div class="hp-bar-inner" id="p2HpBar" style="width:100%"></div></div>
+    </div>
+    <div class="panel-problem">
+      <div class="panel-problem-label">約分せよ</div>
+      <div class="panel-fraction">
+        <span id="p2FracNumer">?</span>
+        <div class="panel-frac-line"></div>
+        <span id="p2FracDenom">?</span>
+      </div>
+    </div>
+    <div class="skill-active-badge" id="p2SkillBadge" style="display:none"></div>
+    <div class="extra-q-badge" id="p2ExtraQ" style="display:none">追加問題あり！</div>
+    <div class="char-display" id="p2Char">🔮</div>
+    <div class="tenkey-area">
+      <div class="input-display" id="p2Display">入力待ち</div>
+      <div class="phase-label" id="p2Phase">分母を入力</div>
+      <div class="tenkey-grid">
+        <button class="tk-btn tk-num" onclick="tkInput(2,'7')">7</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'8')">8</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'9')">9</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'4')">4</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'5')">5</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'6')">6</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'1')">1</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'2')">2</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'3')">3</button>
+        <button class="tk-btn tk-del" onclick="tkDel(2)">⌫</button>
+        <button class="tk-btn tk-num" onclick="tkInput(2,'0')">0</button>
+        <button class="tk-btn tk-confirm" id="p2SlashBtn" onclick="tkSlash(2)">／</button>
+        <button class="tk-btn tk-answer" id="p2AnswerBtn" onclick="tkAnswer(2)" style="grid-column:span 2" disabled>答え合わせ</button>
+        <button class="tk-btn tk-special" id="p2SpecialBtn" onclick="tkSpecial(2)">必殺技</button>
+      </div>
+    </div>
+    <div class="feedback-flash" id="p2Feedback"></div>
+  </div>
+
+  <div class="special-announce" id="specialAnnounce"></div>
+</div>
+
+<!-- ===== SCREEN 3: RESULT ===== -->
+<div id="resultScreen" class="screen">
+  <h1 id="resultTitle">🏆 勝利！ 🏆</h1>
+  <div class="winner-display" id="winnerEmoji">🛡️</div>
+  <div class="winner-name" id="winnerName">騎士の勝利！</div>
+  <div>
+    <button class="result-btn" onclick="backToSelect()">もう一度</button>
+  </div>
+</div>
+
+<script>
+// ===== CHARACTERS =====
+const CHARS = [
+  { id:'knight', name:'騎士', emoji:'🛡️', hp:150, atk:20,
+    skillName:'二連撃', skillDesc:'ダメージ2倍！',
+    skillEffect: (atk) => ({ dmg: atk * 2, type:'double' }) },
+  { id:'mage', name:'魔法使い', emoji:'🔮', hp:100, atk:35,
+    skillName:'大魔法', skillDesc:'HP全回復！',
+    skillEffect: (atk) => ({ dmg: atk, type:'heal' }) },
+  { id:'ninja', name:'忍者', emoji:'🥷', hp:120, atk:25,
+    skillName:'影分身', skillDesc:'相手に追加問題！',
+    skillEffect: (atk) => ({ dmg: atk, type:'extra' }) },
+  { id:'monster', name:'モンスター', emoji:'👹', hp:130, atk:30,
+    skillName:'大暴れ', skillDesc:'相手HPを半分に！',
+    skillEffect: (atk) => ({ dmg: 0, type:'half' }) },
+  { id:'dragon', name:'竜', emoji:'🐉', hp:160, atk:18,
+    skillName:'炎ブレス', skillDesc:'固定60ダメージ！',
+    skillEffect: (atk) => ({ dmg: 60, type:'fixed' }) },
+  { id:'angel', name:'天使', emoji:'👼', hp:110, atk:28,
+    skillName:'聖なる光', skillDesc:'自分HP半回復！',
+    skillEffect: (atk) => ({ dmg: atk, type:'halfheal' }) },
+  { id:'pirate', name:'海賊', emoji:'🏴‍☠️', hp:140, atk:25,
+    skillName:'強奪', skillDesc:'相手HP30を奪う！',
+    skillEffect: (atk) => ({ dmg: atk, type:'steal', stealAmt: 30 }) },
+  { id:'demon', name:'魔王', emoji:'😈', hp:90, atk:45,
+    skillName:'三連撃', skillDesc:'ダメージ3倍！',
+    skillEffect: (atk) => ({ dmg: atk * 3, type:'triple' }) },
+];
+
+// ===== GAME STATE =====
+let state = {
+  p1Char: null, p2Char: null,
+  p1Hp: 0, p2Hp: 0,
+  p1MaxHp: 0, p2MaxHp: 0,
+  round: 1,
+  problem: null,
+  roundEnding: false,
+  gameOver: false,
+  p1: { numer: '', denom: '', phase: 'denom', skillUsed: false, skillActive: false, extraQ: 0, answered: false },
+  p2: { numer: '', denom: '', phase: 'denom', skillUsed: false, skillActive: false, extraQ: 0, answered: false },
+};
+
+// ===== AUDIO =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+
+function getActx() {
+  if (!actx) actx = new AudioCtx();
+  return actx;
+}
+
+function playTone(freq, type, dur, vol=0.3) {
+  try {
+    const ctx = getActx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start();
+    osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+
+function sfxCorrect() {
+  playTone(523, 'sine', 0.1, 0.3);
+  setTimeout(() => playTone(659, 'sine', 0.1, 0.3), 100);
+  setTimeout(() => playTone(784, 'sine', 0.2, 0.3), 200);
+}
+
+function sfxWrong() {
+  playTone(200, 'sawtooth', 0.3, 0.3);
+}
+
+function sfxSpecial() {
+  [300,400,500,700,900].forEach((f,i) => {
+    setTimeout(() => playTone(f, 'square', 0.15, 0.4), i * 80);
+  });
+}
+
+// ===== INIT CHARACTER SELECT =====
+let countdownActive = false;
+
+function buildCharGrid(gridId, player) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  CHARS.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.innerHTML = `
+      <span class="emoji">${c.emoji}</span>
+      <div class="name">${c.name}</div>
+      <div class="stats">HP:${c.hp} 攻:${c.atk}</div>
+      <div class="skill">⚡${c.skillName}</div>
+    `;
+    card.onclick = () => selectChar(player, i, card, gridId);
+    grid.appendChild(card);
+  });
+}
+
+function selectChar(player, idx, card, gridId) {
+  if (countdownActive) return;
+  document.querySelectorAll(`#${gridId} .char-card`).forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const c = CHARS[idx];
+  if (player === 1) {
+    state.p1Char = c;
+    document.getElementById('p1Selected').textContent = `${c.emoji} ${c.name}`;
+  } else {
+    state.p2Char = c;
+    document.getElementById('p2Selected').textContent = `${c.emoji} ${c.name}`;
+  }
+  playTone(440, 'sine', 0.1);
+
+  if (state.p1Char && state.p2Char) {
+    startCountdown();
+  }
+}
+
+function startCountdown() {
+  countdownActive = true;
+  // カード全部ロック
+  document.querySelectorAll('.char-card').forEach(c => c.classList.add('locked'));
+
+  let n = 3;
+  const hint = document.getElementById('selectHint');
+
+  function showNum(num) {
+    hint.innerHTML = `
+      <div class="countdown-big p1side">${num}</div>
+      <div class="countdown-big">${num}</div>
+    `;
+    playTone(300 + num * 80, 'square', 0.15, 0.35);
+  }
+
+  showNum(n);
+  const timer = setInterval(() => {
+    n--;
+    if (n <= 0) {
+      clearInterval(timer);
+      countdownActive = false;
+      startBattle();
+    } else {
+      showNum(n);
+    }
+  }, 900);
+}
+
+window.onload = () => {
+  buildCharGrid('charGrid1', 1);
+  buildCharGrid('charGrid2', 2);
+};
+
+// ===== START BATTLE =====
+function startBattle() {
+  const c1 = state.p1Char, c2 = state.p2Char;
+  state.p1Hp = c1.hp; state.p1MaxHp = c1.hp;
+  state.p2Hp = c2.hp; state.p2MaxHp = c2.hp;
+  state.round = 1;
+  state.roundEnding = false;
+  state.gameOver = false;
+  state.p1.skillUsed = false;
+  state.p2.skillUsed = false;
+  [1, 2].forEach(p => {
+    const btn = document.getElementById(`p${p}SpecialBtn`);
+    btn.disabled = false;
+    btn.classList.remove('special-used');
+  });
+  resetPlayerState(1);
+  resetPlayerState(2);
+
+  document.getElementById('p1Char').textContent = c1.emoji;
+  document.getElementById('p2Char').textContent = c2.emoji;
+  document.getElementById('p1Name').textContent = `${c1.emoji}${c1.name}`;
+  document.getElementById('p2Name').textContent = `${c2.emoji}${c2.name}`;
+  document.getElementById('p1SpecialBtn').textContent = `⚡${c1.skillName}`;
+  document.getElementById('p2SpecialBtn').textContent = `⚡${c2.skillName}`;
+
+  updateHpDisplay();
+  newProblem();
+  showScreen('battleScreen');
+}
+
+function resetPlayerState(p) {
+  const ps = state[`p${p}`];
+  ps.numer = ''; ps.denom = ''; ps.phase = 'denom';
+  ps.skillActive = false; ps.extraQ = 0; ps.answered = false;
+  updateDisplay(p);
+  updatePhaseLabel(p);
+  document.getElementById(`p${p}AnswerBtn`).disabled = true;
+  document.getElementById(`p${p}SlashBtn`).disabled = false;
+  document.getElementById(`p${p}ExtraQ`).style.display = 'none';
+  document.getElementById(`p${p}SkillBadge`).style.display = 'none';
+}
+
+// ===== PROBLEM GENERATION =====
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+function generateProblem() {
+  const g = Math.floor(Math.random() * 8) + 2; // 2-9
+  const maxN = Math.floor(9 / g);
+  const n = Math.floor(Math.random() * maxN) + 1;
+  const dCandidates = [];
+  for (let d = n + 1; d <= 9; d++) {
+    if (gcd(n, d) === 1) dCandidates.push(d);
+  }
+  if (dCandidates.length === 0) return generateProblem();
+  const d = dCandidates[Math.floor(Math.random() * dCandidates.length)];
+  return { numer: n * g, denom: d * g, ansN: n, ansD: d };
+}
+
+function newProblem() {
+  state.problem = generateProblem();
+  const { numer, denom } = state.problem;
+  // 各プレイヤーパネル内の問題表示を更新
+  document.getElementById('p1FracNumer').textContent = numer;
+  document.getElementById('p1FracDenom').textContent = denom;
+  document.getElementById('p2FracNumer').textContent = numer;
+  document.getElementById('p2FracDenom').textContent = denom;
+  document.getElementById('roundLabel').textContent = `ROUND ${state.round}`;
+  resetPlayerState(1);
+  resetPlayerState(2);
+}
+
+// ===== TENKEY INPUT =====
+function tkInput(p, digit) {
+  if (state.gameOver || state.roundEnding) return;
+  const ps = state[`p${p}`];
+  if (ps.answered) return;
+  if (ps.phase === 'numer') {
+    if (ps.numer.length >= 2) return;
+    ps.numer += digit;
+  } else {
+    if (ps.denom.length >= 2) return;
+    ps.denom += digit;
+  }
+  updateDisplay(p);
+  playTone(660, 'sine', 0.05, 0.15);
+}
+
+function tkDel(p) {
+  const ps = state[`p${p}`];
+  if (ps.answered) return;
+  if (ps.phase === 'numer') {
+    ps.numer = ps.numer.slice(0, -1);
+  } else {
+    ps.denom = ps.denom.slice(0, -1);
+  }
+  updateDisplay(p);
+}
+
+function tkSlash(p) {
+  const ps = state[`p${p}`];
+  if (ps.answered) return;
+  if (ps.phase === 'denom' && ps.denom !== '') {
+    ps.phase = 'numer';
+    updatePhaseLabel(p);
+    updateDisplay(p);
+    document.getElementById(`p${p}AnswerBtn`).disabled = false;
+    document.getElementById(`p${p}SlashBtn`).disabled = true;
+  }
+}
+
+function tkAnswer(p) {
+  if (state.gameOver || state.roundEnding) return;
+  const ps = state[`p${p}`];
+  if (ps.answered) return;
+  if (ps.phase !== 'numer' || ps.numer === '') return;
+
+  const n = parseInt(ps.numer);
+  const d = parseInt(ps.denom);
+  if (isNaN(n) || isNaN(d) || d === 0) { sfxWrong(); return; }
+
+  // Check: correct reduced fraction
+  const prob = state.problem;
+  const correct = (n === prob.ansN && d === prob.ansD);
+  // Also accept if gcd(n,d)==1 and n/d == ansN/ansD
+  const correctAlt = gcd(n, d) === 1 && n * prob.ansD === d * prob.ansN;
+
+  ps.answered = true;
+
+  if (correct || correctAlt) {
+    handleCorrect(p);
+  } else {
+    handleWrong(p);
+  }
+}
+
+function handleCorrect(p) {
+  const ps = state[`p${p}`];
+  const opponent = p === 1 ? 2 : 1;
+  const char = state[`p${p}Char`];
+  let effect = null;
+
+  if (ps.skillActive) {
+    effect = char.skillEffect(char.atk);
+    ps.skillActive = false;
+    document.getElementById(`p${p}SkillBadge`).style.display = 'none';
+    showSpecialAnnounce(char.skillName + '！\n' + char.skillDesc);
+    sfxSpecial();
+  } else {
+    sfxCorrect();
+  }
+
+  showFeedback(p, '✅ 正解！', '#88ff88');
+
+  if (effect) {
+    applyEffect(p, opponent, effect);
+  } else {
+    dealDamage(opponent, char.atk);
+  }
+
+  // If opponent has extra questions pending (from ninja skill), don't advance yet
+  const ops = state[`p${opponent}`];
+  if (ops.extraQ > 0) {
+    ops.extraQ--;
+    if (ops.extraQ <= 0) {
+      document.getElementById(`p${opponent}ExtraQ`).style.display = 'none';
+    }
+    setTimeout(() => resetPlayerInputOnly(opponent), 1200);
+    return;
+  }
+
+  if (state.roundEnding) return;
+  state.roundEnding = true;
+  setTimeout(() => {
+    state.roundEnding = false;
+    state.round++;
+    newProblem();
+  }, 1400);
+}
+
+function handleWrong(p) {
+  sfxWrong();
+  showFeedback(p, '❌ 不正解', '#ff6666');
+  // Reset this player's input
+  setTimeout(() => resetPlayerInputOnly(p), 900);
+}
+
+function resetPlayerInputOnly(p) {
+  const ps = state[`p${p}`];
+  ps.numer = ''; ps.denom = ''; ps.phase = 'denom'; ps.answered = false;
+  updateDisplay(p);
+  updatePhaseLabel(p);
+  document.getElementById(`p${p}AnswerBtn`).disabled = true;
+}
+
+// ===== SPECIAL SKILLS =====
+function tkSpecial(p) {
+  if (state.gameOver) return;
+  const ps = state[`p${p}`];
+  if (ps.skillUsed) return;
+  if (ps.answered) return;
+  ps.skillUsed = true;
+  ps.skillActive = true;
+  const char = state[`p${p}Char`];
+  const badge = document.getElementById(`p${p}SkillBadge`);
+  badge.textContent = `⚡ ${char.skillName} 発動準備中！`;
+  badge.style.display = '';
+  const btn = document.getElementById(`p${p}SpecialBtn`);
+  btn.classList.add('special-used');
+  btn.disabled = true;
+  playTone(500, 'square', 0.2, 0.3);
+}
+
+function applyEffect(p, opponent, effect) {
+  if (effect.type === 'double') {
+    dealDamage(opponent, effect.dmg);
+  } else if (effect.type === 'heal') {
+    const char = state[`p${p}Char`];
+    state[`p${p}Hp`] = state[`p${p}MaxHp`];
+    updateHpDisplay();
+    dealDamage(opponent, effect.dmg);
+  } else if (effect.type === 'extra') {
+    dealDamage(opponent, effect.dmg);
+    const ops = state[`p${opponent}`];
+    ops.extraQ = 1;
+    document.getElementById(`p${opponent}ExtraQ`).style.display = '';
+  } else if (effect.type === 'half') {
+    state[`p${opponent}Hp`] = Math.floor(state[`p${opponent}Hp`] / 2);
+    updateHpDisplay();
+    checkDeath(opponent);
+  } else if (effect.type === 'fixed') {
+    dealDamage(opponent, effect.dmg);
+  } else if (effect.type === 'triple') {
+    dealDamage(opponent, effect.dmg);
+  } else if (effect.type === 'halfheal') {
+    const heal = Math.floor(state[`p${p}MaxHp`] / 2);
+    state[`p${p}Hp`] = Math.min(state[`p${p}MaxHp`], state[`p${p}Hp`] + heal);
+    updateHpDisplay();
+    dealDamage(opponent, effect.dmg);
+  } else if (effect.type === 'steal') {
+    const steal = Math.min(effect.stealAmt, state[`p${opponent}Hp`]);
+    state[`p${opponent}Hp`] = Math.max(0, state[`p${opponent}Hp`] - steal);
+    state[`p${p}Hp`]       = Math.min(state[`p${p}MaxHp`], state[`p${p}Hp`] + steal);
+    updateHpDisplay();
+    checkDeath(opponent);
+    dealDamage(opponent, effect.dmg);
+  }
+}
+
+function dealDamage(target, dmg) {
+  state[`p${target}Hp`] = Math.max(0, state[`p${target}Hp`] - dmg);
+  updateHpDisplay();
+  const charEl = document.getElementById(`p${target}Char`);
+  charEl.classList.add('damaged');
+  setTimeout(() => charEl.classList.remove('damaged'), 500);
+  checkDeath(target);
+}
+
+function checkDeath(p) {
+  if (state[`p${p}Hp`] <= 0) {
+    setTimeout(() => endBattle(p === 1 ? 2 : 1), 1000);
+  }
+}
+
+// ===== UI UPDATES =====
+function updateDisplay(p) {
+  const ps = state[`p${p}`];
+  const el = document.getElementById(`p${p}Display`);
+  if (ps.phase === 'denom') {
+    // 分母入力中：「？／[入力中]」
+    el.innerHTML = `<span class="frac-num" style="opacity:0.4">?</span><span class="frac-sep">／</span><span class="frac-num">${ps.denom || '?'}</span>`;
+  } else {
+    // 分子入力中：「[入力中]／[確定済み分母]」
+    el.innerHTML = `<span class="frac-num">${ps.numer || '?'}</span><span class="frac-sep">／</span><span class="frac-num">${ps.denom}</span>`;
+  }
+}
+
+function updatePhaseLabel(p) {
+  const ps = state[`p${p}`];
+  const el = document.getElementById(`p${p}Phase`);
+  if (ps.phase === 'denom') {
+    el.textContent = '① 分母を入力 → ／';
+  } else {
+    el.textContent = '② 分子を入力 → 答え合わせ';
+  }
+}
+
+function updateHpDisplay() {
+  [1, 2].forEach(p => {
+    const hp = state[`p${p}Hp`];
+    const maxHp = state[`p${p}MaxHp`];
+    const pct = Math.max(0, (hp / maxHp) * 100);
+    document.getElementById(`p${p}HpBar`).style.width = pct + '%';
+    document.getElementById(`p${p}HpText`).textContent = `${hp}/${maxHp}`;
+  });
+}
+
+function showFeedback(p, msg, color) {
+  const el = document.getElementById(`p${p}Feedback`);
+  el.textContent = msg;
+  el.style.color = color;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function showSpecialAnnounce(text) {
+  const el = document.getElementById('specialAnnounce');
+  el.textContent = text;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ===== END BATTLE =====
+function endBattle(winner) {
+  state.gameOver = true;
+  const wChar = state[`p${winner}Char`];
+  document.getElementById('resultTitle').textContent = `🏆 P${winner} 勝利！ 🏆`;
+  document.getElementById('winnerEmoji').textContent = wChar.emoji;
+  document.getElementById('winnerName').textContent = `${wChar.name} の勝利！`;
+  showScreen('resultScreen');
+}
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function backToSelect() {
+  state.p1Char = null; state.p2Char = null;
+  countdownActive = false;
+  document.getElementById('p1Selected').textContent = 'タップして選ぼう！';
+  document.getElementById('p2Selected').textContent = 'タップして選ぼう！';
+  document.getElementById('selectHint').innerHTML = `
+    <div class="hint-p2">両者<br>選択で<br>スタート</div>
+    <div class="hint-p1">両者<br>選択で<br>スタート</div>
+  `;
+  buildCharGrid('charGrid1', 1);
+  buildCharGrid('charGrid2', 2);
+  showScreen('selectScreen');
+}
+</script>
+</body>
+</html>
