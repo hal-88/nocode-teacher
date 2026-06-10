@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全国体力テスト 結果チェック</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#eef2f7;color:#2d3748;min-height:100vh;padding:16px}
+.container{max-width:680px;margin:0 auto}
+header{text-align:center;margin-bottom:20px}
+header h1{font-size:1.3rem;color:#2c5282;font-weight:800}
+header p{font-size:0.8rem;color:#718096;margin-top:4px}
+
+.step-bar{display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.step-circle{width:32px;height:32px;border-radius:50%;background:#cbd5e0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;transition:background 0.3s}
+.step-circle.active{background:#3182ce}
+.step-circle.done{background:#38a169}
+.step-label{font-size:0.65rem;color:#a0aec0;white-space:nowrap}
+.step-line{width:48px;height:3px;background:#e2e8f0;margin-bottom:16px;transition:background 0.3s}
+.step-line.done{background:#38a169}
+
+.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,0.07)}
+.section-label{font-size:0.72rem;font-weight:700;color:#a0aec0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
+
+.btn-group{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.sel-btn{flex:1;min-width:80px;padding:13px 8px;border:2.5px solid #e2e8f0;border-radius:12px;background:#fff;color:#4a5568;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center}
+.sel-btn:hover{border-color:#bee3f8;background:#ebf8ff}
+.sel-btn.selected{border-color:#3182ce;background:#ebf8ff;color:#2b6cb0}
+
+.primary-btn{width:100%;padding:15px;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:6px}
+.primary-btn.blue{background:#3182ce;color:#fff}
+.primary-btn.blue:hover:not(:disabled){background:#2b6cb0}
+.primary-btn.blue:disabled{background:#cbd5e0;cursor:not-allowed}
+.primary-btn.green{background:#38a169;color:#fff}
+.primary-btn.green:hover{background:#2f855a}
+.primary-btn.gray{background:#edf2f7;color:#4a5568;margin-top:10px}
+.primary-btn.gray:hover{background:#e2e8f0}
+
+.events-list{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.ev-card{background:#f7fafc;border-radius:12px;padding:14px 16px}
+.ev-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ev-name{font-weight:700;font-size:0.9rem}
+.ev-val{font-size:1.5rem;font-weight:800;color:#3182ce}
+.ev-unit{font-size:0.8rem;color:#718096;margin-left:2px}
+input[type=range]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:#e2e8f0;border-radius:3px;outline:none;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#3182ce;cursor:pointer;box-shadow:0 2px 6px rgba(49,130,206,0.35)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#3182ce;cursor:pointer;border:none}
+.ev-hints{display:flex;justify-content:space-between;font-size:0.67rem;color:#b0bec5;margin-top:5px}
+
+.result-hero{text-align:center;padding:8px 0 16px}
+.result-score{font-size:3.2rem;font-weight:800;color:#1a202c;line-height:1}
+.result-score small{font-size:1.1rem;color:#a0aec0;font-weight:400}
+.badge-wrap{margin:14px 0 6px}
+.rating-badge{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;border-radius:50%;font-size:2.6rem;font-weight:800}
+.rA{background:#c0dd97;color:#3b6d11}
+.rB{background:#b5d4f4;color:#185fa5}
+.rC{background:#fac775;color:#633806}
+.rD{background:#f5c4b3;color:#712b13}
+.rE{background:#d3d1c7;color:#5f5e5a}
+.profile-tag{font-size:0.85rem;color:#718096;margin-top:4px}
+.nat-total-tag{font-size:0.78rem;color:#a0aec0;margin-top:6px}
+
+.events-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.res-card{background:#f7fafc;border-radius:12px;padding:12px;text-align:center}
+.res-name{font-size:0.72rem;color:#718096;margin-bottom:3px}
+.res-meas{font-size:0.82rem;color:#4a5568;margin-bottom:5px}
+.res-score{font-size:1.6rem;font-weight:800;line-height:1}
+.res-score small{font-size:0.72rem;color:#a0aec0;font-weight:400}
+.sc-hi{color:#2f855a}
+.sc-mid{color:#3182ce}
+.sc-lo{color:#c05621}
+.nat-line{font-size:0.68rem;color:#a0aec0;margin-top:5px}
+.diff-hi{color:#2f855a;font-weight:700}
+.diff-eq{color:#718096;font-weight:700}
+.diff-lo{color:#c05621;font-weight:700}
+
+.chart-wrap{position:relative;height:310px;margin:0 0 20px}
+
+@media(max-width:400px){
+  .result-score{font-size:2.6rem}
+  .chart-wrap{height:260px}
+  .step-line{width:28px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>全国体力テスト 結果チェック</h1>
+    <p>小学4〜6年生（文科省準拠）</p>
+  </header>
+
+  <div class="step-bar">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1">1</div>
+      <div class="step-label">プロフィール</div>
+    </div>
+    <div class="step-line" id="sl1"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label">記録入力</div>
+    </div>
+    <div class="step-line" id="sl2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label">結果</div>
+    </div>
+  </div>
+
+  <div id="step1" class="card">
+    <div class="section-label">性別</div>
+    <div class="btn-group">
+      <button class="sel-btn" id="bm" onclick="pickGender('male')">男子</button>
+      <button class="sel-btn" id="bf" onclick="pickGender('female')">女子</button>
+    </div>
+    <div class="section-label">学年</div>
+    <div class="btn-group">
+      <button class="sel-btn" id="b4" onclick="pickGrade(4)">4年生</button>
+      <button class="sel-btn" id="b5" onclick="pickGrade(5)">5年生</button>
+      <button class="sel-btn" id="b6" onclick="pickGrade(6)">6年生</button>
+    </div>
+    <button class="primary-btn blue" id="nextBtn" disabled onclick="toStep2()">次へ →</button>
+  </div>
+
+  <div id="step2" class="card" style="display:none">
+    <div class="events-list" id="sliderList"></div>
+    <button class="primary-btn green" onclick="toStep3()">結果を見る</button>
+    <button class="primary-btn gray" onclick="toStep1()">← 戻る</button>
+  </div>
+
+  <div id="step3" class="card" style="display:none">
+    <div class="result-hero">
+      <div class="result-score" id="rScore">—<small>/80点</small></div>
+      <div class="badge-wrap"><div class="rating-badge" id="rBadge"></div></div>
+      <div class="profile-tag" id="rProfile"></div>
+      <div class="nat-total-tag" id="rNatTotal"></div>
+    </div>
+    <div class="events-grid" id="rGrid"></div>
+    <div class="chart-wrap"><canvas id="radar"></canvas></div>
+    <button class="primary-btn gray" onclick="resetAll()">もう一度やり直す</button>
+  </div>
+</div>
+
+<script>
+const EVENTS = [
+  {key:'grip',  name:'握力',           unit:'kg', step:0.1, rev:false, hints:['弱め','ふつう','強め']},
+  {key:'situp', name:'上体起こし',      unit:'回', step:1,   rev:false, hints:['少ない','ふつう','多い']},
+  {key:'fwd',   name:'長座体前屈',      unit:'cm', step:1,   rev:false, hints:['硬め','ふつう','柔らかい']},
+  {key:'agil',  name:'反復横とび',      unit:'点', step:1,   rev:false, hints:['低め','ふつう','高め']},
+  {key:'shut',  name:'20mシャトルラン', unit:'回', step:1,   rev:false, hints:['少ない','ふつう','多い']},
+  {key:'run',   name:'50m走',          unit:'秒', step:0.1, rev:true,  hints:['速め','ふつう','遅め']},
+  {key:'jump',  name:'立ち幅とび',      unit:'cm', step:1,   rev:false, hints:['短め','ふつう','遠い']},
+  {key:'throw', name:'ソフトボール投げ', unit:'m',  step:1,   rev:false, hints:['短め','ふつう','遠い']}
+];
+
+const TABLES = {
+  male:{
+    grip: [-Infinity,5,7,9,11,14,17,20,23,26],
+    situp:[-Infinity,3,6,9,12,15,18,20,23,26],
+    fwd:  [-Infinity,15,19,23,27,30,34,38,43,49],
+    agil: [-Infinity,18,22,26,30,34,38,42,46,50],
+    shut: [-Infinity,8,10,15,23,33,45,57,69,80],
+    run:  [Infinity,13.0,12.2,11.4,10.6,9.9,9.3,8.8,8.4,8.0],
+    jump: [-Infinity,93,105,117,130,143,156,168,180,192],
+    throw:[-Infinity,5,7,10,13,18,24,30,35,40]
+  },
+  female:{
+    grip: [-Infinity,4,7,9,11,13,16,19,22,25],
+    situp:[-Infinity,3,6,9,12,14,16,18,20,23],
+    fwd:  [-Infinity,18,21,25,29,33,37,41,46,52],
+    agil: [-Infinity,17,21,25,28,32,36,40,43,47],
+    shut: [-Infinity,8,10,14,19,26,35,44,54,64],
+    run:  [Infinity,13.2,12.4,11.6,10.9,10.2,9.6,9.1,8.7,8.3],
+    jump: [-Infinity,85,98,109,121,134,147,160,170,181],
+    throw:[-Infinity,4,5,6,8,11,14,17,21,25]
+  }
+};
+
+// 令和7年度 全国平均（小学校5年生相当）
+const NATIONAL_AVGS = {
+  male:  {grip:15.97,situp:19.45,fwd:33.88,agil:40.90,shut:47.95,run:9.46, jump:150.96,throw:21.06},
+  female:{grip:15.61,situp:18.36,fwd:38.17,agil:38.71,shut:36.87,run:9.77, jump:142.39,throw:13.10}
+};
+
+const RANGES = {
+  male:{
+    4:{grip:[3,35],   situp:[0,47],  fwd:[0,65],  agil:[15,65], shut:[3,95],   run:[7.5,14.0], jump:[45,225],  throw:[3,50]},
+    5:{grip:[3,42],   situp:[0,55],  fwd:[0,78],  agil:[18,75], shut:[5,120],  run:[7.0,14.0], jump:[60,245],  throw:[5,62]},
+    6:{grip:[5,48],   situp:[0,60],  fwd:[0,85],  agil:[22,82], shut:[8,140],  run:[6.5,13.5], jump:[75,265],  throw:[6,72]}
+  },
+  female:{
+    4:{grip:[3,30],   situp:[0,42],  fwd:[3,72],  agil:[15,62], shut:[1,70],   run:[8.0,15.5], jump:[35,205],  throw:[1,32]},
+    5:{grip:[3,34],   situp:[0,46],  fwd:[3,78],  agil:[16,72], shut:[1,78],   run:[7.5,15.0], jump:[45,215],  throw:[1,35]},
+    6:{grip:[4,36],   situp:[0,50],  fwd:[5,85],  agil:[18,74], shut:[1,82],   run:[7.0,14.5], jump:[52,228],  throw:[2,38]}
+  }
+};
+
+const RATING = {
+  4:{A:59,B:52,C:45,D:38},
+  5:{A:65,B:58,C:50,D:42},
+  6:{A:71,B:63,C:55,D:46}
+};
+
+let gender=null, grade=null, chartInst=null;
+
+function pickGender(g){
+  gender=g;
+  document.getElementById('bm').classList.toggle('selected',g==='male');
+  document.getElementById('bf').classList.toggle('selected',g==='female');
+  checkNext();
+}
+function pickGrade(n){
+  grade=n;
+  [4,5,6].forEach(i=>document.getElementById('b'+i).classList.toggle('selected',i===n));
+  checkNext();
+}
+function checkNext(){
+  document.getElementById('nextBtn').disabled=!(gender&&grade);
+}
+
+function calcScore(v,tbl,rev){
+  if(rev){
+    for(let i=9;i>=0;i--) if(v<=tbl[i]) return i+1;
+    return 1;
+  }
+  let s=1;
+  for(let i=1;i<10;i++) if(v>=tbl[i]) s=i+1;
+  return s;
+}
+
+function midVal(mn,mx,step){
+  const m=(mn+mx)/2;
+  return step===0.1?Math.round(m*10)/10:Math.round(m);
+}
+
+function toStep1(){setStep(1);}
+
+function toStep2(){
+  const r=RANGES[gender][grade];
+  const list=document.getElementById('sliderList');
+  list.innerHTML='';
+  EVENTS.forEach(ev=>{
+    const [mn,mx]=r[ev.key];
+    const def=midVal(mn,mx,ev.step);
+    const d=document.createElement('div');
+    d.className='ev-card';
+    d.innerHTML=`
+      <div class="ev-head">
+        <span class="ev-name">${ev.name}</span>
+        <span><span class="ev-val" id="v_${ev.key}">${def}</span><span class="ev-unit">${ev.unit}</span></span>
+      </div>
+      <input type="range" id="s_${ev.key}" min="${mn}" max="${mx}" step="${ev.step}" value="${def}"
+        oninput="updVal('${ev.key}')">
+      <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span><span>${ev.hints[2]}</span></div>`;
+    list.appendChild(d);
+  });
+  setStep(2);
+}
+
+function updVal(key){
+  document.getElementById('v_'+key).textContent=document.getElementById('s_'+key).value;
+}
+
+function toStep3(){
+  const tbl=TABLES[gender];
+  let total=0;
+  const scores={}, vals={};
+  EVENTS.forEach(ev=>{
+    const v=parseFloat(document.getElementById('s_'+ev.key).value);
+    vals[ev.key]=v;
+    const s=calcScore(v,tbl[ev.key],ev.rev);
+    scores[ev.key]=s;
+    total+=s;
+  });
+
+  const nat=NATIONAL_AVGS[gender];
+  const natScores={};
+  let natTotal=0;
+  EVENTS.forEach(ev=>{
+    const s=calcScore(nat[ev.key],tbl[ev.key],ev.rev);
+    natScores[ev.key]=s;
+    natTotal+=s;
+  });
+
+  const t=RATING[grade];
+  const rating=total>=t.A?'A':total>=t.B?'B':total>=t.C?'C':total>=t.D?'D':'E';
+
+  document.getElementById('rScore').innerHTML=`${total}<small>/80点</small>`;
+  const badge=document.getElementById('rBadge');
+  badge.className=`rating-badge r${rating}`;
+  badge.textContent=rating;
+  document.getElementById('rProfile').textContent=`${grade}年生 ${gender==='male'?'男子':'女子'}`;
+
+  const totalDiff=total-natTotal;
+  const diffStr=totalDiff>0?`+${totalDiff}`:totalDiff===0?'±0':`${totalDiff}`;
+  const diffCls=totalDiff>0?'diff-hi':totalDiff===0?'diff-eq':'diff-lo';
+  document.getElementById('rNatTotal').innerHTML=
+    `5年生全国平均 ${natTotal}点　<span class="${diffCls}">(${diffStr})</span>`;
+
+  const grid=document.getElementById('rGrid');
+  grid.innerHTML='';
+  EVENTS.forEach(ev=>{
+    const s=scores[ev.key];
+    const ns=natScores[ev.key];
+    const diff=s-ns;
+    const cls=s>=8?'sc-hi':s>=5?'sc-mid':'sc-lo';
+    const dStr=diff>0?`+${diff}`:diff===0?'±0':`${diff}`;
+    const dCls=diff>0?'diff-hi':diff===0?'diff-eq':'diff-lo';
+    const c=document.createElement('div');
+    c.className='res-card';
+    c.innerHTML=`<div class="res-name">${ev.name}</div>
+      <div class="res-meas">${vals[ev.key]}${ev.unit}</div>
+      <div class="res-score ${cls}">${s}<small>/10点</small></div>
+      <div class="nat-line">全国平均 ${nat[ev.key]}${ev.unit}（${ns}点）<span class="${dCls}">${dStr}</span></div>`;
+    grid.appendChild(c);
+  });
+
+  buildChart(scores, natScores);
+  setStep(3);
+}
+
+function buildChart(scores, natScores){
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const ctx=document.getElementById('radar').getContext('2d');
+  chartInst=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:EVENTS.map(e=>e.name),
+      datasets:[
+        {
+          label:'あなた',
+          data:EVENTS.map(e=>scores[e.key]),
+          backgroundColor:'rgba(49,130,206,0.18)',
+          borderColor:'rgba(49,130,206,0.85)',
+          pointBackgroundColor:'rgba(49,130,206,1)',
+          pointRadius:4,
+          borderWidth:2.5
+        },
+        {
+          label:'5年生全国平均',
+          data:EVENTS.map(e=>natScores[e.key]),
+          backgroundColor:'rgba(0,0,0,0)',
+          borderColor:'rgba(237,137,54,0.85)',
+          pointBackgroundColor:'rgba(237,137,54,1)',
+          pointRadius:3,
+          borderWidth:1.8,
+          borderDash:[5,4]
+        }
+      ]
+    },
+    options:{
+      animation:{duration:900,easing:'easeInOutQuart'},
+      maintainAspectRatio:false,
+      scales:{r:{min:0,max:10,ticks:{stepSize:2,font:{size:10},backdropColor:'transparent'},pointLabels:{font:{size:11}}}},
+      plugins:{
+        legend:{
+          display:true,
+          position:'bottom',
+          labels:{font:{size:11},boxWidth:18,padding:12}
+        }
+      }
+    }
+  });
+}
+
+function setStep(n){
+  document.getElementById('step1').style.display=n===1?'block':'none';
+  document.getElementById('step2').style.display=n===2?'block':'none';
+  document.getElementById('step3').style.display=n===3?'block':'none';
+  [1,2,3].forEach(i=>{
+    const c=document.getElementById('sc'+i);
+    c.className='step-circle'+(i<n?' done':i===n?' active':'');
+  });
+  [1,2].forEach(i=>{
+    document.getElementById('sl'+i).className='step-line'+(i<n?' done':'');
+  });
+}
+
+function resetAll(){
+  gender=null;grade=null;
+  document.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('selected'));
+  checkNext();
+  toStep1();
+}
+</script>
+</body>
+</html>
