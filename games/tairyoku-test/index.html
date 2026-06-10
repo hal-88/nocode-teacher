@@ -50,6 +50,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#3182ce;cursor:pointer;border:none}
 .ev-hints{display:flex;justify-content:space-between;font-size:0.67rem;color:#b0bec5;margin-top:5px}
 
+/* 握力：左右2列レイアウト */
+.grip-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.grip-side-label{font-size:0.72rem;font-weight:700;color:#718096;margin-bottom:4px}
+.grip-val-row{display:flex;align-items:baseline;gap:2px;margin-bottom:6px}
+
 .result-hero{text-align:center;padding:8px 0 16px}
 .result-score{font-size:3.2rem;font-weight:800;color:#1a202c;line-height:1}
 .result-score small{font-size:1.1rem;color:#a0aec0;font-weight:400}
@@ -66,7 +71,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .events-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
 .res-card{background:#f7fafc;border-radius:12px;padding:12px;text-align:center}
 .res-name{font-size:0.72rem;color:#718096;margin-bottom:3px}
-.res-meas{font-size:0.82rem;color:#4a5568;margin-bottom:5px}
+.res-meas{font-size:0.82rem;color:#4a5568;margin-bottom:5px;line-height:1.5}
 .res-score{font-size:1.6rem;font-weight:800;line-height:1}
 .res-score small{font-size:0.72rem;color:#a0aec0;font-weight:400}
 .sc-hi{color:#2f855a}
@@ -145,15 +150,17 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 </div>
 
 <script>
+// split:true → 右手・左手の2スライダー（平均で得点計算）
+// flip:true  → スライダーを反転（右ほど良い値）
 const EVENTS = [
-  {key:'grip',  name:'握力',           unit:'kg', step:0.1, rev:false, hints:['弱め','ふつう','強め']},
-  {key:'situp', name:'上体起こし',      unit:'回', step:1,   rev:false, hints:['少ない','ふつう','多い']},
-  {key:'fwd',   name:'長座体前屈',      unit:'cm', step:1,   rev:false, hints:['硬め','ふつう','柔らかい']},
-  {key:'agil',  name:'反復横とび',      unit:'点', step:1,   rev:false, hints:['低め','ふつう','高め']},
-  {key:'shut',  name:'20mシャトルラン', unit:'回', step:1,   rev:false, hints:['少ない','ふつう','多い']},
-  {key:'run',   name:'50m走',          unit:'秒', step:0.1, rev:true,  hints:['速め','ふつう','遅め']},
-  {key:'jump',  name:'立ち幅とび',      unit:'cm', step:1,   rev:false, hints:['短め','ふつう','遠い']},
-  {key:'throw', name:'ソフトボール投げ', unit:'m',  step:1,   rev:false, hints:['短め','ふつう','遠い']}
+  {key:'grip',  name:'握力',           unit:'kg', step:0.1, rev:false, hints:['弱め','強め'], split:true},
+  {key:'situp', name:'上体起こし',      unit:'回', step:1,   rev:false, hints:['少ない','多い']},
+  {key:'fwd',   name:'長座体前屈',      unit:'cm', step:1,   rev:false, hints:['硬め','柔らかい']},
+  {key:'agil',  name:'反復横とび',      unit:'点', step:1,   rev:false, hints:['低め','高め']},
+  {key:'shut',  name:'20mシャトルラン', unit:'回', step:1,   rev:false, hints:['少ない','多い']},
+  {key:'run',   name:'50m走',          unit:'秒', step:0.1, rev:true,  hints:['遅め','速め'], flip:true},
+  {key:'jump',  name:'立ち幅とび',      unit:'cm', step:1,   rev:false, hints:['短め','遠い']},
+  {key:'throw', name:'ソフトボール投げ', unit:'m',  step:1,   rev:false, hints:['短め','遠い']}
 ];
 
 const TABLES = {
@@ -179,7 +186,6 @@ const TABLES = {
   }
 };
 
-// 令和7年度 全国平均（小学校5年生相当）
 const NATIONAL_AVGS = {
   male:  {grip:15.97,situp:19.45,fwd:33.88,agil:40.90,shut:47.95,run:9.46, jump:150.96,throw:21.06},
   female:{grip:15.61,situp:18.36,fwd:38.17,agil:38.71,shut:36.87,run:9.77, jump:142.39,throw:13.10}
@@ -187,14 +193,14 @@ const NATIONAL_AVGS = {
 
 const RANGES = {
   male:{
-    4:{grip:[3,35],   situp:[0,47],  fwd:[0,65],  agil:[15,65], shut:[3,95],   run:[7.5,14.0], jump:[45,225],  throw:[3,50]},
-    5:{grip:[3,42],   situp:[0,55],  fwd:[0,78],  agil:[18,75], shut:[5,120],  run:[7.0,14.0], jump:[60,245],  throw:[5,62]},
-    6:{grip:[5,48],   situp:[0,60],  fwd:[0,85],  agil:[22,82], shut:[8,140],  run:[6.5,13.5], jump:[75,265],  throw:[6,72]}
+    4:{grip:[3,35],  situp:[0,47], fwd:[0,65],  agil:[15,65],shut:[3,95],  run:[7.5,14.0],jump:[45,225], throw:[3,50]},
+    5:{grip:[3,42],  situp:[0,55], fwd:[0,78],  agil:[18,75],shut:[5,120], run:[7.0,14.0],jump:[60,245], throw:[5,62]},
+    6:{grip:[5,48],  situp:[0,60], fwd:[0,85],  agil:[22,82],shut:[8,140], run:[6.5,13.5],jump:[75,265], throw:[6,72]}
   },
   female:{
-    4:{grip:[3,30],   situp:[0,42],  fwd:[3,72],  agil:[15,62], shut:[1,70],   run:[8.0,15.5], jump:[35,205],  throw:[1,32]},
-    5:{grip:[3,34],   situp:[0,46],  fwd:[3,78],  agil:[16,72], shut:[1,78],   run:[7.5,15.0], jump:[45,215],  throw:[1,35]},
-    6:{grip:[4,36],   situp:[0,50],  fwd:[5,85],  agil:[18,74], shut:[1,82],   run:[7.0,14.5], jump:[52,228],  throw:[2,38]}
+    4:{grip:[3,30],  situp:[0,42], fwd:[3,72],  agil:[15,62],shut:[1,70],  run:[8.0,15.5],jump:[35,205], throw:[1,32]},
+    5:{grip:[3,34],  situp:[0,46], fwd:[3,78],  agil:[16,72],shut:[1,78],  run:[7.5,15.0],jump:[45,215], throw:[1,35]},
+    6:{grip:[4,36],  situp:[0,50], fwd:[5,85],  agil:[18,74],shut:[1,82],  run:[7.0,14.5],jump:[52,228], throw:[2,38]}
   }
 };
 
@@ -247,14 +253,51 @@ function toStep2(){
     const def=midVal(mn,mx,ev.step);
     const d=document.createElement('div');
     d.className='ev-card';
-    d.innerHTML=`
-      <div class="ev-head">
-        <span class="ev-name">${ev.name}</span>
-        <span><span class="ev-val" id="v_${ev.key}">${def}</span><span class="ev-unit">${ev.unit}</span></span>
-      </div>
-      <input type="range" id="s_${ev.key}" min="${mn}" max="${mx}" step="${ev.step}" value="${def}"
-        oninput="updVal('${ev.key}')">
-      <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span><span>${ev.hints[2]}</span></div>`;
+
+    if(ev.split){
+      // 握力：右手・左手の2スライダー
+      d.innerHTML=`
+        <div class="ev-name">${ev.name}</div>
+        <div class="grip-grid">
+          <div>
+            <div class="grip-side-label">右手</div>
+            <div class="grip-val-row">
+              <span class="ev-val" id="v_grip_r">${def}</span><span class="ev-unit">${ev.unit}</span>
+            </div>
+            <input type="range" id="s_grip_r" min="${mn}" max="${mx}" step="${ev.step}" value="${def}"
+              oninput="updVal('grip_r')">
+            <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span></div>
+          </div>
+          <div>
+            <div class="grip-side-label">左手</div>
+            <div class="grip-val-row">
+              <span class="ev-val" id="v_grip_l">${def}</span><span class="ev-unit">${ev.unit}</span>
+            </div>
+            <input type="range" id="s_grip_l" min="${mn}" max="${mx}" step="${ev.step}" value="${def}"
+              oninput="updVal('grip_l')">
+            <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span></div>
+          </div>
+        </div>`;
+    } else if(ev.flip){
+      // 50m走：反転スライダー（内部値=-秒数、右が速い）
+      d.innerHTML=`
+        <div class="ev-head">
+          <span class="ev-name">${ev.name}</span>
+          <span><span class="ev-val" id="v_${ev.key}">${def}</span><span class="ev-unit">${ev.unit}</span></span>
+        </div>
+        <input type="range" id="s_${ev.key}" min="${-mx}" max="${-mn}" step="${ev.step}" value="${-def}"
+          oninput="updFlip('${ev.key}')">
+        <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span></div>`;
+    } else {
+      d.innerHTML=`
+        <div class="ev-head">
+          <span class="ev-name">${ev.name}</span>
+          <span><span class="ev-val" id="v_${ev.key}">${def}</span><span class="ev-unit">${ev.unit}</span></span>
+        </div>
+        <input type="range" id="s_${ev.key}" min="${mn}" max="${mx}" step="${ev.step}" value="${def}"
+          oninput="updVal('${ev.key}')">
+        <div class="ev-hints"><span>${ev.hints[0]}</span><span>${ev.hints[1]}</span></div>`;
+    }
     list.appendChild(d);
   });
   setStep(2);
@@ -264,12 +307,28 @@ function updVal(key){
   document.getElementById('v_'+key).textContent=document.getElementById('s_'+key).value;
 }
 
+function updFlip(key){
+  const v=-parseFloat(document.getElementById('s_'+key).value);
+  document.getElementById('v_'+key).textContent=v.toFixed(1);
+}
+
 function toStep3(){
   const tbl=TABLES[gender];
   let total=0;
   const scores={}, vals={};
+
   EVENTS.forEach(ev=>{
-    const v=parseFloat(document.getElementById('s_'+ev.key).value);
+    let v;
+    if(ev.split){
+      const vr=parseFloat(document.getElementById('s_grip_r').value);
+      const vl=parseFloat(document.getElementById('s_grip_l').value);
+      v=Math.round((vr+vl)/2*10)/10;
+      vals.grip_r=vr; vals.grip_l=vl;
+    } else if(ev.flip){
+      v=-parseFloat(document.getElementById('s_'+ev.key).value);
+    } else {
+      v=parseFloat(document.getElementById('s_'+ev.key).value);
+    }
     vals[ev.key]=v;
     const s=calcScore(v,tbl[ev.key],ev.rev);
     scores[ev.key]=s;
@@ -311,8 +370,16 @@ function toStep3(){
     const dCls=diff>0?'diff-hi':diff===0?'diff-eq':'diff-lo';
     const c=document.createElement('div');
     c.className='res-card';
+
+    let measHtml;
+    if(ev.split){
+      measHtml=`右 ${vals.grip_r}kg / 左 ${vals.grip_l}kg<br>平均 ${vals.grip}kg`;
+    } else {
+      measHtml=`${vals[ev.key]}${ev.unit}`;
+    }
+
     c.innerHTML=`<div class="res-name">${ev.name}</div>
-      <div class="res-meas">${vals[ev.key]}${ev.unit}</div>
+      <div class="res-meas">${measHtml}</div>
       <div class="res-score ${cls}">${s}<small>/10点</small></div>
       <div class="nat-line">全国平均 ${nat[ev.key]}${ev.unit}（${ns}点）<span class="${dCls}">${dStr}</span></div>`;
     grid.appendChild(c);
@@ -356,11 +423,7 @@ function buildChart(scores, natScores){
       maintainAspectRatio:false,
       scales:{r:{min:0,max:10,ticks:{stepSize:2,font:{size:10},backdropColor:'transparent'},pointLabels:{font:{size:11}}}},
       plugins:{
-        legend:{
-          display:true,
-          position:'bottom',
-          labels:{font:{size:11},boxWidth:18,padding:12}
-        }
+        legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:18,padding:12}}
       }
     }
   });
