@@ -79,6 +79,9 @@ UNITS.forEach(unit => {
       errors.push(label + ': missing bank/answer');
       return;
     }
+    if (![1, 2, 3].includes(q.level)) {
+      errors.push(label + ': level must be 1, 2, or 3 (got ' + JSON.stringify(q.level) + ')');
+    }
     if (!sameMultiset(q.bank, q.answer)) {
       errors.push(label + ': bank/answer token multiset mismatch — bank=[' + q.bank.join(',') + '] answer=[' + q.answer.join(',') + ']');
     }

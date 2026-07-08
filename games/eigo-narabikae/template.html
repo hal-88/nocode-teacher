@@ -158,6 +158,43 @@
   .set-cta{flex:0 0 auto;font-size:17px;color:var(--accent-dark);transition:transform .15s ease;}
   .set-card:hover .set-cta{transform:translateX(3px);}
 
+  /* ---------- MODE SELECT SCREEN ---------- */
+  .mode-card{
+    all:unset;
+    box-sizing:border-box;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    border-radius:var(--radius-md);
+    padding:20px 18px;
+    margin-bottom:14px;
+    transition:border-color .18s ease, transform .15s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, background .18s ease;
+  }
+  .mode-card:last-child{margin-bottom:0;}
+  .mode-card:hover{border-color:transparent;background:#FFFBF8;box-shadow:var(--shadow-soft);transform:translateY(-2px);}
+  .mode-card:active{transform:translateY(0) scale(0.98);}
+  .mode-card-icon{
+    flex:0 0 auto;
+    width:52px;height:52px;
+    border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    background:var(--accent-soft);
+    box-shadow:inset 0 0 0 1px rgba(255,138,61,0.18);
+  }
+  .mode-card-body{flex:1;min-width:0;}
+  .mode-card-title{font-family:var(--font-display);font-weight:700;font-size:16.5px;color:var(--ink);margin-bottom:3px;}
+  .mode-card-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+  .mode-card-cta{flex:0 0 auto;font-size:19px;color:var(--accent-dark);transition:transform .15s ease;}
+  .mode-card:hover .mode-card-cta{transform:translateX(3px);}
+  .mode-card-weak{border-color:rgba(232,93,93,0.35);}
+  .mode-card-weak .mode-card-icon{background:var(--incorrect-bg);box-shadow:inset 0 0 0 1px rgba(232,93,93,0.22);}
+  .mode-card-weak .mode-card-cta{color:var(--incorrect);}
+
   /* ---------- QUIZ SCREEN ---------- */
   .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px;}
   .home-link{
@@ -409,10 +446,31 @@ const UNIT_ICONS = {
 };
 function unitIcon(unitId){ return UNIT_ICONS[unitId] || '✏️'; }
 
+const LEVEL_META = {
+  1: { label: 'レベル1', description: 'やさしい', icon: '🌱' },
+  2: { label: 'レベル2', description: 'ふつう', icon: '⭐' },
+  3: { label: 'レベル3', description: 'むずかしい', icon: '🏆' }
+};
+const WRONG_BANK_KEY = 'eigo-narabikae-wrong-bank';
+
+/* 全問題のフラットな配列と、問題id→所属unitの逆引き（レベルモードで元の単元名をタグ表示するのに使う） */
+const ALL_QUESTIONS = [];
+const QUESTION_UNIT_MAP = {};
+UNITS.forEach(unit=>{
+  unit.questions.forEach(q=>{
+    ALL_QUESTIONS.push(q);
+    QUESTION_UNIT_MAP[q.id] = unit;
+  });
+});
+function unitOf(q){ return QUESTION_UNIT_MAP[q.id]; }
+function questionsByLevel(level){ return ALL_QUESTIONS.filter(q=>q.level===level); }
+
 /* ============ STATE ============ */
 let state = {
-  screen:'start',
+  screen:'mode',
+  mode:null, /* 'unit' | 'level' | 'weak' */
   unitId:null,
+  level:null,
   isReviewRound:false,
   queue:[],
   qIndex:0,
@@ -453,14 +511,38 @@ function writeRecent(unitId, ids){
     window.localStorage.setItem(RECENT_STORAGE_PREFIX+unitId, JSON.stringify(ids));
   }catch(e){ /* localStorage unavailable, ignore */ }
 }
-function pickRandomQuestions(unit){
-  const roundSize = Math.min(MAX_QUESTIONS_PER_ROUND, unit.questions.length);
-  const recentIds = readRecent(unit.id);
-  let pool = unit.questions.filter(q=>recentIds.indexOf(q.id)===-1);
-  if(pool.length < roundSize){ pool = unit.questions; }
-  const picked = shuffle(pool).slice(0, roundSize);
-  writeRecent(unit.id, picked.map(q=>q.id));
+function pickRandomFromPool(pool, recentKey){
+  const roundSize = Math.min(MAX_QUESTIONS_PER_ROUND, pool.length);
+  const recentIds = readRecent(recentKey);
+  let avoid = pool.filter(q=>recentIds.indexOf(q.id)===-1);
+  if(avoid.length < roundSize){ avoid = pool; }
+  const picked = shuffle(avoid).slice(0, roundSize);
+  writeRecent(recentKey, picked.map(q=>q.id));
   return picked;
+}
+function readWrongBank(){
+  try{
+    const raw = window.localStorage.getItem(WRONG_BANK_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function writeWrongBank(ids){
+  try{
+    window.localStorage.setItem(WRONG_BANK_KEY, JSON.stringify(ids));
+  }catch(e){ /* localStorage unavailable, ignore */ }
+}
+function addToWrongBank(id){
+  const ids = readWrongBank();
+  if(ids.indexOf(id)===-1){
+    ids.push(id);
+    writeWrongBank(ids);
+  }
+}
+function removeFromWrongBank(id){
+  writeWrongBank(readWrongBank().filter(x=>x!==id));
+}
+function wrongBankQuestions(){
+  return readWrongBank().map(id=>ALL_QUESTIONS.find(q=>q.id===id)).filter(Boolean);
 }
 function tileLabel(token, question){
   if(question && question.alwaysCapitalize && question.alwaysCapitalize.indexOf(token)!==-1){
@@ -508,11 +590,51 @@ function scoreMessage(score,total){
 }
 
 /* ============ FLOW ============ */
+function goToModeSelect(){
+  state.screen = 'mode';
+  render();
+}
+function goToUnitList(){
+  state.screen = 'start';
+  render();
+}
+function goToLevelList(){
+  state.screen = 'level-list';
+  render();
+}
 function startUnit(unitId){
   const unit = getUnit(unitId);
+  state.mode = 'unit';
   state.unitId = unitId;
+  state.level = null;
   state.isReviewRound = false;
-  state.queue = pickRandomQuestions(unit);
+  state.queue = pickRandomFromPool(unit.questions, unitId);
+  state.qIndex = 0;
+  state.score = 0;
+  state.wrongIds = [];
+  state.answered = [];
+  loadQuestion();
+}
+function startLevel(level){
+  state.mode = 'level';
+  state.level = level;
+  state.unitId = null;
+  state.isReviewRound = false;
+  state.queue = pickRandomFromPool(questionsByLevel(level), 'level-'+level);
+  state.qIndex = 0;
+  state.score = 0;
+  state.wrongIds = [];
+  state.answered = [];
+  loadQuestion();
+}
+function startWeakReview(){
+  const pool = wrongBankQuestions();
+  if(pool.length === 0) return;
+  state.mode = 'weak';
+  state.unitId = null;
+  state.level = null;
+  state.isReviewRound = false;
+  state.queue = pickRandomFromPool(pool, 'weak');
   state.qIndex = 0;
   state.score = 0;
   state.wrongIds = [];
@@ -521,8 +643,7 @@ function startUnit(unitId){
 }
 function startReview(){
   const ids = state.wrongIds;
-  const unit = getUnit(state.unitId);
-  state.queue = unit.questions.filter(q=>ids.indexOf(q.id)!==-1);
+  state.queue = ALL_QUESTIONS.filter(q=>ids.indexOf(q.id)!==-1);
   state.isReviewRound = true;
   state.qIndex = 0;
   state.score = 0;
@@ -531,9 +652,8 @@ function startReview(){
   loadQuestion();
 }
 function retrySameRound(){
-  const unit = getUnit(state.unitId);
   const ids = state.queue.map(q=>q.id);
-  state.queue = unit.questions.filter(q=>ids.indexOf(q.id)!==-1);
+  state.queue = ALL_QUESTIONS.filter(q=>ids.indexOf(q.id)!==-1);
   state.qIndex = 0;
   state.score = 0;
   state.wrongIds = [];
@@ -570,7 +690,13 @@ function submitAnswer(){
   const q = state.queue[state.qIndex];
   const builtTokens = state.built.map(t=>t.token);
   const isCorrect = sameOrder(builtTokens, q.answer);
-  if(isCorrect){ state.score++; } else { state.wrongIds.push(q.id); }
+  if(isCorrect){
+    state.score++;
+    if(state.mode==='weak'){ removeFromWrongBank(q.id); }
+  } else {
+    state.wrongIds.push(q.id);
+    addToWrongBank(q.id);
+  }
   state.answered.push(isCorrect);
   state.lastResult = {isCorrect:isCorrect, q:q};
   state.screen = 'feedback';
@@ -585,27 +711,72 @@ function nextQuestion(){
     loadQuestion();
   }
 }
-function goHome(){
-  if(!state.isReviewRound && state.unitId){
+function goBack(){
+  if(!state.isReviewRound && state.mode==='unit' && state.unitId){
     state.lastScores[state.unitId] = {score:state.score, total:state.queue.length};
+  } else if(!state.isReviewRound && state.mode==='level' && state.level){
+    state.lastScores['level-'+state.level] = {score:state.score, total:state.queue.length};
   }
-  state.screen = 'start';
+  if(state.mode==='unit'){ state.screen = 'start'; }
+  else if(state.mode==='level'){ state.screen = 'level-list'; }
+  else { state.screen = 'mode'; }
   render();
 }
 
 /* ============ RENDER ============ */
 function render(){
   const app = document.getElementById('app');
-  if(state.screen==='start') app.innerHTML = renderStart();
+  if(state.screen==='mode') app.innerHTML = renderMode();
+  else if(state.screen==='start') app.innerHTML = renderStart();
+  else if(state.screen==='level-list') app.innerHTML = renderLevelList();
   else if(state.screen==='quiz') app.innerHTML = renderQuiz();
   else if(state.screen==='feedback') app.innerHTML = renderFeedback();
   else if(state.screen==='results') app.innerHTML = renderResults();
 }
 
-function lastScoreBadge(unitId){
-  const rec = state.lastScores[unitId];
+function lastScoreBadge(key){
+  const rec = state.lastScores[key];
   if(!rec) return '';
   return '<span class="badge">前回 '+rec.score+'/'+rec.total+'</span>';
+}
+
+function renderMode(){
+  const weakCount = readWrongBank().length;
+  let weakCard = '';
+  if(weakCount>0){
+    weakCard = ''+
+      '<button class="mode-card mode-card-weak" onclick="startWeakReview()">'+
+        '<div class="mode-card-icon">🔥</div>'+
+        '<div class="mode-card-body">'+
+          '<div class="mode-card-title">苦手問題を復習する</div>'+
+          '<div class="mode-card-desc">今までまちがえた '+weakCount+' 問から出題するよ</div>'+
+        '</div>'+
+        '<div class="mode-card-cta">→</div>'+
+      '</button>';
+  }
+  return ''+
+  '<div class="card">'+
+    '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
+    '<h1 class="title">ならびかえ<br>トレーニング</h1>'+
+    '<p class="lead">かっこの中の単語をタップして正しい英文を組み立てよう。まなびかたをえらんでね。</p>'+
+    weakCard+
+    '<button class="mode-card" onclick="goToUnitList()">'+
+      '<div class="mode-card-icon">📚</div>'+
+      '<div class="mode-card-body">'+
+        '<div class="mode-card-title">単元ごとに学ぶ</div>'+
+        '<div class="mode-card-desc">文法テーマをえらんで集中的に練習するよ</div>'+
+      '</div>'+
+      '<div class="mode-card-cta">→</div>'+
+    '</button>'+
+    '<button class="mode-card" onclick="goToLevelList()">'+
+      '<div class="mode-card-icon">🎲</div>'+
+      '<div class="mode-card-body">'+
+        '<div class="mode-card-title">レベルごとにランダム</div>'+
+        '<div class="mode-card-desc">むずかしさをえらんで単元をまたいで出題するよ</div>'+
+      '</div>'+
+      '<div class="mode-card-cta">→</div>'+
+    '</button>'+
+  '</div>';
 }
 
 function renderStart(){
@@ -624,16 +795,43 @@ function renderStart(){
   });
   return ''+
   '<div class="card">'+
+    '<button class="home-link" onclick="goToModeSelect()" style="margin-bottom:16px;">← モードをえらびなおす</button>'+
     '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
-    '<h1 class="title">ならびかえ<br>トレーニング</h1>'+
-    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに数問（最大5問）出題されるよ。○×判定のあとに解説が出て、まちがえた問題はあとで復習できるよ。</p>'+
+    '<h1 class="title">単元でえらぶ</h1>'+
+    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに数問（最大5問）出題されるよ。</p>'+
+    '<div class="set-list">'+cards+'</div>'+
+  '</div>';
+}
+
+function renderLevelList(){
+  let cards = '';
+  [1,2,3].forEach(lv=>{
+    const meta = LEVEL_META[lv];
+    const count = questionsByLevel(lv).length;
+    cards += ''+
+      '<button class="set-card" onclick="startLevel('+lv+')">'+
+        '<div class="set-icon">'+meta.icon+'</div>'+
+        '<div class="set-body">'+
+          '<div class="set-card-top"><span class="set-num">'+count+'問</span>'+lastScoreBadge('level-'+lv)+'</div>'+
+          '<div class="set-title">'+meta.label+'（'+meta.description+'）</div>'+
+          '<div class="set-tags">いろいろな単元からランダムに出題</div>'+
+        '</div>'+
+        '<div class="set-cta">→</div>'+
+      '</button>';
+  });
+  return ''+
+  '<div class="card">'+
+    '<button class="home-link" onclick="goToModeSelect()" style="margin-bottom:16px;">← モードをえらびなおす</button>'+
+    '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
+    '<h1 class="title">レベルでえらぶ</h1>'+
+    '<p class="lead">レベルをえらぶと、いろいろな単元から数問（最大5問）ランダムに出題されるよ。</p>'+
     '<div class="set-list">'+cards+'</div>'+
   '</div>';
 }
 
 function renderQuiz(){
-  const unit = getUnit(state.unitId);
   const q = state.queue[state.qIndex];
+  const tagUnit = unitOf(q);
   const totalSlots = state.currentBank.length;
   const canSubmit = state.built.length === totalSlots && totalSlots>0;
 
@@ -662,16 +860,27 @@ function renderQuiz(){
     dots += '<span class="'+cls+'"></span>';
   });
 
-  const roundLabel = (state.isReviewRound ? '復習ラウンド' : unit.name) + ' ・ '+(state.qIndex+1)+'/'+state.queue.length+'問目';
+  let contextLabel, backLabel;
+  if(state.mode==='unit'){
+    contextLabel = getUnit(state.unitId).name;
+    backLabel = '← 単元一覧へ';
+  } else if(state.mode==='level'){
+    contextLabel = LEVEL_META[state.level].label;
+    backLabel = '← レベル一覧へ';
+  } else {
+    contextLabel = '苦手問題の復習';
+    backLabel = '← モード選択へ';
+  }
+  const roundLabel = (state.isReviewRound ? '復習ラウンド' : contextLabel) + ' ・ '+(state.qIndex+1)+'/'+state.queue.length+'問目';
 
   return ''+
   '<div class="card">'+
     '<div class="quiz-header">'+
-      '<button class="home-link" onclick="goHome()">← スタートへ</button>'+
+      '<button class="home-link" onclick="goBack()">'+backLabel+'</button>'+
       '<div class="progress-dots">'+dots+'</div>'+
     '</div>'+
     '<div class="round-label" style="margin-bottom:14px;">'+roundLabel+'</div>'+
-    '<div class="q-tag">'+unit.name+'</div>'+
+    '<div class="q-tag">'+tagUnit.name+'</div>'+
     '<div class="slot-row">'+slots+'</div>'+
     '<div class="bank-row">'+bank+'</div>'+
     '<div class="action-row">'+
@@ -700,11 +909,28 @@ function renderFeedback(){
 }
 
 function renderResults(){
-  const unit = getUnit(state.unitId);
   const total = state.queue.length;
   const score = state.score;
   const wrongList = state.queue.filter(q=>state.wrongIds.indexOf(q.id)!==-1);
-  const roundLabel = state.isReviewRound ? '復習ラウンド' : unit.name;
+
+  let contextLabel, backLabel, againLabel, againFn;
+  if(state.mode==='unit'){
+    contextLabel = getUnit(state.unitId).name;
+    backLabel = '単元一覧にもどる';
+    againLabel = 'この単元をもう一度（べつの問題で）';
+    againFn = "startUnit('"+state.unitId+"')";
+  } else if(state.mode==='level'){
+    contextLabel = LEVEL_META[state.level].label;
+    backLabel = 'レベル一覧にもどる';
+    againLabel = 'このレベルをもう一度（べつの問題で）';
+    againFn = "startLevel("+state.level+")";
+  } else {
+    contextLabel = '苦手問題の復習';
+    backLabel = 'モード選択にもどる';
+    againLabel = '苦手問題をもう一度復習する';
+    againFn = "startWeakReview()";
+  }
+  const roundLabel = state.isReviewRound ? '復習ラウンド' : contextLabel;
 
   let reviewHtml='';
   if(wrongList.length>0){
@@ -712,7 +938,7 @@ function renderResults(){
     wrongList.forEach(q=>{
       items += ''+
       '<div class="review-item">'+
-        '<div class="review-tag">'+unit.name+'</div>'+
+        '<div class="review-tag">'+unitOf(q).name+'</div>'+
         '<div class="review-sentence">'+formatDisplay(q.answer, q)+'</div>'+
         '<div class="review-explanation">'+q.explanation+'</div>'+
       '</div>';
@@ -723,14 +949,14 @@ function renderResults(){
   }
 
   let actions = '';
-  if(wrongList.length>0){
+  if(wrongList.length>0 && !state.isReviewRound){
     actions += '<button class="btn-primary full" onclick="startReview()">まちがえた問題だけ復習する（'+wrongList.length+'問）</button>';
   }
   actions += '<button class="btn-secondary full" onclick="retrySameRound()">もう一度さいしょから</button>';
-  if(!state.isReviewRound){
-    actions += '<button class="btn-secondary full" onclick="startUnit(state.unitId)">この単元をもう一度（べつの問題で）</button>';
+  if(!state.isReviewRound && (state.mode!=='weak' || readWrongBank().length>0)){
+    actions += '<button class="btn-secondary full" onclick="'+againFn+'">'+againLabel+'</button>';
   }
-  actions += '<button class="btn-ghost full" onclick="goHome()">単元一覧にもどる</button>';
+  actions += '<button class="btn-ghost full" onclick="goBack()">'+backLabel+'</button>';
 
   return ''+
   '<div class="card results-card">'+
