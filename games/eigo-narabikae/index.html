@@ -9,23 +9,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EDF1F7;
+    --bg:#EEF1F8;
     --surface:#FFFFFF;
-    --ink:#22304A;
+    --ink:#1E293F;
     --ink-soft:#5B6B85;
-    --line:#D7E0EC;
+    --line:#DEE5F0;
     --accent:#FF8A3D;
-    --accent-dark:#E06F22;
-    --accent-soft:#FFEBD9;
+    --accent-dark:#DB6318;
+    --accent-soft:#FFEEDD;
+    --accent-grad:linear-gradient(135deg,#FFA25C,#FF7A29);
     --blue:#4C6FFF;
     --blue-soft:#E9EDFF;
+    --violet:#8B6BFF;
+    --hero-grad:linear-gradient(120deg,#FF8A3D 0%,#FF6F9C 50%,#8B6BFF 100%);
     --correct:#2FAE66;
     --correct-bg:#E6F7ED;
     --incorrect:#E85D5D;
     --incorrect-bg:#FDECEC;
-    --radius-lg:26px;
+    --radius-lg:28px;
     --radius-md:16px;
     --radius-sm:10px;
+    --shadow-card:0 20px 48px -12px rgba(30,41,63,0.16), 0 2px 8px rgba(30,41,63,0.05);
+    --shadow-soft:0 6px 16px rgba(30,41,63,0.08);
     --font-display:'Zen Maru Gothic', sans-serif;
     --font-body:'Noto Sans JP', sans-serif;
   }
@@ -34,90 +39,137 @@
   body{
     min-height:100vh;
     background:
-      linear-gradient(var(--bg),var(--bg));
+      repeating-linear-gradient(
+        to bottom,
+        rgba(76,111,255,0.045) 0px,
+        rgba(76,111,255,0.045) 1px,
+        transparent 1px,
+        transparent 34px
+      ),
+      radial-gradient(ellipse 900px 500px at 12% -8%, rgba(255,138,61,0.14), transparent 60%),
+      radial-gradient(ellipse 800px 500px at 100% 0%, rgba(139,107,255,0.10), transparent 55%),
+      var(--bg);
     font-family:var(--font-body);
     color:var(--ink);
     display:flex;
     justify-content:center;
-    padding:28px 14px 60px;
+    padding:32px 14px 64px;
   }
   #app{width:100%;max-width:460px;}
 
   .card{
+    position:relative;
     background:var(--surface);
     border-radius:var(--radius-lg);
-    box-shadow:0 10px 34px rgba(34,48,74,0.09);
-    padding:30px 24px;
-    animation:cardIn .35s ease;
+    box-shadow:var(--shadow-card);
+    padding:32px 24px 26px;
+    animation:cardIn .4s cubic-bezier(.2,.8,.2,1);
+    overflow:hidden;
   }
-  @keyframes cardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .card::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:5px;
+    background:var(--hero-grad);
+  }
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
 
   /* ---------- START SCREEN ---------- */
   .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:7px;
     font-family:var(--font-display);
-    font-size:12px;
-    letter-spacing:.14em;
+    font-size:11.5px;
+    letter-spacing:.16em;
     color:var(--accent-dark);
     font-weight:700;
-    margin-bottom:6px;
+    margin-bottom:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px;height:7px;border-radius:50%;
+    background:var(--hero-grad);
+    box-shadow:0 0 0 3px var(--accent-soft);
   }
   .title{
     font-family:var(--font-display);
     font-weight:900;
-    font-size:clamp(26px,7vw,32px);
-    line-height:1.3;
+    font-size:clamp(26px,7vw,33px);
+    line-height:1.28;
     margin:0 0 14px;
+    background:linear-gradient(100deg,var(--ink) 40%, var(--accent-dark) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
   }
   .lead{
-    font-size:14.5px;
+    font-size:14px;
     line-height:1.8;
     color:var(--ink-soft);
-    margin:0 0 26px;
+    margin:0 0 24px;
   }
-  .set-list{display:flex;flex-direction:column;gap:14px;max-height:60vh;overflow-y:auto;padding-right:2px;}
+  .set-list{display:flex;flex-direction:column;gap:12px;max-height:58vh;overflow-y:auto;padding:2px 2px 2px 0;margin:0 -2px;}
   .set-card{
     all:unset;
     cursor:pointer;
-    display:block;
+    display:flex;
+    align-items:center;
+    gap:14px;
     border:1.5px solid var(--line);
+    background:var(--surface);
     border-radius:var(--radius-md);
-    padding:18px 18px 16px;
-    transition:border-color .15s ease, transform .1s ease, background .15s ease;
+    padding:14px 16px;
+    transition:border-color .18s ease, transform .15s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, background .18s ease;
   }
-  .set-card:hover{border-color:var(--accent);background:#FFFBF8;}
-  .set-card:active{transform:scale(0.98);}
-  .set-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .set-card:hover{border-color:transparent;background:#FFFBF8;box-shadow:var(--shadow-soft);transform:translateY(-2px);}
+  .set-card:active{transform:translateY(0) scale(0.98);}
+  .set-icon{
+    flex:0 0 auto;
+    width:44px;height:44px;
+    border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:21px;
+    background:var(--accent-soft);
+    box-shadow:inset 0 0 0 1px rgba(255,138,61,0.18);
+  }
+  .set-body{flex:1;min-width:0;}
+  .set-card-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap;}
   .set-num{
     font-family:var(--font-display);
     font-weight:700;
-    font-size:13px;
+    font-size:11.5px;
     color:var(--accent-dark);
     background:var(--accent-soft);
-    padding:3px 10px;
+    padding:2.5px 9px;
     border-radius:999px;
   }
   .badge{
-    font-size:12px;
+    font-size:11.5px;
     color:var(--ink-soft);
     background:var(--bg);
-    padding:3px 9px;
+    padding:2.5px 9px;
     border-radius:999px;
     font-weight:500;
   }
-  .set-title{font-family:var(--font-display);font-weight:700;font-size:17px;margin-bottom:5px;}
-  .set-tags{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:12px;}
-  .set-cta{font-family:var(--font-display);font-weight:700;font-size:13.5px;color:var(--accent-dark);}
+  .set-title{font-family:var(--font-display);font-weight:700;font-size:15.5px;margin-bottom:3px;color:var(--ink);}
+  .set-tags{font-size:12px;color:var(--ink-soft);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .set-cta{flex:0 0 auto;font-size:17px;color:var(--accent-dark);transition:transform .15s ease;}
+  .set-card:hover .set-cta{transform:translateX(3px);}
 
   /* ---------- QUIZ SCREEN ---------- */
-  .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px;}
   .home-link{
     all:unset;cursor:pointer;font-size:12px;color:var(--ink-soft);font-weight:500;
+    display:flex;align-items:center;gap:3px;
+    transition:color .15s ease, transform .15s ease;
   }
-  .home-link:hover{color:var(--accent-dark);}
+  .home-link:hover{color:var(--accent-dark);transform:translateX(-2px);}
   .round-label{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--ink-soft);}
-  .progress-dots{display:flex;gap:6px;}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block;transition:background .2s ease, transform .2s ease;}
-  .dot-current{background:var(--blue);transform:scale(1.35);}
+  .progress-dots{display:flex;gap:5px;flex:0 0 auto;}
+  .dot{width:18px;height:6px;border-radius:4px;background:var(--line);display:inline-block;transition:background .25s ease, transform .25s ease, box-shadow .25s ease;}
+  .dot-current{background:var(--hero-grad);transform:scaleY(1.25);box-shadow:0 2px 6px rgba(255,138,61,0.4);}
   .dot-correct{background:var(--correct);}
   .dot-incorrect{background:var(--incorrect);}
 
@@ -127,20 +179,23 @@
     font-weight:700;
     color:var(--blue);
     background:var(--blue-soft);
-    padding:4px 11px;
+    padding:5px 12px;
     border-radius:999px;
-    margin-bottom:18px;
+    margin-bottom:20px;
+    box-shadow:inset 0 0 0 1px rgba(76,111,255,0.12);
   }
 
   .slot-row{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
-    padding:18px 14px;
+    padding:20px 16px;
     border-radius:var(--radius-md);
-    background:repeating-linear-gradient(var(--surface),var(--surface));
+    background:
+      radial-gradient(circle at 100% 0%, rgba(76,111,255,0.05), transparent 55%),
+      var(--surface);
     border:1.5px dashed var(--line);
-    min-height:66px;
+    min-height:70px;
     align-content:flex-start;
     margin-bottom:20px;
   }
@@ -148,13 +203,13 @@
     font-family:var(--font-display);
     font-size:15px;
     font-weight:700;
-    padding:8px 14px;
+    padding:9px 15px;
     border-radius:var(--radius-sm);
-    min-height:38px;
+    min-height:40px;
     display:flex;align-items:center;justify-content:center;
   }
   .slot.empty{
-    width:44px;
+    width:46px;
     border-bottom:2.5px solid var(--line);
     background:transparent;
   }
@@ -164,20 +219,22 @@
     font-family:var(--font-display);
     font-size:15px;
     font-weight:700;
-    padding:8px 14px;
+    padding:9px 15px;
     border-radius:var(--radius-sm);
     background:var(--accent-soft);
     color:var(--accent-dark);
-    min-height:38px;
+    min-height:40px;
     display:flex;align-items:center;justify-content:center;
-    animation:popIn .18s ease;
+    box-shadow:0 2px 8px rgba(255,138,61,0.22);
+    animation:popIn .2s cubic-bezier(.3,1.4,.6,1);
+    transition:transform .12s ease, box-shadow .12s ease;
   }
-  .slot.filled:hover{background:#FFDFC2;}
+  .slot.filled:hover{background:#FFDFC2;transform:translateY(-1px);box-shadow:0 4px 10px rgba(255,138,61,0.3);}
   @keyframes popIn{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
 
   .bank-row{
     display:flex;flex-wrap:wrap;gap:9px;
-    margin-bottom:22px;
+    margin-bottom:24px;
   }
   .tile{
     all:unset;
@@ -185,14 +242,15 @@
     font-family:var(--font-display);
     font-size:15px;
     font-weight:700;
-    padding:9px 16px;
+    padding:10px 17px;
     border-radius:var(--radius-sm);
-    background:var(--bg);
+    background:var(--surface);
     border:1.5px solid var(--line);
     color:var(--ink);
-    transition:transform .1s ease, border-color .15s ease;
+    box-shadow:0 1px 3px rgba(30,41,63,0.05);
+    transition:transform .12s cubic-bezier(.3,1.4,.6,1), border-color .15s ease, box-shadow .15s ease;
   }
-  .tile:hover{border-color:var(--accent);}
+  .tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 5px 12px rgba(255,138,61,0.18);}
   .tile:active{transform:scale(.94);}
 
   .action-row{display:flex;gap:10px;}
@@ -201,20 +259,23 @@
     font-weight:700;
     font-size:14.5px;
     border-radius:999px;
-    padding:13px 18px;
+    padding:14px 18px;
     cursor:pointer;
     border:none;
-    transition:opacity .15s ease, transform .1s ease;
+    transition:opacity .15s ease, transform .12s ease, box-shadow .15s ease;
   }
-  .btn-primary{background:var(--accent);color:#fff;flex:1;}
-  .btn-primary:disabled{background:var(--line);color:var(--ink-soft);cursor:not-allowed;}
-  .btn-primary:not(:disabled):active{transform:scale(.97);}
+  .btn-primary{background:var(--accent-grad);color:#fff;flex:1;box-shadow:0 8px 18px -4px rgba(255,111,34,0.48);}
+  .btn-primary:disabled{background:var(--line);color:var(--ink-soft);cursor:not-allowed;box-shadow:none;}
+  .btn-primary:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 10px 22px -4px rgba(255,111,34,0.55);}
+  .btn-primary:not(:disabled):active{transform:scale(.97) translateY(0);}
   .btn-primary.full{width:100%;}
   .btn-secondary{background:var(--blue-soft);color:var(--blue);width:100%;}
+  .btn-secondary:hover{background:#DFE5FF;}
   .btn-secondary.full{width:100%;}
   .btn-ghost{background:transparent;color:var(--ink-soft);width:100%;border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft);}
   .btn-ghost.full{width:100%;}
-  .action-row .btn-ghost{flex:0 0 auto;}
+  .action-row .btn-ghost{flex:0 0 auto;width:auto;white-space:nowrap;}
 
   /* ---------- FEEDBACK SCREEN ---------- */
   .feedback-card{text-align:center;}
@@ -231,14 +292,15 @@
     border-radius:var(--radius-md);
     margin-bottom:18px;
   }
-  .is-correct .feedback-sentence{background:var(--correct-bg);color:var(--correct);}
-  .is-incorrect .feedback-sentence{background:var(--incorrect-bg);color:var(--incorrect);}
+  .is-correct .feedback-sentence{background:var(--correct-bg);color:var(--correct);box-shadow:inset 0 0 0 1px rgba(47,174,102,0.18);}
+  .is-incorrect .feedback-sentence{background:var(--incorrect-bg);color:var(--incorrect);box-shadow:inset 0 0 0 1px rgba(232,93,93,0.18);}
   .feedback-explanation{
     text-align:left;
     background:var(--bg);
     border-radius:var(--radius-md);
-    padding:14px 16px;
+    padding:15px 16px;
     margin-bottom:22px;
+    border:1px solid var(--line);
   }
   .exp-label{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:5px;}
   .exp-body{font-size:14px;line-height:1.75;color:var(--ink);}
@@ -247,16 +309,17 @@
   .results-card{text-align:center;}
   .results-round-label{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--ink-soft);margin-bottom:18px;}
   .score-ring{
-    width:130px;height:130px;border-radius:50%;
-    margin:0 auto 16px;
+    width:136px;height:136px;border-radius:50%;
+    margin:0 auto 18px;
     display:flex;align-items:center;justify-content:center;
-    padding:9px;
+    padding:10px;
+    box-shadow:var(--shadow-soft);
   }
   .score-ring-inner{
     width:100%;height:100%;border-radius:50%;
     background:var(--surface);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    font-family:var(--font-display);font-weight:900;font-size:30px;color:var(--ink);
+    font-family:var(--font-display);font-weight:900;font-size:32px;color:var(--ink);
   }
   .score-ring-inner span{font-size:13px;font-weight:700;color:var(--ink-soft);}
   .score-message{font-size:14.5px;color:var(--ink-soft);margin-bottom:24px;}
@@ -264,6 +327,7 @@
     font-family:var(--font-display);font-weight:700;color:var(--correct);
     background:var(--correct-bg);border-radius:var(--radius-md);
     padding:14px;margin-bottom:22px;font-size:14.5px;
+    box-shadow:inset 0 0 0 1px rgba(47,174,102,0.18);
   }
   .review-section{text-align:left;margin-bottom:24px;}
   .review-heading{font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--ink);margin-bottom:12px;}
@@ -272,7 +336,9 @@
     border-radius:var(--radius-md);
     padding:14px 16px;
     margin-bottom:10px;
+    transition:border-color .15s ease;
   }
+  .review-item:hover{border-color:var(--blue);}
   .review-tag{font-size:11.5px;font-weight:700;color:var(--blue);margin-bottom:5px;}
   .review-sentence{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);margin-bottom:7px;}
   .review-explanation{font-size:13px;line-height:1.7;color:var(--ink-soft);}
@@ -313,1312 +379,927 @@ const PROPER_NOUNS = {
   "sunday": "Sunday",
   "ms.": "Ms.",
   "mr.": "Mr.",
-  "mrs.": "Mrs."
+  "mrs.": "Mrs.",
+  "rpg games": "RPG games",
+  "kyoto": "Kyoto",
+  "april": "April",
+  "fukuoka": "Fukuoka",
+  "may 5th": "May 5th",
+  "september": "September",
+  "shohei": "Shohei",
+  "otani": "Otani",
+  "fukui": "Fukui",
+  "mike": "Mike",
+  "asia": "Asia",
+  "ken": "Ken",
+  "midori junior high school": "Midori Junior High School",
+  "kumi": "Kumi",
+  "sendai": "Sendai",
+  "italy": "Italy",
+  "midori park": "Midori Park",
+  "yamagata": "Yamagata"
 };
 
 UNITS.push({
-  id: "general-verb",
-  name: "一般動詞",
-  description: "3人称単数のsなど",
+  id: "general-verb-basic",
+  name: "一般動詞の文（基本）",
+  description: "現在形・過去形の基本文",
   questions: [
     {
-      id: "general-verb-001",
-      bank: ["plays","soccer","every","he","day","."],
-      answer: ["he","plays","soccer","every","day","."],
-      explanation: "主語が3人称単数（he）のとき、一般動詞には s がつきます。並び順は「主語→動詞→目的語→頻度を表す語句」です。",
+      id: "general-verb-basic-001",
+      bank: ["ken","runs","very","fast","."],
+      answer: ["ken","runs","very","fast","."],
+      explanation: "主語が3人称単数（Ken）のとき、一般動詞には s がつきます。並び順は「主語→動詞→様子を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "general-verb-002",
-      bank: ["a","reads","she","book","every","night","."],
-      answer: ["she","reads","a","book","every","night","."],
-      explanation: "主語が3人称単数（she）のとき、動詞readにsがつきます。並び順は「主語→動詞→目的語→時を表す語句」です。",
+      id: "general-verb-basic-002",
+      bank: ["i","went","to","the","park","with","my friends","."],
+      answer: ["i","went","to","the","park","with","my friends","."],
+      explanation: "goの過去形はwentという不規則変化です。並び順は「主語→動詞(過去形)→場所→いっしょにいた人」です。",
       alwaysCapitalize: []
     },
     {
-      id: "general-verb-003",
-      bank: ["watches","tv","after","she","dinner","."],
-      answer: ["she","watches","tv","after","dinner","."],
-      explanation: "watchのように語尾がchで終わる動詞は、3人称単数でesをつけます。並び順は「主語→動詞→目的語→時を表す語句」です。",
+      id: "general-verb-basic-003",
+      bank: ["i","run","in","the","park","."],
+      answer: ["i","run","in","the","park","."],
+      explanation: "主語がI（1人称）のとき、一般動詞はそのままの形を使います。並び順は「主語→動詞→場所を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "general-verb-004",
-      bank: ["ken","music","likes","very","much","."],
-      answer: ["ken","likes","music","very","much","."],
-      explanation: "主語が人名（3人称単数）のとき、動詞likeにsがつきます。並び順は「主語→動詞→目的語→強調の語句」です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "general-verb-005",
-      bank: ["mika","cat","has","a","cute","."],
-      answer: ["mika","has","a","cute","cat","."],
-      explanation: "haveは3人称単数でhasに形が変わる特別な動詞です。並び順は「主語→動詞→目的語（冠詞＋形容詞＋名詞）」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "general-verb-006",
-      bank: ["goes","he","school","to","bike","by","."],
-      answer: ["he","goes","to","school","by","bike","."],
-      explanation: "goは3人称単数でgoesになります。並び順は「主語→動詞→場所→手段を表す語句」です。",
+      id: "general-verb-basic-004",
+      bank: ["i","went","to","kyoto","in","april","."],
+      answer: ["i","went","to","kyoto","in","april","."],
+      explanation: "goの過去形はwentという不規則変化です。並び順は「主語→動詞(過去形)→場所→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "general-verb-007",
-      bank: ["studies","hard","she","math","every","day","."],
-      answer: ["she","studies","math","hard","every","day","."],
-      explanation: "語尾が子音字+yで終わる動詞studyは、3人称単数でyをiに変えてesをつけます。並び順は「主語→動詞→目的語→様態→頻度を表す語句」です。",
+      id: "general-verb-basic-005",
+      bank: ["the","party","starts","at","eleven","."],
+      answer: ["the","party","starts","at","eleven","."],
+      explanation: "主語が3人称単数（the party）のとき、一般動詞には s がつきます。並び順は「主語→動詞→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "general-verb-008",
-      bank: ["play","we","tennis","every","weekend","."],
-      answer: ["we","play","tennis","every","weekend","."],
-      explanation: "主語がwe（複数）のとき、一般動詞にsはつきません。並び順は「主語→動詞→目的語→頻度を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-009",
-      bank: ["do","any","sports","you","like","?"],
-      answer: ["do","you","like","any","sports","?"],
-      explanation: "主語がyouの一般動詞の疑問文はdoを文頭に置きます。並び順は「do→主語→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-010",
-      bank: ["does","play","tom","tennis","well","?"],
-      answer: ["does","tom","play","tennis","well","?"],
-      explanation: "主語が3人称単数の疑問文はdoesを使い、動詞は原形に戻します。並び順は「does→主語→動詞→目的語→様態を表す語句」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "general-verb-011",
-      bank: ["does","not","play","he","soccer","."],
-      answer: ["he","does","not","play","soccer","."],
-      explanation: "3人称単数の否定文はdoes notを動詞の前に置き、動詞は原形になります。並び順は「主語→does not→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-012",
-      bank: ["like","i","japanese","food","very","much","."],
-      answer: ["i","like","japanese","food","very","much","."],
-      explanation: "主語がI（1人称）のとき、一般動詞にsはつきません。並び順は「主語→動詞→目的語→強調の語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-013",
-      bank: ["speaks","english","well","she","very","."],
-      answer: ["she","speaks","english","very","well","."],
-      explanation: "主語が3人称単数（she）のとき、動詞speakにsがつきます。並び順は「主語→動詞→目的語→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-014",
-      bank: ["teaches","math","mr.","smith","us","."],
-      answer: ["mr.","smith","teaches","us","math","."],
-      explanation: "teachのように語尾がchで終わる動詞は、3人称単数でesをつけます。並び順は「主語→動詞→目的語（人）→目的語（もの）」です。",
-      alwaysCapitalize: ["smith"]
-    },
-    {
-      id: "general-verb-015",
-      bank: ["do","not","we","homework","our","do","."],
-      answer: ["we","do","not","do","our","homework","."],
-      explanation: "主語weの否定文はdo notを動詞の前に置きます。並び順は「主語→do not→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-016",
-      bank: ["runs","fast","he","very","park","in","the","."],
-      answer: ["he","runs","very","fast","in","the","park","."],
-      explanation: "主語が3人称単数（he）のとき、動詞runにsがつきます。並び順は「主語→動詞→様態→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-017",
-      bank: ["it","rains","a","lot","japan","in","."],
-      answer: ["it","rains","a","lot","in","japan","."],
-      explanation: "天候を表すitは3人称単数扱いなので、動詞rainにsがつきます。並び順は「主語→動詞→程度→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-018",
-      bank: ["you","and","play","i","games","."],
-      answer: ["you","and","i","play","games","."],
-      explanation: "youとIをandで結んだ主語は複数扱いになるので、動詞にsはつきません。並び順は「主語→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-019",
-      bank: ["washes","dog","her","every","she","week","."],
-      answer: ["she","washes","her","dog","every","week","."],
-      explanation: "washのように語尾がshで終わる動詞は、3人称単数でesをつけます。並び順は「主語→動詞→目的語→頻度を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-020",
-      bank: ["they","breakfast","eat","every","morning","early","."],
-      answer: ["they","eat","breakfast","early","every","morning","."],
-      explanation: "主語がthey（複数）のとき、一般動詞にsはつきません。並び順は「主語→動詞→目的語→様態→頻度を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-021",
-      bank: ["comes","tokyo","from","she","japan","in","."],
-      answer: ["she","comes","from","tokyo","in","japan","."],
-      explanation: "主語が3人称単数（she）のとき、動詞comeにsがつきます。並び順は「主語→動詞→場所を表す語句（詳しい場所→広い場所）」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-022",
-      bank: ["does","tom","what","study","school","after","?"],
-      answer: ["what","does","tom","study","after","school","?"],
-      explanation: "疑問詞whatを使う3人称単数の疑問文は、whatを文頭に置きdoesを続けます。並び順は「what→does→主語→動詞→時を表す語句」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "general-verb-023",
-      bank: ["does","not","like","she","tea","."],
-      answer: ["she","does","not","like","tea","."],
-      explanation: "3人称単数の否定文はdoes notを動詞の前に置き、動詞は原形になります。並び順は「主語→does not→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-024",
-      bank: ["cooks","dinner","father","my","every","sunday","."],
-      answer: ["my","father","cooks","dinner","every","sunday","."],
-      explanation: "my fatherは3人称単数扱いなので、動詞cookにsがつきます。並び順は「主語→動詞→目的語→頻度を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-025",
-      bank: ["study","we","english","hard","classroom","in","the","."],
-      answer: ["we","study","english","hard","in","the","classroom","."],
-      explanation: "主語がwe（複数）のとき、動詞にsはつきません。並び順は「主語→動詞→目的語→様態→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-026",
-      bank: ["has","she","lot","of","books","a","."],
-      answer: ["she","has","a","lot","of","books","."],
-      explanation: "haveは3人称単数でhasに変わります。並び順は「主語→動詞→目的語（数量表現＋名詞）」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-027",
-      bank: ["do","play","when","you","tennis","?"],
-      answer: ["when","do","you","play","tennis","?"],
-      explanation: "疑問詞whenを使う疑問文は、whenを文頭に置きdoを続けます。並び順は「when→do→主語→動詞→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-028",
-      bank: ["brother","my","piano","the","plays","well","."],
-      answer: ["my","brother","plays","the","piano","well","."],
-      explanation: "my brotherは3人称単数扱いなので、動詞playにsがつきます。並び順は「主語→動詞→目的語→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "general-verb-029",
-      bank: ["ms.","green","science","us","teaches","."],
-      answer: ["ms.","green","teaches","us","science","."],
-      explanation: "teachのように語尾がchで終わる動詞は、3人称単数でesをつけます。並び順は「主語→動詞→目的語（人）→目的語（もの）」です。",
-      alwaysCapitalize: ["green"]
-    },
-    {
-      id: "general-verb-030",
-      bank: ["do","not","play","they","video","games","."],
-      answer: ["they","do","not","play","video","games","."],
-      explanation: "主語theyの否定文はdo notを動詞の前に置きます。並び順は「主語→do not→動詞→目的語」です。",
+      id: "general-verb-basic-006",
+      bank: ["my sister","lives","in","fukuoka","."],
+      answer: ["my sister","lives","in","fukuoka","."],
+      explanation: "主語が3人称単数（my sister）のとき、一般動詞には s がつきます。並び順は「主語→動詞→場所を表す語句」です。",
       alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "be-negative",
-  name: "be動詞の否定文",
-  description: "is/am/are + not",
+  id: "be-verb",
+  name: "be動詞の文",
+  description: "主語+be動詞+補語（形容詞・名詞）",
   questions: [
     {
-      id: "be-negative-001",
-      bank: ["question","this","is","not","difficult","."],
-      answer: ["this","question","is","not","difficult","."],
-      explanation: "be動詞の否定文は、be動詞のすぐあとに not を置きます。「主語→be動詞→not→形容詞」の順になります。",
+      id: "be-verb-001",
+      bank: ["my","friends","are","kind","."],
+      answer: ["my","friends","are","kind","."],
+      explanation: "主語が複数（my friends）のとき、be動詞は are を使います。「主語→be動詞→形容詞」の順になります。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-002",
-      bank: ["i","am","not","hungry","this","morning","."],
-      answer: ["i","am","not","hungry","this","morning","."],
-      explanation: "主語が I のときは am を使います。「主語→am→not→形容詞→修飾語」の順で否定文を作ります。",
+      id: "be-verb-002",
+      bank: ["my","soccer ball","is","from","my","grandmother","."],
+      answer: ["my","soccer ball","is","from","my","grandmother","."],
+      explanation: "主語が単数（my soccer ball）のとき、be動詞は is を使います。「主語→be動詞→from+人」の順で出どころを表します。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-003",
-      bank: ["you","are","not","late","for","school","."],
-      answer: ["you","are","not","late","for","school","."],
-      explanation: "主語が you のときは are を使います。「主語→are→not→形容詞→前置詞句」の順になります。",
+      id: "be-verb-003",
+      bank: ["that","cat","is","so","cute","."],
+      answer: ["that","cat","is","so","cute","."],
+      explanation: "主語が単数（that cat）なので be動詞は is になります。「主語→be動詞→so+形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-004",
-      bank: ["he","is","not","busy","today","."],
-      answer: ["he","is","not","busy","today","."],
-      explanation: "主語が he のような3人称単数のときは is を使います。「主語→is→not→形容詞→修飾語」の順です。",
+      id: "be-verb-004",
+      bank: ["he","is","a","famous","scientist","."],
+      answer: ["he","is","a","famous","scientist","."],
+      explanation: "主語が3人称単数（he）のとき、be動詞は is です。補語が名詞のときは a をつけて表します。「主語→be動詞→a+形容詞+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-005",
-      bank: ["she","is","not","a","teacher","."],
-      answer: ["she","is","not","a","teacher","."],
-      explanation: "be動詞のあとに名詞が続く文でも not の位置は変わりません。「主語→is→not→名詞」の順になります。",
+      id: "be-verb-005",
+      bank: ["my","birthday","is","may 5th","."],
+      answer: ["my","birthday","is","may 5th","."],
+      explanation: "主語が単数（my birthday）のとき、be動詞は is を使います。「主語→be動詞→日付（名詞）」の順で表します。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-006",
-      bank: ["it","is","not","expensive","at","all","."],
-      answer: ["it","is","not","expensive","at","all","."],
-      explanation: "主語が it のときも is を使います。「主語→is→not→形容詞→修飾語」の語順で否定文を作ります。",
+      id: "be-verb-006",
+      bank: ["this","is","my","weekend","schedule","."],
+      answer: ["this","is","my","weekend","schedule","."],
+      explanation: "this を主語にすると be動詞は is になります。「主語→be動詞→my+名詞+名詞」の順で補語（名詞）を続けます。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-007",
-      bank: ["we","are","not","tired","after","the","game","."],
-      answer: ["we","are","not","tired","after","the","game","."],
-      explanation: "主語が we のときは are を使います。「主語→are→not→形容詞→前置詞句」の順で否定文になります。",
+      id: "be-verb-007",
+      bank: ["our","sports day","was","in","september","."],
+      answer: ["our","sports day","was","in","september","."],
+      explanation: "過去のことを言うときは be動詞を was（単数）にします。「主語→be動詞(was)→in+月」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-008",
-      bank: ["they","are","not","students","of","this","school","."],
-      answer: ["they","are","not","students","of","this","school","."],
-      explanation: "主語が they のときも are を使います。「主語→are→not→名詞→前置詞句」の順で否定文を作ります。",
+      id: "be-verb-008",
+      bank: ["that","is","a","good","idea","."],
+      answer: ["that","is","a","good","idea","."],
+      explanation: "that を主語にすると be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+形容詞+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-009",
-      bank: ["ken","is","not","kind","to","animals","."],
-      answer: ["ken","is","not","kind","to","animals","."],
-      explanation: "人名は3人称単数として扱うため is を使います。「主語→is→not→形容詞→前置詞句」の語順です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "be-negative-010",
-      bank: ["mika","is","not","free","now","."],
-      answer: ["mika","is","not","free","now","."],
-      explanation: "主語が人名（3人称単数）のときも is を使います。「主語→is→not→形容詞→修飾語」の順になります。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "be-negative-011",
-      bank: ["this","is","not","my","bag","."],
-      answer: ["this","is","not","my","bag","."],
-      explanation: "this を主語にした否定文でも is のあとに not を置きます。「主語→is→not→所有格→名詞」の順です。",
+      id: "be-verb-009",
+      bank: ["it","is","rainy","today","."],
+      answer: ["it","is","rainy","today","."],
+      explanation: "天気を言うときは it を主語にし、be動詞は is を使います。「主語→be動詞→形容詞→today」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-012",
-      bank: ["that","is","not","his","car","."],
-      answer: ["that","is","not","his","car","."],
-      explanation: "that も単数扱いなので is を使います。「主語→is→not→所有格→名詞」の順で否定文を作ります。",
+      id: "be-verb-010",
+      bank: ["my","mother","is","busy","."],
+      answer: ["my","mother","is","busy","."],
+      explanation: "主語が単数（my mother）のとき、be動詞は is を使います。「主語→be動詞→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-013",
-      bank: ["these","are","not","new","books","."],
-      answer: ["these","are","not","new","books","."],
-      explanation: "these は複数扱いなので are を使います。「主語→are→not→形容詞→名詞」の順になります。",
+      id: "be-verb-011",
+      bank: ["my","hero","is","shohei","otani","."],
+      answer: ["my","hero","is","shohei","otani","."],
+      explanation: "主語が単数（my hero）のとき、be動詞は is を使います。「主語→be動詞→人名（名詞）」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-014",
-      bank: ["those","are","not","my","pens","."],
-      answer: ["those","are","not","my","pens","."],
-      explanation: "those も複数扱いなので are を使います。「主語→are→not→所有格→名詞」の順で否定文を作ります。",
+      id: "be-verb-012",
+      bank: ["my","father","is","a","teacher","."],
+      answer: ["my","father","is","a","teacher","."],
+      explanation: "主語が単数（my father）のとき、be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-015",
-      bank: ["my","father","is","not","a","doctor","."],
-      answer: ["my","father","is","not","a","doctor","."],
-      explanation: "主語が my father のような3人称単数の名詞のときも is を使います。「主語→is→not→名詞」の順です。",
+      id: "be-verb-013",
+      bank: ["my","brother","is","very","active","."],
+      answer: ["my","brother","is","very","active","."],
+      explanation: "主語が単数（my brother）のとき、be動詞は is を使います。「主語→be動詞→very+形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-016",
-      bank: ["her","sisters","are","not","tall","."],
-      answer: ["her","sisters","are","not","tall","."],
-      explanation: "主語が her sisters のように複数のときは are を使います。「主語→are→not→形容詞」の順になります。",
+      id: "be-verb-014",
+      bank: ["i","felt","very","sad","."],
+      answer: ["i","felt","very","sad","."],
+      explanation: "feel（過去形 felt）は be動詞のように「〜と感じる」を表す動詞です。「主語→felt→very+形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-017",
-      bank: ["we","are","not","in","the","classroom","."],
-      answer: ["we","are","not","in","the","classroom","."],
-      explanation: "場所を表す語句が続く否定文でも not は be動詞の直後に置きます。「主語→are→not→場所」の順です。",
+      id: "be-verb-015",
+      bank: ["my","grandfather","looks","young","."],
+      answer: ["my","grandfather","looks","young","."],
+      explanation: "look（3人称単数で looks）は be動詞のように「〜に見える」を表す動詞です。「主語→looks→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-018",
-      bank: ["tom","is","not","at","home","now","."],
-      answer: ["tom","is","not","at","home","now","."],
-      explanation: "人名主語で場所を表す否定文です。「主語→is→not→場所→修飾語」の順になります。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "be-negative-019",
-      bank: ["i","am","not","a","member","of","this","club","."],
-      answer: ["i","am","not","a","member","of","this","club","."],
-      explanation: "主語が I の否定文に説明を加える形です。「主語→am→not→名詞句」の順で表します。",
+      id: "be-verb-016",
+      bank: ["our","team","is","strong","."],
+      answer: ["our","team","is","strong","."],
+      explanation: "主語が複数（our team）でも1つの集団を表すときは is を使います。「主語→be動詞→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-020",
-      bank: ["you","are","not","wrong","about","this","."],
-      answer: ["you","are","not","wrong","about","this","."],
-      explanation: "主語が you の否定文です。「主語→are→not→形容詞→前置詞句」の順で「あなたは間違っていない」を表します。",
+      id: "be-verb-017",
+      bank: ["my","favorite","food","is","spaghetti","."],
+      answer: ["my","favorite","food","is","spaghetti","."],
+      explanation: "主語が単数（my favorite food）のとき、be動詞は is を使います。「主語→be動詞→名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-021",
-      bank: ["this","cat","is","not","cute","."],
-      answer: ["this","cat","is","not","cute","."],
-      explanation: "主語が this cat のような単数名詞のときは is を使います。「主語→is→not→形容詞」の順です。",
+      id: "be-verb-018",
+      bank: ["her","new","bike","is","very","good","."],
+      answer: ["her","new","bike","is","very","good","."],
+      explanation: "主語が単数（her new bike）のとき、be動詞は is を使います。「主語→be動詞→very+形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-022",
-      bank: ["these","questions","are","not","easy","."],
-      answer: ["these","questions","are","not","easy","."],
-      explanation: "主語が複数名詞のときは are を使います。「主語→are→not→形容詞」の順で否定文を作ります。",
+      id: "be-verb-019",
+      bank: ["the","moon","is","beautiful","at night","."],
+      answer: ["the","moon","is","beautiful","at night","."],
+      explanation: "主語が単数（the moon）のとき、be動詞は is を使います。「主語→be動詞→形容詞→at night」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-023",
-      bank: ["mr.","smith","is","not","angry","."],
-      answer: ["mr.","smith","is","not","angry","."],
-      explanation: "Mr. のような敬称がついた人名も3人称単数として is を使います。「主語→is→not→形容詞」の順です。",
-      alwaysCapitalize: ["smith"]
-    },
-    {
-      id: "be-negative-024",
-      bank: ["ms.","brown","is","not","from","america","."],
-      answer: ["ms.","brown","is","not","from","america","."],
-      explanation: "出身を表す否定文でも not は is の直後に置きます。「主語→is→not→前置詞句」の順になります。",
-      alwaysCapitalize: ["brown"]
-    },
-    {
-      id: "be-negative-025",
-      bank: ["the","movie","is","not","interesting","."],
-      answer: ["the","movie","is","not","interesting","."],
-      explanation: "主語が the movie のような物のときも is を使います。「主語→is→not→形容詞」の順で否定文になります。",
+      id: "be-verb-020",
+      bank: ["he","is","a","popular","singer","."],
+      answer: ["he","is","a","popular","singer","."],
+      explanation: "主語が3人称単数（he）のとき、be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+形容詞+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-026",
-      bank: ["the","stores","are","not","open","on","sunday","."],
-      answer: ["the","stores","are","not","open","on","sunday","."],
-      explanation: "複数主語 the stores には are を使います。「主語→are→not→形容詞→前置詞句」の順です。",
+      id: "be-verb-021",
+      bank: ["plastic","is","a","big","problem","."],
+      answer: ["plastic","is","a","big","problem","."],
+      explanation: "主語が単数（plastic）のとき、be動詞は is を使います。「主語→be動詞→a+形容詞+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-027",
-      bank: ["i","am","not","good","at","math","."],
-      answer: ["i","am","not","good","at","math","."],
-      explanation: "「〜が得意ではない」も be動詞の否定文で表します。「主語→am→not→形容詞→前置詞句」の順です。",
+      id: "be-verb-022",
+      bank: ["it","sounds","difficult","."],
+      answer: ["it","sounds","difficult","."],
+      explanation: "sound（3人称単数で sounds）は be動詞のように「〜に聞こえる」を表す動詞です。「主語→sounds→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-028",
-      bank: ["he","is","not","a","good","cook","."],
-      answer: ["he","is","not","a","good","cook","."],
-      explanation: "名詞句を否定する文でも not の位置は変わりません。「主語→is→not→名詞句」の順になります。",
+      id: "be-verb-023",
+      bank: ["that","is","a","wonderful","old","house","."],
+      answer: ["that","is","a","wonderful","old","house","."],
+      explanation: "that を主語にすると be動詞は is です。形容詞が2つ続くときの語順に注意します。「主語→be動詞→a+形容詞+形容詞+名詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-029",
-      bank: ["we","are","not","ready","for","the","test","."],
-      answer: ["we","are","not","ready","for","the","test","."],
-      explanation: "「〜の準備ができていない」も be動詞の否定文です。「主語→are→not→形容詞→前置詞句」の順です。",
+      id: "be-verb-024",
+      bank: ["he","is","smart","and","cool","."],
+      answer: ["he","is","smart","and","cool","."],
+      explanation: "主語が3人称単数（he）のとき、be動詞は is を使います。2つの形容詞は and でつなぎます。「主語→be動詞→形容詞→and→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "be-negative-030",
-      bank: ["these","shoes","are","not","cheap","."],
-      answer: ["these","shoes","are","not","cheap","."],
-      explanation: "主語が複数名詞 these shoes のときは are を使います。「主語→are→not→形容詞」の順で否定文になります。",
+      id: "be-verb-025",
+      bank: ["my","town","is","famous","for","soba","."],
+      answer: ["my","town","is","famous","for","soba","."],
+      explanation: "主語が単数（my town）のとき、be動詞は is を使います。「主語→be動詞→famous→for+名詞」の順で理由を表します。",
       alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "question-words",
-  name: "疑問詞",
-  description: "what/who/when/where/why/howなど",
+  id: "general-verb-advanced",
+  name: "一般動詞の文（応用）",
+  description: "目的語や時を表す語句を含む文",
   questions: [
     {
-      id: "question-words-001",
-      bank: ["do","you","sports","like","what","?"],
-      answer: ["what","sports","do","you","like","?"],
-      explanation: "疑問詞で始まる疑問文は「疑問詞(+名詞)→do→主語→動詞の原形」の順に並びます。",
+      id: "general-verb-advanced-001",
+      bank: ["i","practice","soccer","."],
+      answer: ["i","practice","soccer","."],
+      explanation: "一般動詞practiceは「~を練習する」という意味です。並び順は「主語→動詞→目的語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-002",
-      bank: ["is","that","tall","who","girl","?"],
-      answer: ["who","is","that","tall","girl","?"],
-      explanation: "「誰ですか」とたずねるときはwhoを文頭に置き、その後にbe動詞と主語を続けます。語順は「who→be動詞→主語→...」です。",
+      id: "general-verb-advanced-002",
+      bank: ["i","get","up","at","five","."],
+      answer: ["i","get","up","at","five","."],
+      explanation: "get upで「起きる」という意味の動詞句になります。並び順は「主語→動詞句→時刻を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-003",
-      bank: ["do","when","homework","your","you","do","?"],
-      answer: ["when","do","you","do","your","homework","?"],
-      explanation: "時をたずねるwhenは文頭に置き、一般動詞の疑問文と同様doを主語の前に続けます。「when→do→主語→動詞→目的語」の順です。",
+      id: "general-verb-advanced-003",
+      bank: ["i","want","a","new","bike","."],
+      answer: ["i","want","a","new","bike","."],
+      explanation: "wantは「~がほしい」という意味の一般動詞です。並び順は「主語→動詞→目的語(冠詞＋形容詞＋名詞)」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-004",
-      bank: ["live","where","your","do","parents","?"],
-      answer: ["where","do","your","parents","live","?"],
-      explanation: "場所をたずねるときはwhereを文頭に置きます。一般動詞の疑問文なので「where→do→主語→動詞」の順に並びます。",
+      id: "general-verb-advanced-004",
+      bank: ["many","children","visit","the","museum","."],
+      answer: ["many","children","visit","the","museum","."],
+      explanation: "主語many childrenは複数なので動詞visitにsはつきません。並び順は「主語→動詞→目的語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-005",
-      bank: ["why","tired","are","you","so","?"],
-      answer: ["why","are","you","so","tired","?"],
-      explanation: "理由をたずねるwhyは文頭に置き、be動詞の疑問文の語順を続けます。「why→be動詞→主語→補語」の順になります。",
+      id: "general-verb-advanced-005",
+      bank: ["i","want","to","go","to","america","."],
+      answer: ["i","want","to","go","to","america","."],
+      explanation: "「~したい」はwant to + 動詞の原形で表します。並び順は「主語→want to→動詞の原形→場所を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-006",
-      bank: ["school","to","how","go","you","do","?"],
-      answer: ["how","do","you","go","to","school","?"],
-      explanation: "方法や手段をたずねるhowは文頭に置きます。一般動詞の疑問文なので「how→do→主語→動詞→...」の順です。",
+      id: "general-verb-advanced-006",
+      bank: ["they","watch","videos","at","night","."],
+      answer: ["they","watch","videos","at","night","."],
+      explanation: "主語theyは複数なので動詞watchにsはつきません。並び順は「主語→動詞→目的語→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-007",
-      bank: ["is","this","new","book","whose","?"],
-      answer: ["whose","new","book","is","this","?"],
-      explanation: "「誰の〜」と持ち主をたずねるときはwhoseを名詞の前に置き文頭にします。「whose+名詞→be動詞→主語」の順になります。",
+      id: "general-verb-advanced-007",
+      bank: ["i","sometimes","eat","fried chicken","."],
+      answer: ["i","sometimes","eat","fried chicken","."],
+      explanation: "sometimesのような頻度を表す副詞は一般動詞の前に置きます。並び順は「主語→頻度を表す語句→動詞→目的語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-008",
-      bank: ["books","many","you","how","have","do","?"],
-      answer: ["how","many","books","do","you","have","?"],
-      explanation: "数をたずねるときはhow manyの後に複数名詞を置き、一般動詞の疑問文を続けます。「how many+名詞→do→主語→動詞」の順です。",
+      id: "general-verb-advanced-008",
+      bank: ["we","play","basketball","in","the","gym","."],
+      answer: ["we","play","basketball","in","the","gym","."],
+      explanation: "play + スポーツ名で「~をする」という意味になります。並び順は「主語→動詞→目的語→場所を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-009",
-      bank: ["is","water","much","this","how","?"],
-      answer: ["how","much","is","this","water","?"],
-      explanation: "値段や量をたずねるときはhow muchを使います。be動詞の疑問文では「how much→be動詞→主語」の順に並びます。",
+      id: "general-verb-advanced-009",
+      bank: ["saori","studies","english","very","hard","."],
+      answer: ["saori","studies","english","very","hard","."],
+      explanation: "主語が3人称単数（Saori）のとき、一般動詞studyはstudiesになります。並び順は「主語→動詞→目的語→程度を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-010",
-      bank: ["did","you","yesterday","what","eat","?"],
-      answer: ["what","did","you","eat","yesterday","?"],
-      explanation: "過去のことをたずねるときはdidを使います。「疑問詞→did→主語→動詞の原形」の語順になります。",
+      id: "general-verb-advanced-010",
+      bank: ["she","plays","the","piano","."],
+      answer: ["she","plays","the","piano","."],
+      explanation: "主語が3人称単数（she）のとき、一般動詞playにはsがつきます。並び順は「主語→動詞→目的語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-011",
-      bank: ["plays","tennis","well","who","so","?"],
-      answer: ["who","plays","tennis","so","well","?"],
-      explanation: "whoが主語になる疑問文では、doやdoesを使わず動詞に三人称単数のsをつけます。「who→動詞(三単現)→...」の順です。",
+      id: "general-verb-advanced-011",
+      bank: ["he","teaches","us","math","."],
+      answer: ["he","teaches","us","math","."],
+      explanation: "主語が3人称単数（he）のとき、一般動詞teachにはesがつきます。並び順は「主語→動詞→人→もの」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-012",
-      bank: ["your","when","mother's","birthday","is","?"],
-      answer: ["when","is","your","mother's","birthday","?"],
-      explanation: "誕生日など時をたずねるときはwhenを文頭に置き、be動詞の疑問文を続けます。「when→be動詞→主語」の順です。",
+      id: "general-verb-advanced-012",
+      bank: ["my father","makes","gyoza","for","my family","."],
+      answer: ["my father","makes","gyoza","for","my family","."],
+      explanation: "主語が3人称単数（my father）のとき、一般動詞makeにはsがつきます。並び順は「主語→動詞→目的語→for+人」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-013",
-      bank: ["ken","live","where","now","does","?"],
-      answer: ["where","does","ken","live","now","?"],
-      explanation: "主語が三人称単数のときはdoesを使います。「where→does→主語→動詞の原形」の語順に並びます。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "question-words-014",
-      bank: ["crying","why","baby","is","the","?"],
-      answer: ["why","is","the","baby","crying","?"],
-      explanation: "理由をたずねるwhyの文でも、be動詞の疑問文の語順「why→be動詞→主語→動詞ing」に従って並べます。",
+      id: "general-verb-advanced-013",
+      bank: ["i","respect","my","mother","."],
+      answer: ["i","respect","my","mother","."],
+      explanation: "respectは「~を尊敬する」という意味の一般動詞です。並び順は「主語→動詞→所有格＋名詞」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-015",
-      bank: ["is","how","weather","the","today","?"],
-      answer: ["how","is","the","weather","today","?"],
-      explanation: "様子や状態をたずねるhowはbe動詞の疑問文と組み合わせます。「how→be動詞→主語→...」の順に並びます。",
+      id: "general-verb-advanced-014",
+      bank: ["my uncle","likes","seafood","very","much","."],
+      answer: ["my uncle","likes","seafood","very","much","."],
+      explanation: "主語が3人称単数（my uncle）のとき、一般動詞likeにはsがつきます。並び順は「主語→動詞→目的語→程度を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-016",
-      bank: ["sisters","how","have","you","many","do","?"],
-      answer: ["how","many","sisters","do","you","have","?"],
-      explanation: "how manyの後には数えられる名詞の複数形を置きます。「how many+名詞→do→主語→動詞」の順になります。",
+      id: "general-verb-advanced-015",
+      bank: ["we","cooked","curry and rice","at","our school camp","."],
+      answer: ["we","cooked","curry and rice","at","our school camp","."],
+      explanation: "cookの過去形はcookedという規則変化です。並び順は「主語→動詞(過去形)→目的語→場所を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-017",
-      bank: ["want","you","what","to","eat","do","?"],
-      answer: ["what","do","you","want","to","eat","?"],
-      explanation: "「何を〜したいか」をたずねるときはwhatを文頭に置きます。一般動詞の疑問文なので「what→do→主語→動詞」の順です。",
+      id: "general-verb-advanced-016",
+      bank: ["i","am going to","visit","fukui","next week","."],
+      answer: ["i","am going to","visit","fukui","next week","."],
+      explanation: "「~する予定だ」はbe going to + 動詞の原形で表します。並び順は「主語→am going to→動詞の原形→目的語→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-018",
-      bank: ["did","study","when","math","you","?"],
-      answer: ["when","did","you","study","math","?"],
-      explanation: "過去の出来事の時をたずねるときはwhenとdidを使います。「when→did→主語→動詞の原形→目的語」の順です。",
+      id: "general-verb-advanced-017",
+      bank: ["he","reads","comic books","in","his","free time","."],
+      answer: ["he","reads","comic books","in","his","free time","."],
+      explanation: "主語が3人称単数（he）のとき、一般動詞readにはsがつきます。並び順は「主語→動詞→目的語→in his free time」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-019",
-      bank: ["is","picture","who","in","this","?"],
-      answer: ["who","is","in","this","picture","?"],
-      explanation: "「誰が写っているか」をたずねるときはwhoを主語として使い、be動詞を続けます。「who→be動詞→前置詞句」の順です。",
+      id: "general-verb-advanced-018",
+      bank: ["i","am","going to","stay","here","for","a week","."],
+      answer: ["i","am","going to","stay","here","for","a week","."],
+      explanation: "「~するつもりだ」はbe going to + 動詞の原形で表します。並び順は「主語→am going to→動詞の原形→場所→期間を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-020",
-      bank: ["milk","much","how","need","we","do","?"],
-      answer: ["how","much","milk","do","we","need","?"],
-      explanation: "数えられない名詞の量をたずねるときはhow muchを使います。「how much+名詞→do→主語→動詞」の順に並びます。",
+      id: "general-verb-advanced-019",
+      bank: ["i","read","a","newspaper","this","morning","."],
+      answer: ["i","read","a","newspaper","this","morning","."],
+      explanation: "readの過去形は原形と同じ形ですが発音が変わる不規則変化です。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-021",
-      bank: ["shoes","whose","new","these","are","?"],
-      answer: ["whose","new","shoes","are","these","?"],
-      explanation: "持ち主をたずねるwhoseは名詞の前に置いて文頭にします。「whose+名詞→be動詞→主語」の語順になります。",
+      id: "general-verb-advanced-020",
+      bank: ["i","have","two","books","."],
+      answer: ["i","have","two","books","."],
+      explanation: "haveは「~を持っている」という意味の一般動詞です。並び順は「主語→動詞→数量＋名詞」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-022",
-      bank: ["did","see","who","you","there","?"],
-      answer: ["who","did","you","see","there","?"],
-      explanation: "過去に「誰を見たか」をたずねるときはwhoとdidを使います。「who→did→主語→動詞の原形」の順に並びます。",
+      id: "general-verb-advanced-021",
+      bank: ["i","have","a lot of","homework","today","."],
+      answer: ["i","have","a lot of","homework","today","."],
+      explanation: "a lot ofで「たくさんの」という意味になります。並び順は「主語→動詞→数量＋名詞→時を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-023",
-      bank: ["why","so","late","was","he","today","?"],
-      answer: ["why","was","he","so","late","today","?"],
-      explanation: "過去の理由をたずねるときはwhyとbe動詞の過去形wasを使います。「why→be動詞(過去)→主語→補語」の順です。",
+      id: "general-verb-advanced-022",
+      bank: ["a","boy","found","a","small","dog","in the park","."],
+      answer: ["a","boy","found","a","small","dog","in the park","."],
+      explanation: "findの過去形はfoundという不規則変化です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)→場所を表す語句」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-024",
-      bank: ["mika","do","this","how","word","spell","you","?"],
-      answer: ["how","do","you","spell","this","word","mika","?"],
-      explanation: "つづり方をたずねるときもhowを文頭に置きます。呼びかけの名前は文末に置き「how→do→主語→動詞→目的語」が基本語順です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "question-words-025",
-      bank: ["your","teacher","who","english","is","?"],
-      answer: ["who","is","your","english","teacher","?"],
-      explanation: "「誰が〜ですか」をたずねる文では、whoの後にbe動詞、そして主語を続けます。「who→be動詞→主語」の順になります。",
+      id: "general-verb-advanced-023",
+      bank: ["the","dream","changed","my","life","."],
+      answer: ["the","dream","changed","my","life","."],
+      explanation: "changeの過去形はchangedという規則変化です。並び順は「主語→動詞(過去形)→所有格＋名詞」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-026",
-      bank: ["did","how","get","school","to","you","?"],
-      answer: ["how","did","you","get","to","school","?"],
-      explanation: "過去の手段をたずねるときはhowとdidを組み合わせます。「how→did→主語→動詞の原形→...」の順に並びます。",
+      id: "general-verb-advanced-024",
+      bank: ["i","had","a","great","experience","."],
+      answer: ["i","had","a","great","experience","."],
+      explanation: "haveの過去形はhadという不規則変化です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)」です。",
       alwaysCapitalize: []
     },
     {
-      id: "question-words-027",
-      bank: ["students","are","many","there","how","in","class","the","?"],
-      answer: ["how","many","students","are","there","in","the","class","?"],
-      explanation: "there is/areの文でも数をたずねるときはhow manyを使います。「how many+名詞→be動詞→there→場所」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "question-words-028",
-      bank: ["want","why","study","japanese","you","do","to","?"],
-      answer: ["why","do","you","want","to","study","japanese","?"],
-      explanation: "理由をたずねるwhyでも一般動詞の疑問文の語順を使います。「why→do→主語→動詞→...」が基本の並びです。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "question-words-029",
-      bank: ["is","dog","tom","whose","that","?"],
-      answer: ["whose","dog","is","that","tom","?"],
-      explanation: "持ち主をたずねるwhoseの後に名詞を置き文頭にします。呼びかけの名前は文末に置き「whose+名詞→be動詞→主語」の順です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "question-words-030",
-      bank: ["you","when","japan","did","come","to","?"],
-      answer: ["when","did","you","come","to","japan","?"],
-      explanation: "過去に「いつ来たか」をたずねるときはwhenとdidを使います。「when→did→主語→動詞の原形→場所」の順に並びます。",
+      id: "general-verb-advanced-025",
+      bank: ["okinawa","has","many","beautiful","beaches","."],
+      answer: ["okinawa","has","many","beautiful","beaches","."],
+      explanation: "主語が3人称単数（Okinawa）のとき、haveはhasになります。並び順は「主語→動詞→目的語(数量＋形容詞＋名詞)」です。",
       alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "present-progressive",
-  name: "現在進行形",
-  description: "be動詞+動詞ing",
+  id: "svoo-svoc",
+  name: "文型（give型・call型）",
+  description: "「主語+動詞+人+もの」「主語+動詞+目的語+補語」の文",
   questions: [
     {
-      id: "present-progressive-001",
-      bank: ["is","studying","she","english","now","."],
-      answer: ["she","is","studying","english","now","."],
-      explanation: "現在進行形は「be動詞+動詞ing」の形。「主語→be動詞→動詞ing→目的語→今を表す語」の順です。",
+      id: "svoo-svoc-001",
+      bank: ["i'll","give","you","some","cookies","."],
+      answer: ["i'll","give","you","some","cookies","."],
+      explanation: "give型（SVOO）の文です。並び順は「主語→動詞→目的語(人)→目的語(もの)」です。",
       alwaysCapitalize: []
     },
     {
-      id: "present-progressive-002",
-      bank: ["am","i","reading","book","a","now","."],
-      answer: ["i","am","reading","a","book","now","."],
-      explanation: "主語がIのとき、be動詞はamを使います。並び順は「主語→am→動詞ing→目的語→今を表す語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-003",
-      bank: ["are","they","playing","soccer","park","the","in","."],
-      answer: ["they","are","playing","soccer","in","the","park","."],
-      explanation: "主語が複数（they）のとき、be動詞はareを使います。並び順は「主語→are→動詞ing→目的語→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-004",
-      bank: ["is","running","he","very","fast","."],
-      answer: ["he","is","running","very","fast","."],
-      explanation: "runのように語尾が子音字+短母音で終わる動詞は、nを重ねてingをつけます。並び順は「主語→be動詞→動詞ing→様態を表す語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-005",
-      bank: ["we","are","making","cake","a","."],
-      answer: ["we","are","making","a","cake","."],
-      explanation: "主語がwe（複数）のとき、be動詞はareを使います。並び順は「主語→be動詞→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-006",
-      bank: ["ken","is","watching","tv","now","."],
-      answer: ["ken","is","watching","tv","now","."],
-      explanation: "主語が3人称単数（ken）のとき、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語→今を表す語」です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "present-progressive-007",
-      bank: ["is","not","she","sleeping","now","."],
-      answer: ["she","is","not","sleeping","now","."],
-      explanation: "現在進行形の否定文はbe動詞のあとにnotを置きます。並び順は「主語→be動詞→not→動詞ing→今を表す語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-008",
-      bank: ["are","you","doing","what","now","?"],
-      answer: ["what","are","you","doing","now","?"],
-      explanation: "疑問詞whatを使う進行形の疑問文は、whatを文頭に置きbe動詞を続けます。並び順は「what→be動詞→主語→動詞ing」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-009",
-      bank: ["writing","is","letter","mika","a","."],
-      answer: ["mika","is","writing","a","letter","."],
-      explanation: "主語が3人称単数（mika）のとき、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "present-progressive-010",
-      bank: ["is","raining","hard","it","outside","."],
-      answer: ["it","is","raining","hard","outside","."],
-      explanation: "天候を表すitを主語にするときも、be動詞はisを使います。並び順は「主語→is→動詞ing→様態を表す語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-011",
-      bank: ["are","not","we","studying","math","."],
-      answer: ["we","are","not","studying","math","."],
-      explanation: "主語we（複数）の否定文はareのあとにnotを置きます。並び順は「主語→are→not→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-012",
-      bank: ["swimming","are","pool","they","the","in","?"],
-      answer: ["are","they","swimming","in","the","pool","?"],
-      explanation: "進行形の疑問文はbe動詞を主語の前に置きます。並び順は「be動詞→主語→動詞ing→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-013",
-      bank: ["is","cooking","dinner","mother","my","."],
-      answer: ["my","mother","is","cooking","dinner","."],
-      explanation: "my motherは3人称単数扱いなので、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-014",
-      bank: ["am","not","i","using","computer","the","."],
-      answer: ["i","am","not","using","the","computer","."],
-      explanation: "主語Iの否定文はamのあとにnotを置きます。並び順は「主語→am→not→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-015",
-      bank: ["listening","tom","music","is","to","."],
-      answer: ["tom","is","listening","to","music","."],
-      explanation: "listen toは「〜を聞く」という意味のまとまりです。並び順は「主語→is→動詞ing→to→目的語」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "present-progressive-016",
-      bank: ["are","students","the","singing","song","a","."],
-      answer: ["the","students","are","singing","a","song","."],
-      explanation: "主語the studentsは複数なので、be動詞はareを使います。並び順は「主語→are→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-017",
-      bank: ["is","taking","picture","a","she","."],
-      answer: ["she","is","taking","a","picture","."],
-      explanation: "主語が3人称単数（she）のとき、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-018",
-      bank: ["are","doing","homework","you","your","?"],
-      answer: ["are","you","doing","your","homework","?"],
-      explanation: "主語youの進行形の疑問文はareを文頭に置きます。並び順は「are→主語→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-019",
-      bank: ["mr.","brown","car","washing","his","is","."],
-      answer: ["mr.","brown","is","washing","his","car","."],
-      explanation: "主語が人名（3人称単数）のとき、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語」です。",
-      alwaysCapitalize: ["brown"]
-    },
-    {
-      id: "present-progressive-020",
-      bank: ["talking","she","is","not","him","with","."],
-      answer: ["she","is","not","talking","with","him","."],
-      explanation: "talk withは「〜と話す」という意味のまとまりです。並び順は「主語→be動詞→not→動詞ing→with→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-021",
-      bank: ["is","running","who","in","the","gym","?"],
-      answer: ["who","is","running","in","the","gym","?"],
-      explanation: "疑問詞whoが主語になる文はそのまま文頭に置き、be動詞と動詞ingを続けます。並び順は「who→be動詞→動詞ing」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-022",
-      bank: ["are","having","we","lunch","now","."],
-      answer: ["we","are","having","lunch","now","."],
-      explanation: "haveは進行形でhavingの形になります。並び順は「主語→are→動詞ing→目的語→今を表す語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-023",
-      bank: ["is","not","he","japan","in","living","."],
-      answer: ["he","is","not","living","in","japan","."],
-      explanation: "liveのようにeで終わる動詞は、eをとってingをつけます。並び順は「主語→is→not→動詞ing→場所を表す語句」です。",
-      alwaysCapitalize: ["japan"]
-    },
-    {
-      id: "present-progressive-024",
-      bank: ["is","waiting","for","bus","the","mika","."],
-      answer: ["mika","is","waiting","for","the","bus","."],
-      explanation: "wait forは「〜を待つ」という意味のまとまりです。並び順は「主語→is→動詞ing→for→目的語」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "present-progressive-025",
-      bank: ["are","students","japanese","learning","the","?"],
-      answer: ["are","the","students","learning","japanese","?"],
-      explanation: "主語the studentsの進行形の疑問文はareを文頭に置きます。並び順は「are→主語→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-026",
-      bank: ["is","dog","under","sitting","the","table","the","."],
-      answer: ["the","dog","is","sitting","under","the","table","."],
-      explanation: "sitのように語尾が子音字+短母音で終わる動詞は、tを重ねてingをつけます。並び順は「主語→is→動詞ing→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-027",
-      bank: ["is","doing","what","tom","now","?"],
-      answer: ["what","is","tom","doing","now","?"],
-      explanation: "疑問詞whatを使う3人称単数の進行形疑問文は、whatを文頭に置きisを続けます。並び順は「what→is→主語→動詞ing」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "present-progressive-028",
-      bank: ["are","not","playing","they","games","video","."],
-      answer: ["they","are","not","playing","video","games","."],
-      explanation: "主語they（複数）の否定文はareのあとにnotを置きます。並び順は「主語→are→not→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-029",
-      bank: ["is","speaking","teacher","english","our","."],
-      answer: ["our","teacher","is","speaking","english","."],
-      explanation: "our teacherは3人称単数扱いなので、be動詞はisを使います。並び順は「主語→is→動詞ing→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "present-progressive-030",
-      bank: ["is","standing","who","door","the","at","?"],
-      answer: ["who","is","standing","at","the","door","?"],
-      explanation: "疑問詞whoが主語になる進行形の疑問文は、whoのあとにbe動詞と動詞ingを続けます。並び順は「who→is→動詞ing→場所を表す語句」です。",
-      alwaysCapitalize: []
-    }
-  ]
-});
-
-UNITS.push({
-  id: "past-tense",
-  name: "過去形",
-  description: "規則・不規則動詞の過去形",
-  questions: [
-    {
-      id: "past-tense-001",
-      bank: ["went","to","school","yesterday","i","."],
-      answer: ["i","went","to","school","yesterday","."],
-      explanation: "go の過去形は went。「主語→動詞(過去形)→場所→時を表す語句」の順に並べます。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-002",
-      bank: ["a","movie","watched","she","last","night","."],
-      answer: ["she","watched","a","movie","last","night","."],
-      explanation: "watchは規則動詞でedをつけてwatchedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-003",
-      bank: ["saw","we","bird","a","park","the","in","."],
-      answer: ["we","saw","a","bird","in","the","park","."],
-      explanation: "seeの過去形はsawという不規則変化です。並び順は「主語→動詞(過去形)→目的語→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-004",
-      bank: ["ken","dinner","cooked","last","week","."],
-      answer: ["ken","cooked","dinner","last","week","."],
-      explanation: "cookは規則動詞でedをつけてcookedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "past-tense-005",
-      bank: ["had","mika","a","headache","yesterday","."],
-      answer: ["mika","had","a","headache","yesterday","."],
-      explanation: "haveの過去形はhadという不規則変化です。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "past-tense-006",
-      bank: ["cake","made","he","a","big","."],
-      answer: ["he","made","a","big","cake","."],
-      explanation: "makeの過去形はmadeという不規則変化です。並び順は「主語→動詞(過去形)→目的語(形容詞＋名詞)」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-007",
-      bank: ["played","tennis","they","two","days","ago","."],
-      answer: ["they","played","tennis","two","days","ago","."],
-      explanation: "playは規則動詞でedをつけてplayedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-008",
-      bank: ["ate","lunch","we","together","yesterday","."],
-      answer: ["we","ate","lunch","together","yesterday","."],
-      explanation: "eatの過去形はateという不規則変化です。並び順は「主語→動詞(過去形)→目的語→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-009",
-      bank: ["got","tom","up","early","today","."],
-      answer: ["tom","got","up","early","today","."],
-      explanation: "getの過去形はgotという不規則変化です。並び順は「主語→動詞(過去形)→副詞→様態→時を表す語句」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "past-tense-010",
-      bank: ["bought","new","i","a","bag","."],
-      answer: ["i","bought","a","new","bag","."],
-      explanation: "buyの過去形はboughtという不規則変化です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-011",
-      bank: ["wrote","letter","she","a","him","to","."],
-      answer: ["she","wrote","a","letter","to","him","."],
-      explanation: "writeの過去形はwroteという不規則変化です。並び順は「主語→動詞(過去形)→目的語→相手を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-012",
-      bank: ["read","book","he","interesting","an","."],
-      answer: ["he","read","an","interesting","book","."],
-      explanation: "readは過去形も同じ形readですが発音が変わる不規則動詞です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-013",
-      bank: ["came","home","late","my","father","."],
-      answer: ["my","father","came","home","late","."],
-      explanation: "comeの過去形はcameという不規則変化です。並び順は「主語→動詞(過去形)→場所→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-014",
-      bank: ["studied","hard","she","math","last","night","."],
-      answer: ["she","studied","math","hard","last","night","."],
-      explanation: "studyは子音字+yで終わる動詞なのでyをiに変えてedをつけstudiedにします。並び順は「主語→動詞(過去形)→目的語→様態→時を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-015",
-      bank: ["stopped","suddenly","car","the","old","."],
-      answer: ["the","old","car","stopped","suddenly","."],
-      explanation: "stopは短母音+子音字で終わる動詞なので子音字を重ねてedをつけstoppedにします。並び順は「主語→動詞(過去形)→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-016",
-      bank: ["visited","japan","last","they","summer","."],
-      answer: ["they","visited","japan","last","summer","."],
-      explanation: "visitは規則動詞でedをつけてvisitedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: ["japan"]
-    },
-    {
-      id: "past-tense-017",
-      bank: ["ran","fast","very","he","yesterday","."],
-      answer: ["he","ran","very","fast","yesterday","."],
-      explanation: "runの過去形はranという不規則変化です。並び順は「主語→動詞(過去形)→様態を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-018",
-      bank: ["did","homework","we","our","last","night","."],
-      answer: ["we","did","our","homework","last","night","."],
-      explanation: "doの過去形はdidという不規則変化です。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-019",
-      bank: ["mika","piano","the","played","yesterday","."],
-      answer: ["mika","played","the","piano","yesterday","."],
-      explanation: "playは規則動詞でedをつけてplayedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "past-tense-020",
-      bank: ["took","many","pictures","i","there","."],
-      answer: ["i","took","many","pictures","there","."],
-      explanation: "takeの過去形はtookという不規則変化です。並び順は「主語→動詞(過去形)→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-021",
-      bank: ["cleaned","his","room","tom","yesterday","."],
-      answer: ["tom","cleaned","his","room","yesterday","."],
-      explanation: "cleanは規則動詞でedをつけてcleanedにします。並び順は「主語→動詞(過去形)→目的語」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "past-tense-022",
-      bank: ["felt","tired","very","she","then","."],
-      answer: ["she","felt","very","tired","then","."],
-      explanation: "feelの過去形はfeltという不規則変化です。並び順は「主語→動詞(過去形)→補語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-023",
-      bank: ["helped","her","mother","she","kitchen","in","the","."],
-      answer: ["she","helped","her","mother","in","the","kitchen","."],
-      explanation: "helpは規則動詞でedをつけてhelpedにします。並び順は「主語→動詞(過去形)→目的語→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-024",
-      bank: ["heard","news","the","we","yesterday","."],
-      answer: ["we","heard","the","news","yesterday","."],
-      explanation: "hearの過去形はheardという不規則変化です。並び順は「主語→動詞(過去形)→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-025",
-      bank: ["arrived","station","at","the","train","the","."],
-      answer: ["the","train","arrived","at","the","station","."],
-      explanation: "arriveは規則動詞でdだけをつけてarrivedにします。並び順は「主語→動詞(過去形)→場所を表す語句」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "past-tense-026",
-      bank: ["mr.","smith","us","taught","english","."],
-      answer: ["mr.","smith","taught","us","english","."],
-      explanation: "teachの過去形はtaughtという不規則変化です。並び順は「主語→動詞(過去形)→目的語(人)→目的語(もの)」です。",
-      alwaysCapitalize: ["smith"]
-    },
-    {
-      id: "past-tense-027",
-      bank: ["gave","present","he","nice","a","me","."],
-      answer: ["he","gave","me","a","nice","present","."],
+      id: "svoo-svoc-002",
+      bank: ["she","gave","me","some","good","advice","."],
+      answer: ["she","gave","me","some","good","advice","."],
       explanation: "giveの過去形はgaveという不規則変化です。並び順は「主語→動詞(過去形)→目的語(人)→目的語(もの)」です。",
       alwaysCapitalize: []
     },
     {
-      id: "past-tense-028",
-      bank: ["listened","radio","to","the","last","i","night","."],
-      answer: ["i","listened","to","the","radio","last","night","."],
-      explanation: "listenは規則動詞でedをつけてlistenedにします。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
+      id: "svoo-svoc-003",
+      bank: ["we","call","him","mike","."],
+      answer: ["we","call","him","mike","."],
+      explanation: "call型（SVOC）の文で、目的語=補語の関係になります。並び順は「主語→動詞→目的語→補語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "past-tense-029",
-      bank: ["left","house","the","early","she","."],
-      answer: ["she","left","the","house","early","."],
-      explanation: "leaveの過去形はleftという不規則変化です。並び順は「主語→動詞(過去形)→目的語→様態を表す語句」です。",
+      id: "svoo-svoc-004",
+      bank: ["music","makes","me","happy","."],
+      answer: ["music","makes","me","happy","."],
+      explanation: "makeを使ったcall型（SVOC）の文で、「〜を…にする」という意味です。並び順は「主語→動詞→目的語→補語」です。",
       alwaysCapitalize: []
     },
     {
-      id: "past-tense-030",
-      bank: ["moved","to","tokyo","family","my","last","year","."],
-      answer: ["my","family","moved","to","tokyo","last","year","."],
-      explanation: "moveは規則動詞でdだけをつけてmovedにします。並び順は「主語→動詞(過去形)→場所→時を表す語句」です。",
-      alwaysCapitalize: ["tokyo"]
+      id: "svoo-svoc-005",
+      bank: ["her","smiles","keep","me","positive","."],
+      answer: ["her","smiles","keep","me","positive","."],
+      explanation: "keepを使ったcall型（SVOC）の文で、「〜を…のままにする」という意味です。並び順は「主語→動詞→目的語→補語」です。",
+      alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "can",
-  name: "canの文",
-  description: "「~できる」can+動詞の原形",
+  id: "can-will",
+  name: "can・willの文",
+  description: "「〜できる」「〜だろう」を表す助動詞",
   questions: [
     {
-      id: "can-001",
-      bank: ["can","swim","very","fast","he","."],
-      answer: ["he","can","swim","very","fast","."],
+      id: "can-will-001",
+      bank: ["you","can","swim","well","."],
+      answer: ["you","can","swim","well","."],
       explanation: "can のあとの動詞は原形のまま使います。「主語→can→動詞の原形→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-002",
-      bank: ["play","the","piano","i","can","."],
-      answer: ["i","can","play","the","piano","."],
-      explanation: "「~できる」は can のあとに動詞の原形を続けて表します。「主語→can→動詞の原形→目的語」の順です。",
+      id: "can-will-002",
+      bank: ["these","experiences","will","stay","in","my","mind","."],
+      answer: ["these","experiences","will","stay","in","my","mind","."],
+      explanation: "willは「~だろう」という未来の予想を表します。「主語→will→動詞の原形→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-003",
-      bank: ["cannot","this","read","book","she","."],
-      answer: ["she","cannot","read","this","book","."],
-      explanation: "can の否定文は cannot（または can't）を使い、あとの動詞は原形のままです。「主語→cannot→動詞の原形→目的語」の順です。",
+      id: "can-will-003",
+      bank: ["we","can","see","many","beautiful","flowers","there","."],
+      answer: ["we","can","see","many","beautiful","flowers","there","."],
+      explanation: "canのあとには動詞の原形が続き、目的語や修飾語が後ろに並びます。「主語→can→動詞の原形→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-004",
-      bank: ["can","cook","dinner","for","us","you","?"],
-      answer: ["can","you","cook","dinner","for","us","?"],
-      explanation: "can の疑問文は can を主語の前に出します。「can→主語→動詞の原形→目的語?」の順です。",
+      id: "can-will-004",
+      bank: ["i","can","dance","well","."],
+      answer: ["i","can","dance","well","."],
+      explanation: "「〜できる」というときはcanのあとに動詞の原形を置きます。「主語→can→動詞の原形→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-005",
-      bank: ["can't","he","drive","a","car","."],
-      answer: ["he","can't","drive","a","car","."],
-      explanation: "can't は cannot の短縮形で、否定の意味を表します。「主語→can't→動詞の原形→目的語」の順です。",
+      id: "can-will-005",
+      bank: ["my grandmother","will","be","happy","to","see","us","in the video","."],
+      answer: ["my grandmother","will","be","happy","to","see","us","in the video","."],
+      explanation: "willのあとの動詞は原形beを使い、to以下がうれしい理由を表します。「主語→will→be→形容詞→to不定詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-006",
-      bank: ["run","fast","can","they","very","."],
-      answer: ["they","can","run","very","fast","."],
-      explanation: "can のあとには動詞の原形が続き、程度を表す語句はそのあとに置きます。「主語→can→動詞の原形→修飾語」の順です。",
+      id: "can-will-006",
+      bank: ["he","will","be","at home","tomorrow","."],
+      answer: ["he","will","be","at home","tomorrow","."],
+      explanation: "willは未来の出来事を表し、あとには動詞の原形beが続きます。「主語→will→be→場所→時」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "negative",
+  name: "否定文",
+  description: "一般動詞・be動詞の否定文",
+  questions: [
+    {
+      id: "negative-001",
+      bank: ["i","did","not","feel","well","yesterday","."],
+      answer: ["i","did","not","feel","well","yesterday","."],
+      explanation: "一般動詞の過去の否定文は did not(didn't) + 動詞の原形 で表します。「主語→did not→動詞の原形→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-007",
-      bank: ["speak","can","japanese","well","ken","?"],
-      answer: ["can","ken","speak","japanese","well","?"],
-      explanation: "can の疑問文は can を文頭に出し、主語と動詞の原形を続けます。「can→主語→動詞の原形→目的語→修飾語?」の順です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "can-008",
-      bank: ["we","use","can","this","computer","."],
-      answer: ["we","can","use","this","computer","."],
-      explanation: "can は「~できる」という可能を表す助動詞で、動詞の前に置きます。「主語→can→動詞の原形→目的語」の順です。",
+      id: "negative-002",
+      bank: ["some","of","them","don't","understand","japanese","."],
+      answer: ["some","of","them","don't","understand","japanese","."],
+      explanation: "一般動詞の現在の否定文は do not(don't)/does not(doesn't) + 動詞の原形 で表します。「主語→don't→動詞の原形→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-009",
-      bank: ["sing","cannot","song","this","mika","."],
-      answer: ["mika","cannot","sing","this","song","."],
-      explanation: "can の否定文では cannot のあとに動詞の原形を置きます。「主語→cannot→動詞の原形→目的語」の順です。",
-      alwaysCapitalize: ["mika"]
-    },
+      id: "negative-003",
+      bank: ["the","man","is","not","so","tall","."],
+      answer: ["the","man","is","not","so","tall","."],
+      explanation: "be動詞の否定文は、be動詞のすぐあとに not を置きます。「主語→be動詞→not→形容詞」の順になります。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "there-is-are",
+  name: "There is/areの文",
+  description: "「〜がある／いる」を表す文",
+  questions: [
     {
-      id: "can-010",
-      bank: ["can","ride","a","bike","you","?"],
-      answer: ["can","you","ride","a","bike","?"],
-      explanation: "can の疑問文では can を主語の前に出し、動詞は原形のまま使います。「can→主語→動詞の原形→目的語?」の順です。",
+      id: "there-is-are-001",
+      bank: ["there","are","many","dogs","in","the","park","."],
+      answer: ["there","are","many","dogs","in","the","park","."],
+      explanation: "「there are + 複数名詞」で「〜がいる／ある」を表します。「there→be動詞→名詞→場所を表す語句」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-011",
-      bank: ["can't","find","my","bag","i","."],
-      answer: ["i","can't","find","my","bag","."],
-      explanation: "can't は「~できない」という意味を表す短縮形です。「主語→can't→動詞の原形→目的語」の順です。",
+      id: "there-is-are-002",
+      bank: ["there","isn't","much","water","in","the","glass","."],
+      answer: ["there","isn't","much","water","in","the","glass","."],
+      explanation: "「there isn't + 数えられない名詞」で「〜がほとんどない」を表す否定文です。「there→be動詞→名詞→場所を表す語句」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-012",
-      bank: ["make","cake","a","can","she","."],
-      answer: ["she","can","make","a","cake","."],
-      explanation: "can のあとの動詞は主語が何であっても原形のままです。「主語→can→動詞の原形→目的語」の順です。",
+      id: "there-is-are-003",
+      bank: ["there","are","three","books","in","my","bag","."],
+      answer: ["there","are","three","books","in","my","bag","."],
+      explanation: "「there are + 複数名詞」で「〜がある」を表します。「there→be動詞→名詞→場所を表す語句」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "preposition",
+  name: "前置詞を使った文",
+  description: "in/on/under/about/forなど前置詞を使った文",
+  questions: [
+    {
+      id: "preposition-001",
+      bank: ["she","is","with","me","."],
+      answer: ["she","is","with","me","."],
+      explanation: "with は「〜といっしょに」という意味を表す前置詞です。「主語→be動詞→with→人」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-013",
-      bank: ["can","help","us","today","tom","?"],
-      answer: ["can","tom","help","us","today","?"],
-      explanation: "can の疑問文は can を文の最初に置き、主語と動詞の原形が続きます。「can→主語→動詞の原形→目的語→修飾語?」の順です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "can-014",
-      bank: ["cannot","open","door","this","we","."],
-      answer: ["we","cannot","open","this","door","."],
-      explanation: "cannot は can の否定形で、あとに動詞の原形を続けます。「主語→cannot→動詞の原形→目的語」の順です。",
+      id: "preposition-002",
+      bank: ["japan","is","in","asia","."],
+      answer: ["japan","is","in","asia","."],
+      explanation: "in は「〜(の中)に」という位置関係を表す前置詞です。「主語→be動詞→in→場所」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-015",
-      bank: ["can","jump","dog","my","high","."],
-      answer: ["my","dog","can","jump","high","."],
-      explanation: "can は主語のあとに置き、動詞の原形を続けて可能を表します。「主語→can→動詞の原形→修飾語」の順です。",
+      id: "preposition-003",
+      bank: ["we","are","in","the","same","class","."],
+      answer: ["we","are","in","the","same","class","."],
+      explanation: "in は「〜(の中)に」という所属を表す前置詞です。「主語→be動詞→in→所属先」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-016",
-      bank: ["can","see","from","here","you","the","mountain","?"],
-      answer: ["can","you","see","the","mountain","from","here","?"],
-      explanation: "can の疑問文では can を文頭に出し、そのあとに主語と動詞の原形を続けます。「can→主語→動詞の原形→目的語→修飾語?」の順です。",
+      id: "preposition-004",
+      bank: ["she","was","in","tokyo","last","week","."],
+      answer: ["she","was","in","tokyo","last","week","."],
+      explanation: "in は「〜に」という場所を表す前置詞です。「主語→be動詞(過去形)→in→場所→時」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-017",
-      bank: ["can't","eat","natto","my","brother","."],
-      answer: ["my","brother","can't","eat","natto","."],
-      explanation: "can't のあとには動詞の原形を置き、「~できない」という意味を表します。「主語→can't→動詞の原形→目的語」の順です。",
+      id: "preposition-005",
+      bank: ["we","are","on","the","soccer team","."],
+      answer: ["we","are","on","the","soccer team","."],
+      explanation: "「on the soccer team」で「サッカーチームに所属して」という意味になります。「主語→be動詞→on→所属先」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-018",
-      bank: ["can","teach","math","mr.","suzuki","us","."],
-      answer: ["mr.","suzuki","can","teach","us","math","."],
-      explanation: "can は主語の直後、動詞の原形の前に置く助動詞です。「主語→can→動詞の原形→目的語1→目的語2」の順です。",
-      alwaysCapitalize: ["suzuki"]
-    },
-    {
-      id: "can-019",
-      bank: ["can","get","up","early","you","?"],
-      answer: ["can","you","get","up","early","?"],
-      explanation: "can の疑問文は can を主語の前に出し、動詞は原形のままにします。「can→主語→動詞の原形→修飾語?」の順です。",
+      id: "preposition-006",
+      bank: ["i","watched","a","musical","for the first time","."],
+      answer: ["i","watched","a","musical","for the first time","."],
+      explanation: "「for the first time」で「初めて」という意味を表します。「主語→動詞→目的語→for the first time」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-020",
-      bank: ["cannot","the","the","answer","students","understand","."],
-      answer: ["the","students","cannot","understand","the","answer","."],
-      explanation: "can の否定文は cannot（またはcan't）を使い、あとに動詞の原形を置きます。「主語→cannot→動詞の原形→目的語」の順です。",
+      id: "preposition-007",
+      bank: ["my father","enjoys","fishing","on weekends","."],
+      answer: ["my father","enjoys","fishing","on weekends","."],
+      explanation: "「on weekends」で「週末に」という時を表します。「主語→動詞→目的語(動名詞)→on weekends」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-021",
-      bank: ["can","ski","very","well","she","."],
-      answer: ["she","can","ski","very","well","."],
-      explanation: "can のあとには動詞の原形が続き、様子を表す語句はそのあとに置きます。「主語→can→動詞の原形→修飾語」の順です。",
+      id: "preposition-008",
+      bank: ["i","will","work","hard","for my dream","."],
+      answer: ["i","will","work","hard","for my dream","."],
+      explanation: "for は「〜のために」という目的を表す前置詞です。「主語→will+動詞→hard→for→目的」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-022",
-      bank: ["can","play","tennis","with","me","you","?"],
-      answer: ["can","you","play","tennis","with","me","?"],
-      explanation: "can の疑問文では can を文頭に置き、主語と動詞の原形を続けます。「can→主語→動詞の原形→目的語→修飾語?」の順です。",
+      id: "preposition-009",
+      bank: ["my","pen","is","on","the","desk","."],
+      answer: ["my","pen","is","on","the","desk","."],
+      explanation: "on は「〜の上に」という位置関係を表す前置詞です。「主語→be動詞→on→場所」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-023",
-      bank: ["can't","math","solve","this","problem","tom","."],
-      answer: ["tom","can't","solve","this","math","problem","."],
-      explanation: "can't のあとには動詞の原形を置き、否定の意味を表します。「主語→can't→動詞の原形→目的語」の順です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "can-024",
-      bank: ["can","use","chopsticks","well","they","."],
-      answer: ["they","can","use","chopsticks","well","."],
-      explanation: "can は動詞の前に置いて「~できる」という可能の意味を表します。「主語→can→動詞の原形→目的語→修飾語」の順です。",
+      id: "preposition-010",
+      bank: ["they","ate","some","bread","for","breakfast","."],
+      answer: ["they","ate","some","bread","for","breakfast","."],
+      explanation: "for は「〜に(用いる)」という用途を表す前置詞です。「主語→動詞→目的語→for→breakfast」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-025",
-      bank: ["can","call","tonight","me","you","?"],
-      answer: ["can","you","call","me","tonight","?"],
-      explanation: "can の疑問文は can を文頭に出し、動詞の原形はそのまま続けます。「can→主語→動詞の原形→目的語→修飾語?」の順です。",
+      id: "preposition-011",
+      bank: ["these","ideas","are","helpful","for","everyone","."],
+      answer: ["these","ideas","are","helpful","for","everyone","."],
+      explanation: "for は「〜にとって」という対象を表す前置詞です。「主語→be動詞→補語→for→対象」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-026",
-      bank: ["cannot","finish","today","homework","my","i","."],
-      answer: ["i","cannot","finish","my","homework","today","."],
-      explanation: "can の否定文 cannot のあとには動詞の原形が続きます。「主語→cannot→動詞の原形→目的語→修飾語」の順です。",
+      id: "preposition-012",
+      bank: ["the","two","cats","are","under","the","table","."],
+      answer: ["the","two","cats","are","under","the","table","."],
+      explanation: "under は「〜の下に」という位置関係を表す前置詞です。「主語→be動詞→under→場所」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-027",
-      bank: ["can","take","picture","a","mika","?"],
-      answer: ["can","mika","take","a","picture","?"],
-      explanation: "can の疑問文は can を主語の前に出し、動詞は原形のまま使います。「can→主語→動詞の原形→目的語?」の順です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "can-028",
-      bank: ["can't","hear","you","well","i","."],
-      answer: ["i","can't","hear","you","well","."],
-      explanation: "can't のあとの動詞は原形のままで、「~できない」を表します。「主語→can't→動詞の原形→目的語→修飾語」の順です。",
+      id: "preposition-013",
+      bank: ["that","boy","over there","is","ken","."],
+      answer: ["that","boy","over there","is","ken","."],
+      explanation: "「over there」で「向こうに」という場所を表し、boy を後ろから修飾します。「主語(that boy over there)→be動詞→補語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-029",
-      bank: ["can","fish","catch","big","he","."],
-      answer: ["he","can","catch","big","fish","."],
-      explanation: "can のあとには動詞の原形を置き、可能の意味を表します。「主語→can→動詞の原形→目的語」の順です。",
+      id: "preposition-014",
+      bank: ["the","movie","is","about","a","dog","in america","."],
+      answer: ["the","movie","is","about","a","dog","in america","."],
+      explanation: "about は「〜について」という内容を表す前置詞です。「主語→be動詞→about→a dog→in america」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "can-030",
-      bank: ["can","join","us","at","party","the","you","?"],
-      answer: ["can","you","join","us","at","the","party","?"],
-      explanation: "can の疑問文は can を文頭に置き、そのあとに主語と動詞の原形を続けます。「can→主語→動詞の原形→修飾語?」の順です。",
+      id: "preposition-015",
+      bank: ["she","is","a","member","of","the","brass band","."],
+      answer: ["she","is","a","member","of","the","brass band","."],
+      explanation: "of は「〜の」という所属を表す前置詞です。「主語→be動詞→a member→of→所属先」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-016",
+      bank: ["i","am","a","student","at","midori junior high school","."],
+      answer: ["i","am","a","student","at","midori junior high school","."],
+      explanation: "at は「〜で」という所属先を表す前置詞です。「主語→be動詞→a student→at→所属先」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-017",
+      bank: ["many people","in","other","countries","visit","japan","."],
+      answer: ["many people","in","other","countries","visit","japan","."],
+      explanation: "in は「〜の」という所属を表し、in other countries が many people を修飾します。「主語(many people in other countries)→動詞→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-018",
+      bank: ["every","member","has","different","ideas","about","this problem","."],
+      answer: ["every","member","has","different","ideas","about","this problem","."],
+      explanation: "about は「〜について」という内容を表す前置詞です。「主語→動詞→目的語→about→話題」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-019",
+      bank: ["this","is","a","present","for","you","."],
+      answer: ["this","is","a","present","for","you","."],
+      explanation: "for は「〜への」という対象を表す前置詞です。「主語→be動詞→a present→for→対象」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-020",
+      bank: ["this","is","a","picture","of","my friend","."],
+      answer: ["this","is","a","picture","of","my friend","."],
+      explanation: "of は「〜の」という所属・内容を表す前置詞です。「主語→be動詞→a picture→of→対象」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-021",
+      bank: ["the","girl","under","the","tree","is","kumi","."],
+      answer: ["the","girl","under","the","tree","is","kumi","."],
+      explanation: "under は「〜の下に」という位置関係を表し、girl を後ろから修飾します。「主語(the girl under the tree)→be動詞→補語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-022",
+      bank: ["you","were","nervous","during","the","game","."],
+      answer: ["you","were","nervous","during","the","game","."],
+      explanation: "during は「〜の間ずっと」という期間を表す前置詞です。「主語→be動詞(過去形)→補語→during→期間」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-023",
+      bank: ["rpg games","are","popular","in","my","class","."],
+      answer: ["rpg games","are","popular","in","my","class","."],
+      explanation: "in は「〜で」という範囲を表す前置詞です。「主語→be動詞→補語→in→範囲」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-024",
+      bank: ["a lot of","students","have","a","problem","with","sleeping","."],
+      answer: ["a lot of","students","have","a","problem","with","sleeping","."],
+      explanation: "with は「〜に関する」という関連を表す前置詞です。「主語→動詞→a problem→with→内容」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-025",
+      bank: ["you","can","enjoy","beautiful","pictures","of","mountains","."],
+      answer: ["you","can","enjoy","beautiful","pictures","of","mountains","."],
+      explanation: "of は「〜の」という対象を表す前置詞です。「主語→can+動詞→pictures→of→対象」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-026",
+      bank: ["i","have","a","friend","working","as","an english teacher","."],
+      answer: ["i","have","a","friend","working","as","an english teacher","."],
+      explanation: "as は「〜として」という立場を表す前置詞です。「主語→動詞→a friend→working as→職業」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "preposition-027",
+      bank: ["i","need","some","information","about","this event","."],
+      answer: ["i","need","some","information","about","this event","."],
+      explanation: "about は「〜についての」という内容を表す前置詞です。「主語→動詞→information→about→話題」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "modal-frequency",
+  name: "助動詞・頻度の文",
+  description: "will/should/must/may/couldと頻度を表す副詞",
+  questions: [
+    {
+      id: "modal-frequency-001",
+      bank: ["i","will","see","him","tomorrow","."],
+      answer: ["i","will","see","him","tomorrow","."],
+      explanation: "「~するつもりだ」は will + 動詞の原形で表します。「主語→will→動詞の原形→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-002",
+      bank: ["i","will","be","fifteen","next month","."],
+      answer: ["i","will","be","fifteen","next month","."],
+      explanation: "未来の状態は will + be動詞の原形で表します。「主語→will→be→補語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-003",
+      bank: ["i","took","a lot of","pictures","there","."],
+      answer: ["i","took","a lot of","pictures","there","."],
+      explanation: "過去の動作は動詞の過去形で表します。「主語→動詞の過去形→目的語→場所」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-004",
+      bank: ["she","usually","goes","to","bed","at","ten","."],
+      answer: ["she","usually","goes","to","bed","at","ten","."],
+      explanation: "頻度を表す副詞(usually)は一般動詞の前に置きます。「主語→usually→動詞→場所」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-005",
+      bank: ["it","will","snow","tomorrow","."],
+      answer: ["it","will","snow","tomorrow","."],
+      explanation: "未来の予想は will + 動詞の原形で表します。「主語→will→動詞の原形→時を表す語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-006",
+      bank: ["we","should","know","a lot","about","our history","."],
+      answer: ["we","should","know","a lot","about","our history","."],
+      explanation: "「~するべきだ」は should + 動詞の原形。「主語→should→動詞の原形→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-007",
+      bank: ["you","must","not","swim","here","."],
+      answer: ["you","must","not","swim","here","."],
+      explanation: "「~してはいけない」は must not + 動詞の原形。「主語→must not→動詞の原形→場所」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-008",
+      bank: ["it","may","rain","in the afternoon","."],
+      answer: ["it","may","rain","in the afternoon","."],
+      explanation: "「~かもしれない」は may + 動詞の原形で表します。「主語→may→動詞の原形→時を表す語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-009",
+      bank: ["we","must","stop","using","plastic bags","."],
+      answer: ["we","must","stop","using","plastic bags","."],
+      explanation: "「~しなければならない」は must + 動詞の原形。「主語→must→動詞の原形→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-010",
+      bank: ["i","could","make","a lot of friends","through","this event","."],
+      answer: ["i","could","make","a lot of friends","through","this event","."],
+      explanation: "「~できた」は could + 動詞の原形で表します。「主語→could→動詞の原形→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-011",
+      bank: ["he","was","so","angry","."],
+      answer: ["he","was","so","angry","."],
+      explanation: "程度を表す so は形容詞の前に置きます。「主語→be動詞の過去形→so→形容詞」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-012",
+      bank: ["she","is","always","kind","."],
+      answer: ["she","is","always","kind","."],
+      explanation: "頻度を表す副詞(always)はbe動詞の後ろに置きます。「主語→be動詞→always→形容詞」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-013",
+      bank: ["she","often","cheers","me","up","."],
+      answer: ["she","often","cheers","me","up","."],
+      explanation: "頻度を表す副詞(often)は一般動詞の前に置きます。「主語→often→動詞→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-014",
+      bank: ["i","usually","walk","my","dog","before dinner","."],
+      answer: ["i","usually","walk","my","dog","before dinner","."],
+      explanation: "頻度を表す副詞(usually)は一般動詞の前に置きます。「主語→usually→動詞→目的語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-015",
+      bank: ["i","got","up","early","this","morning","."],
+      answer: ["i","got","up","early","this","morning","."],
+      explanation: "過去の動作は動詞の過去形で表します。「主語→got up→early→時を表す語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-016",
+      bank: ["we","played","together","in the park","."],
+      answer: ["we","played","together","in the park","."],
+      explanation: "過去の動作は動詞の過去形で表します。「主語→played→together→場所」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-017",
+      bank: ["the","people","there","are","really","friendly","."],
+      answer: ["the","people","there","are","really","friendly","."],
+      explanation: "程度を表す really は形容詞の前に置きます。「主語→be動詞→really→形容詞」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-018",
+      bank: ["he","lived","in","sendai","then","."],
+      answer: ["he","lived","in","sendai","then","."],
+      explanation: "過去の状態は動詞の過去形で表します。「主語→lived→in+場所→時を表す語」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "modal-frequency-019",
+      bank: ["i","stayed","home","all day","yesterday","."],
+      answer: ["i","stayed","home","all day","yesterday","."],
+      explanation: "過去の動作は動詞の過去形で表します。「主語→stayed→home→時を表す語」の順です。",
       alwaysCapitalize: []
     }
   ]
@@ -1626,653 +1307,408 @@ UNITS.push({
 
 UNITS.push({
   id: "comparative",
-  name: "比較級",
-  description: "…より~だ（比較級+than）",
+  name: "比較の文",
+  description: "比較級・最上級を使った文",
   questions: [
     {
       id: "comparative-001",
-      bank: ["than","am","taller","my","brother","i","."],
-      answer: ["i","am","taller","than","my","brother","."],
-      explanation: "「…より~だ」は「比較級(er)+than」で表します。「主語→be動詞→比較級→than→比べる相手」の順です。",
+      bank: ["basketball","is","the","most","exciting","sport","."],
+      answer: ["basketball","is","the","most","exciting","sport","."],
+      explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-002",
-      bank: ["is","than","this","that","book","bigger","."],
-      answer: ["this","book","is","bigger","than","that","."],
-      explanation: "1音節の形容詞は語尾に er をつけて比較級にします。「主語→be動詞→比較級→than→比べる相手」の順です。",
+      bank: ["japan","is","one of","the most popular","countries","in the world","."],
+      answer: ["japan","is","one of","the most popular","countries","in the world","."],
+      explanation: "「最も~な…の一つ」は「one of the most+形容詞+複数名詞」で表します。「主語→be動詞→one of the most+形容詞→複数名詞」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-003",
-      bank: ["mika","is","than","ken","younger","."],
-      answer: ["mika","is","younger","than","ken","."],
-      explanation: "youngはyの前にerをつけて比較級youngerになります。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: ["mika","ken"]
+      bank: ["i","like","eating","better","than","cooking","."],
+      answer: ["i","like","eating","better","than","cooking","."],
+      explanation: "「…より~の方が好きだ」は「like ~ better than …」で表します。「主語→like→動名詞→better→than→比べる相手」の順です。",
+      alwaysCapitalize: []
     },
     {
       id: "comparative-004",
-      bank: ["math","is","interesting","more","than","science","."],
-      answer: ["math","is","more","interesting","than","science","."],
-      explanation: "つづりの長い形容詞は more をつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
+      bank: ["sayaka","began","to","practice","the piano","harder","than","before","."],
+      answer: ["sayaka","began","to","practice","the piano","harder","than","before","."],
+      explanation: "「…より~だ」は「比較級+than」で表します。「主語→動詞→比較級(harder)→than→before」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-005",
-      bank: ["this","pen","is","better","than","that","one","."],
-      answer: ["this","pen","is","better","than","that","one","."],
-      explanation: "goodの比較級は不規則変化でbetterになります。「主語→be動詞→比較級→than→比べる相手」の順です。",
+      bank: ["my","best","memory","is","our","school trip","."],
+      answer: ["my","best","memory","is","our","school trip","."],
+      explanation: "「一番の~」は最上級のbestで表します。「主語(my best memory)→be動詞→名詞(school trip)」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-006",
-      bank: ["tom","runs","faster","than","tim","."],
-      answer: ["tom","runs","faster","than","tim","."],
-      explanation: "一般動詞の文でも比較級を使えます。「主語→動詞→比較級(副詞)→than→比べる相手」の順です。",
-      alwaysCapitalize: ["tom","tim"]
+      bank: ["life","is","more","important","than","anything","else","."],
+      answer: ["life","is","more","important","than","anything","else","."],
+      explanation: "「…より~だ」は「more+形容詞+than」で表します。「主語→be動詞→more+important→than→anything else」の順です。",
+      alwaysCapitalize: []
     },
     {
       id: "comparative-007",
-      bank: ["is","this","question","easier","than","that","one","."],
-      answer: ["this","question","is","easier","than","that","one","."],
-      explanation: "easyはyをiに変えてerをつけ、easierとなります。「主語→be動詞→比較級→than→比べる相手」の順です。",
+      bank: ["two hamburgers","are","cheaper","than","two sandwiches","."],
+      answer: ["two hamburgers","are","cheaper","than","two sandwiches","."],
+      explanation: "「…より~だ」は「比較級(er)+than」で表します。「主語→be動詞→比較級(cheaper)→than→比べる相手」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-008",
-      bank: ["her","bag","is","than","heavier","mine","."],
-      answer: ["her","bag","is","heavier","than","mine","."],
-      explanation: "heavyもyをiに変えてerをつけ、heavierとなります。「主語→be動詞→比較級→than→比べる相手」の順です。",
+      bank: ["this","is","the","most","important","thing","for","me","."],
+      answer: ["this","is","the","most","important","thing","for","me","."],
+      explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞→for me」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-009",
-      bank: ["is","this","movie","exciting","more","than","that","one","."],
-      answer: ["this","movie","is","more","exciting","than","that","one","."],
-      explanation: "excitingのように長い形容詞はmoreをつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
+      bank: ["i","think","her idea","is","better","than","mine","."],
+      answer: ["i","think","her idea","is","better","than","mine","."],
+      explanation: "「…より良い」は比較級betterで表します。「主語→think→her idea→be動詞→better→than→mine」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-010",
-      bank: ["ken","is","stronger","than","his","father","."],
-      answer: ["ken","is","stronger","than","his","father","."],
-      explanation: "strongは語尾にerをつけて比較級strongerにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: ["ken"]
+      bank: ["i think","science","is","not","as","difficult","as","math","."],
+      answer: ["i think","science","is","not","as","difficult","as","math","."],
+      explanation: "not as ~ as で「…ほど~ではない」という同等比較の否定を表します。「主語→be動詞→not as→difficult→as→比べる相手」の順です。",
+      alwaysCapitalize: []
     },
     {
       id: "comparative-011",
-      bank: ["i","get","up","earlier","than","my","sister","."],
-      answer: ["i","get","up","earlier","than","my","sister","."],
-      explanation: "earlyはyをiに変えてerをつけ、earlierとなります。「主語→動詞→比較級(副詞)→than→比べる相手」の順です。",
+      bank: ["i","think","our school","is","the best school","for you","."],
+      answer: ["i","think","our school","is","the best school","for you","."],
+      explanation: "「最も~だ」は「the+最上級」で表します。「主語→think→our school→be動詞→the best school→for you」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-012",
-      bank: ["this","song","is","popular","more","than","that","song","."],
-      answer: ["this","song","is","more","popular","than","that","song","."],
-      explanation: "popularは長い形容詞なのでmoreをつけます。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
+      bank: ["studying","history","is","more","interesting","for","me","."],
+      answer: ["studying","history","is","more","interesting","for","me","."],
+      explanation: "「もっと~だ」は「more+形容詞」で表します。「主語(動名詞句)→be動詞→more+interesting→for me」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-013",
-      bank: ["she","can","swim","faster","than","me","."],
-      answer: ["she","can","swim","faster","than","me","."],
-      explanation: "canの文でも比較級を使えます。「主語→can→動詞→比較級(副詞)→than→比べる相手」の順です。",
+      bank: ["i","like","speaking","english","much","better","than","before","."],
+      answer: ["i","like","speaking","english","much","better","than","before","."],
+      explanation: "「ずっと~の方が好きだ」は「like ~ much better than …」で表します。「主語→like→動名詞句→much better→than→before」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "comparative-014",
-      bank: ["is","tokyo","than","osaka","bigger","."],
-      answer: ["tokyo","is","bigger","than","osaka","."],
-      explanation: "都市の大きさを比べるときもbig(bigger)を使います。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: ["osaka"]
+      bank: ["this bag","is","not","as","expensive","as","that one","."],
+      answer: ["this bag","is","not","as","expensive","as","that one","."],
+      explanation: "not as ~ as で「…ほど~ではない」という同等比較の否定を表します。「主語→be動詞→not as→expensive→as→比べる相手」の順です。",
+      alwaysCapitalize: []
     },
     {
       id: "comparative-015",
-      bank: ["this","chair","is","than","that","one","more","comfortable","."],
-      answer: ["this","chair","is","more","comfortable","than","that","one","."],
-      explanation: "comfortableは長い形容詞なのでmoreをつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-016",
-      bank: ["my","dog","is","smaller","than","yours","."],
-      answer: ["my","dog","is","smaller","than","yours","."],
-      explanation: "smallは語尾にerをつけて比較級smallerにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-017",
-      bank: ["this","cake","tastes","than","that","better","one","."],
-      answer: ["this","cake","tastes","better","than","that","one","."],
-      explanation: "goodの比較級betterはtaste(味がする)のような動詞のあとにも使えます。「主語→動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-018",
-      bank: ["mr.","sato","is","busier","than","mr.","ito","."],
-      answer: ["mr.","sato","is","busier","than","mr.","ito","."],
-      explanation: "busyはyをiに変えてerをつけ、busierとなります。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: ["sato","ito"]
-    },
-    {
-      id: "comparative-019",
-      bank: ["this","road","is","narrower","than","that","road","."],
-      answer: ["this","road","is","narrower","than","that","road","."],
-      explanation: "narrowは語尾にerをつけて比較級narrowerにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-020",
-      bank: ["this","problem","is","difficult","more","than","that","one","."],
-      answer: ["this","problem","is","more","difficult","than","that","one","."],
-      explanation: "difficultは長い形容詞なのでmoreをつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-021",
-      bank: ["he","studies","harder","than","i","do","."],
-      answer: ["he","studies","harder","than","i","do","."],
-      explanation: "hardは語尾にerをつけて比較級harderにします。「主語→動詞→比較級(副詞)→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-022",
-      bank: ["this","lake","is","than","that","one","deeper","."],
-      answer: ["this","lake","is","deeper","than","that","one","."],
-      explanation: "deepは語尾にerをつけて比較級deeperにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-023",
-      bank: ["this","test","was","than","that","test","easier","."],
-      answer: ["this","test","was","easier","than","that","test","."],
-      explanation: "過去の文でもbe動詞をwasにして比較級を使えます。「主語→be動詞(was)→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-024",
-      bank: ["my","brother","eats","more","than","i","do","."],
-      answer: ["my","brother","eats","more","than","i","do","."],
-      explanation: "muchの比較級moreは「もっと多く」という意味で動詞のあとに置きます。「主語→動詞→more→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-025",
-      bank: ["this","building","is","taller","than","that","one","."],
-      answer: ["this","building","is","taller","than","that","one","."],
-      explanation: "tallは語尾にerをつけて比較級tallerにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-026",
-      bank: ["this","story","is","than","that","one","more","interesting","."],
-      answer: ["this","story","is","more","interesting","than","that","one","."],
-      explanation: "interestingは長い形容詞なのでmoreをつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-027",
-      bank: ["this","river","is","longer","than","that","river","."],
-      answer: ["this","river","is","longer","than","that","river","."],
-      explanation: "longは語尾にerをつけて比較級longerにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-028",
-      bank: ["ms.","green","cooks","better","than","ms.","white","."],
-      answer: ["ms.","green","cooks","better","than","ms.","white","."],
-      explanation: "wellの比較級も不規則変化でbetterになります。「主語→動詞→比較級(副詞)→than→比べる相手」の順です。",
-      alwaysCapitalize: ["green","white"]
-    },
-    {
-      id: "comparative-029",
-      bank: ["this","bridge","is","than","that","one","older","."],
-      answer: ["this","bridge","is","older","than","that","one","."],
-      explanation: "oldは語尾にerをつけて比較級olderにします。「主語→be動詞→比較級→than→比べる相手」の順です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "comparative-030",
-      bank: ["this","question","is","important","more","than","that","question","."],
-      answer: ["this","question","is","more","important","than","that","question","."],
-      explanation: "importantは長い形容詞なのでmoreをつけて比較級にします。「主語→be動詞→more+形容詞→than→比べる相手」の順です。",
+      bank: ["math","is","the","most","difficult","subject","for me","."],
+      answer: ["math","is","the","most","difficult","subject","for me","."],
+      explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞→for me」の順です。",
       alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "infinitive-purpose",
-  name: "不定詞〈目的〉",
-  description: "「~するために」to+動詞の原形",
+  id: "infinitive",
+  name: "不定詞の文",
+  description: "「to+動詞の原形」を使ったさまざまな文",
   questions: [
     {
-      id: "infinitive-purpose-001",
-      bank: ["went","to","the","library","study","she","to","."],
-      answer: ["she","went","to","the","library","to","study","."],
-      explanation: "「~するために」という目的は「to+動詞の原形」で表します。場所を表す to と混同しないように注意しましょう。",
+      id: "infinitive-001",
+      bank: ["she","wants","to","learn","the guitar","."],
+      answer: ["she","wants","to","learn","the guitar","."],
+      explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-002",
-      bank: ["he","came","to","help","us","here","."],
-      answer: ["he","came","here","to","help","us","."],
-      explanation: "「手伝うために来た」は「to+動詞の原形」で目的を表します。語順は「主語→動詞→場所→to+動詞」です。",
+      id: "infinitive-002",
+      bank: ["he","loves","to","cook","."],
+      answer: ["he","loves","to","cook","."],
+      explanation: "love to+動詞の原形 で「~することが大好きだ」という意味になります。「主語→love→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-003",
-      bank: ["i","get","up","early","to","jog","."],
-      answer: ["i","get","up","early","to","jog","."],
-      explanation: "「ジョギングするために早起きする」という目的を to+動詞の原形 で表します。語順は「主語→動詞→to+動詞」です。",
+      id: "infinitive-003",
+      bank: ["to","ride","a","bike","is","a lot of","fun","."],
+      answer: ["to","ride","a","bike","is","a lot of","fun","."],
+      explanation: "「to+動詞の原形」が文の主語になり「~することは」という意味を表します。「to→動詞の原形→is→形容詞」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-004",
-      bank: ["ken","practices","hard","to","win","the","game","."],
-      answer: ["ken","practices","hard","to","win","the","game","."],
-      explanation: "目的を表す不定詞は動詞のあとに置きます。人名 ken は alwaysCapitalize で先頭を大文字にします。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "infinitive-purpose-005",
-      bank: ["they","went","to","the","park","to","play","."],
-      answer: ["they","went","to","the","park","to","play","."],
-      explanation: "「遊ぶために公園へ行った」という文です。「主語→動詞→場所→to+動詞の原形」の順で目的を後ろに続けます。",
+      id: "infinitive-004",
+      bank: ["i","want","to","be","like","him","."],
+      answer: ["i","want","to","be","like","him","."],
+      explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→be→like」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-006",
-      bank: ["mika","uses","a","dictionary","to","study","english","."],
-      answer: ["mika","uses","a","dictionary","to","study","english","."],
-      explanation: "「英語を勉強するために辞書を使う」という目的の文です。to+動詞の原形は文の後ろに置かれます。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "infinitive-purpose-007",
-      bank: ["we","need","money","to","buy","a","new","car","."],
-      answer: ["we","need","money","to","buy","a","new","car","."],
-      explanation: "「新しい車を買うためにお金が必要だ」という目的を to+動詞の原形 で表します。名詞のあとに置くこともできます。",
+      id: "infinitive-005",
+      bank: ["i","hope","to","see","you","again","."],
+      answer: ["i","hope","to","see","you","again","."],
+      explanation: "hope to+動詞の原形 で「~することを望む」という意味になります。「主語→hope→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-008",
-      bank: ["tom","went","to","tokyo","to","see","his","aunt","."],
-      answer: ["tom","went","to","tokyo","to","see","his","aunt","."],
-      explanation: "「おばに会うために東京へ行った」という文です。tokyo は共通固有名詞リストにあるためそのまま小文字で使います。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "infinitive-purpose-009",
-      bank: ["she","opened","the","window","to","get","fresh","air","."],
-      answer: ["she","opened","the","window","to","get","fresh","air","."],
-      explanation: "「新鮮な空気を取り入れるために窓を開けた」という目的の文です。to+動詞の原形が理由・目的を説明します。",
+      id: "infinitive-006",
+      bank: ["her","dream","is","to","travel","in space","."],
+      answer: ["her","dream","is","to","travel","in space","."],
+      explanation: "「to+動詞の原形」が be動詞の補語になり「~することだ」という意味を表します。「主語→is→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-010",
-      bank: ["i","went","to","the","store","to","buy","bread","."],
-      answer: ["i","went","to","the","store","to","buy","bread","."],
-      explanation: "「パンを買うために店へ行った」という文です。「主語→動詞→場所→to+動詞の原形」の語順を確認しましょう。",
+      id: "infinitive-007",
+      bank: ["i","want","to","try","something","new","."],
+      answer: ["i","want","to","try","something","new","."],
+      explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→try→something new」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-011",
-      bank: ["he","runs","every","morning","to","stay","healthy","."],
-      answer: ["he","runs","every","morning","to","stay","healthy","."],
-      explanation: "「健康を保つために毎朝走る」という目的を to+動詞の原形 で表します。動詞のあとに続けて置きます。",
+      id: "infinitive-008",
+      bank: ["they","don't","have","enough","time","to","sleep","."],
+      answer: ["they","don't","have","enough","time","to","sleep","."],
+      explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「主語→have→enough time→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-012",
-      bank: ["they","study","hard","to","pass","the","test","."],
-      answer: ["they","study","hard","to","pass","the","test","."],
-      explanation: "「テストに合格するために一生懸命勉強する」という文です。目的の to+動詞の原形 は文末に置きます。",
+      id: "infinitive-009",
+      bank: ["there","are","many","good","places","to","visit","in kyoto","."],
+      answer: ["there","are","many","good","places","to","visit","in kyoto","."],
+      explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「there→are→places→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-013",
-      bank: ["mika","called","me","to","ask","a","question","."],
-      answer: ["mika","called","me","to","ask","a","question","."],
-      explanation: "「質問するために私に電話した」という目的の文です。to+動詞の原形が「なぜ電話したか」を説明します。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "infinitive-purpose-014",
-      bank: ["we","went","to","the","beach","to","swim","."],
-      answer: ["we","went","to","the","beach","to","swim","."],
-      explanation: "「泳ぐために海へ行った」という文です。「主語→動詞→場所→to+動詞の原形」の順序を守りましょう。",
+      id: "infinitive-010",
+      bank: ["many sttudents","use","the internet","to","play games","."],
+      answer: ["many sttudents","use","the internet","to","play games","."],
+      explanation: "「~するために」という目的は「to+動詞の原形」で表します。「主語→use→the internet→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-015",
-      bank: ["i","turned","on","the","tv","to","watch","news","."],
-      answer: ["i","turned","on","the","tv","to","watch","news","."],
-      explanation: "「ニュースを見るためにテレビをつけた」という目的の文です。to+動詞の原形は行動の理由を表します。",
+      id: "infinitive-011",
+      bank: ["i'm","glad","to","hear","that","."],
+      answer: ["i'm","glad","to","hear","that","."],
+      explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→be動詞→glad→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-016",
-      bank: ["tom","saved","money","to","buy","a","bike","."],
-      answer: ["tom","saved","money","to","buy","a","bike","."],
-      explanation: "「自転車を買うためにお金を貯めた」という文です。目的を表す to+動詞の原形 は動詞のあとに置きます。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "infinitive-purpose-017",
-      bank: ["she","went","to","america","to","study","music","."],
-      answer: ["she","went","to","america","to","study","music","."],
-      explanation: "「音楽を学ぶためにアメリカへ行った」という文です。america は共通固有名詞リストにあるので小文字で使います。",
+      id: "infinitive-012",
+      bank: ["many","videos","are","easy","to","understand",".","."],
+      answer: ["many","videos","are","easy","to","understand",".","."],
+      explanation: "easy to+動詞の原形 で「~するのが簡単だ」という意味になります。「主語→are→easy→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-018",
-      bank: ["he","got","up","early","to","catch","the","bus","."],
-      answer: ["he","got","up","early","to","catch","the","bus","."],
-      explanation: "「バスに乗るために早く起きた」という目的の文です。to+動詞の原形が理由を説明する働きをします。",
+      id: "infinitive-013",
+      bank: ["we","took","a","bus","to","go","home","."],
+      answer: ["we","took","a","bus","to","go","home","."],
+      explanation: "「~するために」という目的は「to+動詞の原形」で表します。「主語→took→a bus→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-019",
-      bank: ["ken","went","to","the","gym","to","train","."],
-      answer: ["ken","went","to","the","gym","to","train","."],
-      explanation: "「トレーニングするためにジムへ行った」という文です。人名 ken は alwaysCapitalize で先頭を大文字にします。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "infinitive-purpose-020",
-      bank: ["i","cleaned","my","room","to","relax","."],
-      answer: ["i","cleaned","my","room","to","relax","."],
-      explanation: "「くつろぐために部屋を掃除した」という文です。to+動詞の原形は文末に置いて目的を表します。",
+      id: "infinitive-014",
+      bank: ["he","is","sure","to","come","."],
+      answer: ["he","is","sure","to","come","."],
+      explanation: "sure to+動詞の原形 で「きっと~する」という意味になります。「主語→is→sure→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-021",
-      bank: ["they","came","to","japan","to","learn","japanese","."],
-      answer: ["they","came","to","japan","to","learn","japanese","."],
-      explanation: "「日本語を学ぶために日本に来た」という文です。japan と japanese は共通固有名詞リストにあるので小文字で使います。",
+      id: "infinitive-015",
+      bank: ["i","am","sorry","to","trouble","you","."],
+      answer: ["i","am","sorry","to","trouble","you","."],
+      explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→am→sorry→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-022",
-      bank: ["mika","practices","the","piano","to","join","the","concert","."],
-      answer: ["mika","practices","the","piano","to","join","the","concert","."],
-      explanation: "「コンサートに参加するためにピアノを練習する」という目的の文です。動詞のあとに to+動詞の原形 を続けます。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "infinitive-purpose-023",
-      bank: ["we","stopped","by","the","cafe","to","rest","."],
-      answer: ["we","stopped","by","the","cafe","to","rest","."],
-      explanation: "「休むためにカフェに立ち寄った」という文です。「主語→動詞→場所→to+動詞の原形」の順番で組み立てます。",
+      id: "infinitive-016",
+      bank: ["my mother","looked","worried","to","see","that","."],
+      answer: ["my mother","looked","worried","to","see","that","."],
+      explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→looked→worried→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-024",
-      bank: ["he","went","to","the","station","to","meet","tom","."],
-      answer: ["he","went","to","the","station","to","meet","tom","."],
-      explanation: "「トムに会うために駅へ行った」という文です。目的の to+動詞の原形 は場所を表す語句のあとに置きます。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "infinitive-purpose-025",
-      bank: ["i","went","to","the","hospital","to","see","doctors","."],
-      answer: ["i","went","to","the","hospital","to","see","doctors","."],
-      explanation: "「医者に会うために病院へ行った」という文です。to+動詞の原形が「なぜ病院へ行ったか」を表します。",
+      id: "infinitive-017",
+      bank: ["we","are","old","enough","to","drive","."],
+      answer: ["we","are","old","enough","to","drive","."],
+      explanation: "形容詞+enough+to+動詞の原形 で「~するのに十分…だ」という意味になります。「主語→are→old→enough→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-026",
-      bank: ["she","woke","up","early","to","make","breakfast","."],
-      answer: ["she","woke","up","early","to","make","breakfast","."],
-      explanation: "「朝食を作るために早く起きた」という文です。to+動詞の原形は文の後ろに置いて目的を説明します。",
+      id: "infinitive-018",
+      bank: ["you","must","be","careful","not","to","do","such a mistake","again","."],
+      answer: ["you","must","be","careful","not","to","do","such a mistake","again","."],
+      explanation: "not to+動詞の原形 で「~しないように」という否定の目的を表します。「主語→must be careful→not→to→動詞の原形」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-027",
-      bank: ["ken","and","tom","went","out","to","play","soccer","."],
-      answer: ["ken","and","tom","went","out","to","play","soccer","."],
-      explanation: "「サッカーをするために外に出た」という文です。主語が2人でも語順は「主語→動詞→to+動詞の原形」のままです。",
-      alwaysCapitalize: ["ken","tom"]
-    },
-    {
-      id: "infinitive-purpose-028",
-      bank: ["i","saved","time","to","read","books","."],
-      answer: ["i","saved","time","to","read","books","."],
-      explanation: "「本を読むために時間を確保した」という文です。to+動詞の原形は目的語のあとに置くこともできます。",
+      id: "infinitive-019",
+      bank: ["i","want","to","go","to","the onsen","."],
+      answer: ["i","want","to","go","to","the onsen","."],
+      explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→go→to→場所」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-029",
-      bank: ["mika","went","to","the","shop","to","buy","gifts","."],
-      answer: ["mika","went","to","the","shop","to","buy","gifts","."],
-      explanation: "「プレゼントを買うために店へ行った」という文です。「主語→動詞→場所→to+動詞の原形」の順序で表します。",
-      alwaysCapitalize: ["mika"]
+      id: "infinitive-020",
+      bank: ["my dream","is","to","visit","italy","someday","."],
+      answer: ["my dream","is","to","visit","italy","someday","."],
+      explanation: "「to+動詞の原形」が be動詞の補語になり「~することだ」という意味を表します。「主語→is→to→visit→italy」の順です。",
+      alwaysCapitalize: []
     },
     {
-      id: "infinitive-purpose-030",
-      bank: ["he","studies","every","day","to","become","a","doctor","."],
-      answer: ["he","studies","every","day","to","become","a","doctor","."],
-      explanation: "「医者になるために毎日勉強する」という目的の文です。to+動詞の原形が将来の目標を表しています。",
+      id: "infinitive-021",
+      bank: ["it","is","important","to","have","dreams","."],
+      answer: ["it","is","important","to","have","dreams","."],
+      explanation: "It is ... to ~ で「~することは…だ」という形式主語構文になります。「It→is→important→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-022",
+      bank: ["it","is","a lot of","fun","to","listen","to","music","."],
+      answer: ["it","is","a lot of","fun","to","listen","to","music","."],
+      explanation: "It is ... to ~ で「~することは…だ」という形式主語構文になります。「It→is→a lot of fun→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-023",
+      bank: ["volunteer activities","will","be","a good chance","to","think about","things","we","can","do","for other people","."],
+      answer: ["volunteer activities","will","be","a good chance","to","think about","things","we","can","do","for other people","."],
+      explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「主語→will be→a good chance→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-024",
+      bank: ["it","is","important","for","young people","to","learn","foreign languages",".","."],
+      answer: ["it","is","important","for","young people","to","learn","foreign languages",".","."],
+      explanation: "It is ... for 人 to ~ で「(人)にとって~することは…だ」という意味になります。「It→is→important→for→young people→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-025",
+      bank: ["i","hope","to","travel","around the world","someday",".","."],
+      answer: ["i","hope","to","travel","around the world","someday",".","."],
+      explanation: "hope to+動詞の原形 で「~することを望む」という意味になります。「主語→hope→to→travel→around the world」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-026",
+      bank: ["i","want","you","to","come","and","help","me","."],
+      answer: ["i","want","you","to","come","and","help","me","."],
+      explanation: "want + 人 + to + 動詞の原形 で「(人)に~してほしい」という意味になります。「主語→want→人→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-027",
+      bank: ["my mother","told","me","not","to","go","there","alone","."],
+      answer: ["my mother","told","me","not","to","go","there","alone","."],
+      explanation: "tell + 人 + not to + 動詞の原形 で「(人)に~しないように言う」という意味になります。「主語→told→人→not→to→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-028",
+      bank: ["please","help","me","clean","the","room","."],
+      answer: ["please","help","me","clean","the","room","."],
+      explanation: "help + 人 + 動詞の原形 で「(人)が~するのを手伝う」という意味になります。「please→help→人→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-029",
+      bank: ["keiko","helped","mike","read","japanese","books","."],
+      answer: ["keiko","helped","mike","read","japanese","books","."],
+      explanation: "help + 人 + 動詞の原形 で「(人)が~するのを手伝う」という意味になります。「主語→helped→人→動詞の原形」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-030",
+      bank: ["let","me","know","if","you","need","any","help","."],
+      answer: ["let","me","know","if","you","need","any","help","."],
+      explanation: "let + 人 + 動詞の原形 で「(人)に~させる」という使役の意味になります。「let→me→know」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "infinitive-031",
+      bank: ["i","won't","let","him","do","that","again","."],
+      answer: ["i","won't","let","him","do","that","again","."],
+      explanation: "let + 人 + 動詞の原形 で「(人)に~させる」という使役の意味になります。「主語→won't let→him→動詞の原形」の順です。",
       alwaysCapitalize: []
     }
   ]
 });
 
 UNITS.push({
-  id: "have-to",
-  name: "have to",
-  description: "「~しなければならない」have to+動詞の原形",
+  id: "gerund",
+  name: "動名詞の文",
+  description: "「動詞のing形」が主語・目的語になる文",
   questions: [
     {
-      id: "have-to-001",
-      bank: ["have","to","do","my","homework","i","."],
-      answer: ["i","have","to","do","my","homework","."],
-      explanation: "「~しなければならない」は have to + 動詞の原形。「主語→have to→動詞の原形→目的語」の順です。",
+      id: "gerund-001",
+      bank: ["i","like","reading","books","very","much","."],
+      answer: ["i","like","reading","books","very","much","."],
+      explanation: "like のあとは動名詞（動詞のing形）が続きます。「主語→like→動詞ing→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-002",
-      bank: ["has","to","clean","she","room","her","."],
-      answer: ["she","has","to","clean","her","room","."],
-      explanation: "主語が3人称単数（she）のとき、haveはhasになります。並び順は「主語→has to→動詞の原形→目的語」です。",
+      id: "gerund-002",
+      bank: ["running","with","you","was","a","happy","memory",".","."],
+      answer: ["running","with","you","was","a","happy","memory",".","."],
+      explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-003",
-      bank: ["have","to","early","get","up","we","."],
-      answer: ["we","have","to","get","up","early","."],
-      explanation: "主語がwe（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→様態を表す語句」です。",
+      id: "gerund-003",
+      bank: ["i","started","practicing","the","piano","."],
+      answer: ["i","started","practicing","the","piano","."],
+      explanation: "start のあとは動名詞（動詞のing形）が続きます。「主語→start→動詞ing→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-004",
-      bank: ["has","to","study","math","ken","hard","."],
-      answer: ["ken","has","to","study","math","hard","."],
-      explanation: "主語が人名（3人称単数）のkenのときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語→様態」です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "have-to-005",
-      bank: ["do","not","have","to","hurry","you","."],
-      answer: ["you","do","not","have","to","hurry","."],
-      explanation: "「~する必要はない」はdo not have toで表します。並び順は「主語→do not have to→動詞の原形」です。",
+      id: "gerund-004",
+      bank: ["i","enjoyed","watching","a","rugby game",".","."],
+      answer: ["i","enjoyed","watching","a","rugby game",".","."],
+      explanation: "enjoy のあとは動名詞（動詞のing形）が続きます。「主語→enjoy→動詞ing→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-006",
-      bank: ["does","not","have","to","work","he","today","."],
-      answer: ["he","does","not","have","to","work","today","."],
-      explanation: "主語が3人称単数の否定文はdoes not have toになります。並び順は「主語→does not have to→動詞の原形→時を表す語句」です。",
+      id: "gerund-005",
+      bank: ["she","was","excited","about","studying","in america",".","."],
+      answer: ["she","was","excited","about","studying","in america",".","."],
+      explanation: "前置詞 about のあとにも動名詞（動詞のing形）が続きます。「主語→be動詞→excited about→動詞ing」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-007",
-      bank: ["has","to","wash","car","the","mika","."],
-      answer: ["mika","has","to","wash","the","car","."],
-      explanation: "主語がmika（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "have-to-008",
-      bank: ["have","to","take","medicine","this","i","."],
-      answer: ["i","have","to","take","this","medicine","."],
-      explanation: "主語がI（1人称）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語」です。",
+      id: "gerund-006",
+      bank: ["playing","soccer","makes","me","happy","."],
+      answer: ["playing","soccer","makes","me","happy","."],
+      explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→動詞→目的語→補語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-009",
-      bank: ["have","to","practice","tennis","they","hard","."],
-      answer: ["they","have","to","practice","tennis","hard","."],
-      explanation: "主語がthey（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語→様態」です。",
+      id: "gerund-007",
+      bank: ["sleeping","a lot","is","a","good","way",".","."],
+      answer: ["sleeping","a lot","is","a","good","way",".","."],
+      explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-010",
-      bank: ["do","you","have","to","school","go","to","?"],
-      answer: ["do","you","have","to","go","to","school","?"],
-      explanation: "have toの疑問文はdoを主語の前に置きます。並び順は「do→主語→have to→動詞の原形→場所」です。",
+      id: "gerund-008",
+      bank: ["studying","is","very","important","for","us","."],
+      answer: ["studying","is","very","important","for","us","."],
+      explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "have-to-011",
-      bank: ["does","tom","have","to","piano","play","the","?"],
-      answer: ["does","tom","have","to","play","the","piano","?"],
-      explanation: "主語が3人称単数の疑問文はdoesを使います。並び順は「does→主語→have to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "have-to-012",
-      bank: ["not","she","have","to","cook","dinner","does","."],
-      answer: ["she","does","not","have","to","cook","dinner","."],
-      explanation: "主語が3人称単数の否定文はdoes not have toになります。並び順は「主語→does not have to→動詞の原形→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-013",
-      bank: ["have","to","the","dog","walk","we","."],
-      answer: ["we","have","to","walk","the","dog","."],
-      explanation: "主語がwe（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-014",
-      bank: ["has","to","letter","write","tom","a","."],
-      answer: ["tom","has","to","write","a","letter","."],
-      explanation: "主語がtom（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "have-to-015",
-      bank: ["do","not","have","to","worry","we","."],
-      answer: ["we","do","not","have","to","worry","."],
-      explanation: "主語we（複数）の否定文はdo not have toになります。並び順は「主語→do not have to→動詞の原形」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-016",
-      bank: ["has","to","help","mother","her","mika","."],
-      answer: ["mika","has","to","help","her","mother","."],
-      explanation: "主語がmika（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "have-to-017",
-      bank: ["have","to","hard","study","japanese","students","."],
-      answer: ["students","have","to","study","japanese","hard","."],
-      explanation: "主語がstudents（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語→様態」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-018",
-      bank: ["does","have","to","school","tom","after","work","?"],
-      answer: ["does","tom","have","to","work","after","school","?"],
-      explanation: "主語が3人称単数の疑問文はdoesを使います。並び順は「does→主語→have to→動詞の原形→時を表す語句」です。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "have-to-019",
-      bank: ["do","not","have","to","answer","you","."],
-      answer: ["you","do","not","have","to","answer","."],
-      explanation: "主語youの否定文はdo not have toになります。並び順は「主語→do not have to→動詞の原形」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-020",
-      bank: ["has","to","letter","this","read","ms.","smith","."],
-      answer: ["ms.","smith","has","to","read","this","letter","."],
-      explanation: "主語がMs. Smith（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["smith"]
-    },
-    {
-      id: "have-to-021",
-      bank: ["have","to","home","stay","i","today","."],
-      answer: ["i","have","to","stay","home","today","."],
-      explanation: "主語がI（1人称）のときはhave toを使います。並び順は「主語→have to→動詞の原形→場所→時」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-022",
-      bank: ["does","not","have","to","early","get","up","he","."],
-      answer: ["he","does","not","have","to","get","up","early","."],
-      explanation: "主語が3人称単数の否定文はdoes not have toになります。並び順は「主語→does not have to→動詞の原形→様態」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-023",
-      bank: ["have","to","buy","new","a","bag","we","."],
-      answer: ["we","have","to","buy","a","new","bag","."],
-      explanation: "主語がwe（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語（冠詞＋形容詞＋名詞）」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-024",
-      bank: ["has","to","room","clean","his","ken","."],
-      answer: ["ken","has","to","clean","his","room","."],
-      explanation: "主語がken（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "have-to-025",
-      bank: ["do","not","have","to","cook","they","."],
-      answer: ["they","do","not","have","to","cook","."],
-      explanation: "主語they（複数）の否定文はdo not have toになります。並び順は「主語→do not have to→動詞の原形」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-026",
-      bank: ["what","time","do","have","to","leave","you","?"],
-      answer: ["what","time","do","you","have","to","leave","?"],
-      explanation: "疑問詞whatを使うhave toの疑問文は、whatを文頭に置きdoを続けます。並び順は「what time→do→主語→have to→動詞の原形」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-027",
-      bank: ["have","to","wear","uniform","school","students","a","."],
-      answer: ["students","have","to","wear","a","school","uniform","."],
-      explanation: "主語がstudents（複数）のときはhave toを使います。並び順は「主語→have to→動詞の原形→目的語」です。",
-      alwaysCapitalize: []
-    },
-    {
-      id: "have-to-028",
-      bank: ["has","to","japan","visit","she","."],
-      answer: ["she","has","to","visit","japan","."],
-      explanation: "主語がshe（3人称単数）のときはhas toを使います。並び順は「主語→has to→動詞の原形→目的語（地名）」です。",
-      alwaysCapitalize: ["japan"]
-    },
-    {
-      id: "have-to-029",
-      bank: ["does","not","have","to","the","dog","walk","mika","."],
-      answer: ["mika","does","not","have","to","walk","the","dog","."],
-      explanation: "主語が3人称単数の否定文はdoes not have toになります。並び順は「主語→does not have to→動詞の原形→目的語」です。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "have-to-030",
-      bank: ["have","to","monday","on","school","go","to","i","."],
-      answer: ["i","have","to","go","to","school","on","monday","."],
-      explanation: "曜日の前には前置詞onを使います。並び順は「主語→have to→動詞の原形→場所→時（曜日）」です。",
+      id: "gerund-009",
+      bank: ["i","enjoy","making","new","friends","."],
+      answer: ["i","enjoy","making","new","friends","."],
+      explanation: "enjoy のあとは動名詞（動詞のing形）が続きます。「主語→enjoy→動詞ing→目的語」の順です。",
       alwaysCapitalize: []
     }
   ]
@@ -2280,217 +1716,560 @@ UNITS.push({
 
 UNITS.push({
   id: "passive",
-  name: "受け身",
-  description: "be動詞+過去分詞+by~",
+  name: "受け身の文",
+  description: "「be動詞+過去分詞」で表す受動態",
   questions: [
     {
       id: "passive-001",
-      bank: ["is","written","by","this","letter","her","."],
-      answer: ["this","letter","is","written","by","her","."],
+      bank: ["this","is","a","song","loved","by","young people","."],
+      answer: ["this","is","a","song","loved","by","young people","."],
       explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "passive-002",
-      bank: ["cleaned","room","is","every","day","this","."],
-      answer: ["this","room","is","cleaned","every","day","."],
-      explanation: "現在の受け身は「is/are+過去分詞」で表します。「主語→be動詞→過去分詞→修飾語句」の順です。",
+      bank: ["that","park","is","called","midori park","."],
+      answer: ["that","park","is","called","midori park","."],
+      explanation: "動作をする人が示されない受け身の文です。「主語→be動詞→過去分詞→補語」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "passive-003",
-      bank: ["was","built","house","this","1990","in","."],
-      answer: ["this","house","was","built","in","1990","."],
-      explanation: "過去の受け身は「was/were+過去分詞」で表します。「主語→was→過去分詞→by/in→時」の順です。",
+      bank: ["soccer","is","loved","by","many people","."],
+      answer: ["soccer","is","loved","by","many people","."],
+      explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "passive-004",
-      bank: ["are","spoken","around","the","world","many","languages","."],
-      answer: ["many","languages","are","spoken","around","the","world","."],
-      explanation: "主語が複数のときはareを使います。「主語(複数)→are→過去分詞→修飾語句」の順です。",
+      bank: ["we","were","surprised","at","the news","."],
+      answer: ["we","were","surprised","at","the news","."],
+      explanation: "byではなくatを使う受け身の熟語表現です。「主語→be動詞(過去形)→過去分詞→at→原因」の順です。",
       alwaysCapitalize: []
     },
     {
       id: "passive-005",
-      bank: ["cake","was","made","by","this","mika","."],
-      answer: ["this","cake","was","made","by","mika","."],
-      explanation: "動作をする人は「by+人」で表します。「主語→be動詞→過去分詞→by→人」の順です。人名mikaは最初を大文字にします。",
-      alwaysCapitalize: ["mika"]
+      bank: ["an idea contest","will","be","held","next month","."],
+      answer: ["an idea contest","will","be","held","next month","."],
+      explanation: "未来の受け身は「will+be+過去分詞」の形。「主語→will→be→過去分詞→時を表す語句」の順です。",
+      alwaysCapitalize: []
     },
     {
       id: "passive-006",
-      bank: ["cars","are","made","japan","in","."],
-      answer: ["cars","are","made","in","japan","."],
-      explanation: "場所を表すときはby~ではなくin~を使うこともあります。「主語→be動詞→過去分詞→in→場所」の順です。",
+      bank: ["this","book","is","read","by","many","people","around","the world","."],
+      answer: ["this","book","is","read","by","many","people","around","the world","."],
+      explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "present-perfect",
+  name: "現在完了の文",
+  description: "継続・完了・経験を表す現在完了形",
+  questions: [
+    {
+      id: "present-perfect-001",
+      bank: ["she","has","played","the piano","for","ten","years","."],
+      answer: ["she","has","played","the piano","for","ten","years","."],
+      explanation: "現在完了は「have/has+過去分詞」の形で、継続を表します。「主語→have/has→過去分詞→期間」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-007",
-      bank: ["was","this","song","loved","people","by","many","."],
-      answer: ["this","song","was","loved","by","many","people","."],
-      explanation: "受け身は動作を受ける側を主語にする表現です。「主語→be動詞→過去分詞→by→人」の順で表します。",
+      id: "present-perfect-002",
+      bank: ["my mother","has","influenced","my life","a lot","."],
+      answer: ["my mother","has","influenced","my life","a lot","."],
+      explanation: "現在完了は過去の行為が今も影響を及ぼしていることを表します。「主語→have/has→過去分詞→目的語→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-008",
-      bank: ["is","used","this","by","computer","students","."],
-      answer: ["this","computer","is","used","by","students","."],
-      explanation: "主語が単数のときはisを使います。「主語→is→過去分詞→by→動作をする人」の順です。",
+      id: "present-perfect-003",
+      bank: ["i","have","been","playing","tennis","since","i","was","in elementary school","."],
+      answer: ["i","have","been","playing","tennis","since","i","was","in elementary school","."],
+      explanation: "現在完了進行形は「have/has been+動詞ing」で、動作が今も続いていることを表します。「主語→have/has been→動詞ing→since→期間」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-009",
-      bank: ["were","these","pictures","taken","tom","by","."],
-      answer: ["these","pictures","were","taken","by","tom","."],
-      explanation: "主語が複数で過去のときはwereを使います。「主語→were→過去分詞→by→人」の順です。人名tomは大文字にします。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "passive-010",
-      bank: ["shop","is","sold","this","bread","in","."],
-      answer: ["bread","is","sold","in","this","shop","."],
-      explanation: "受け身文でも場所を表す語句を後ろに続けられます。「主語→be動詞→過去分詞→in→場所」の順です。",
+      id: "present-perfect-004",
+      bank: ["i","have","seen","the movie","many","times","."],
+      answer: ["i","have","seen","the movie","many","times","."],
+      explanation: "現在完了の経験用法は「~したことがある」という意味を表します。「主語→have/has→過去分詞→目的語→回数」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-011",
-      bank: ["was","novel","written","by","famous","this","a","writer","."],
-      answer: ["this","novel","was","written","by","a","famous","writer","."],
-      explanation: "byのあとには動作をする人を表す語句が続きます。「主語→was→過去分詞→by→人」の順です。",
+      id: "present-perfect-005",
+      bank: ["it","has","been","raining","since","yesterday","."],
+      answer: ["it","has","been","raining","since","yesterday","."],
+      explanation: "現在完了進行形は「have/has been+動詞ing」で、動作が今も続いていることを表します。「主語→have/has been→動詞ing→since→起点」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-012",
-      bank: ["english","spoken","is","australia","in","."],
-      answer: ["english","is","spoken","in","australia","."],
-      explanation: "englishは共通固有名詞リストの語で、最初を大文字にして表示されます。「主語→is→過去分詞→in→場所」の順です。",
+      id: "present-perfect-006",
+      bank: ["we","have","not","stopped","using","plastic bags","."],
+      answer: ["we","have","not","stopped","using","plastic bags","."],
+      explanation: "現在完了の否定形は「まだ~していない」という完了用法を表します。「主語→have/has not→過去分詞→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-013",
-      bank: ["was","bag","found","this","ken","by","."],
-      answer: ["this","bag","was","found","by","ken","."],
-      explanation: "findの過去分詞はfoundです。「主語→was→過去分詞→by→人」の順で表します。人名kenは大文字にします。",
-      alwaysCapitalize: ["ken"]
-    },
-    {
-      id: "passive-014",
-      bank: ["are","letters","written","every","week","these","."],
-      answer: ["these","letters","are","written","every","week","."],
-      explanation: "主語が複数で現在の文なのでareを使います。「主語→are→過去分詞→修飾語句」の順です。",
+      id: "present-perfect-007",
+      bank: ["i","have","been","interested","in","volunteer activities","."],
+      answer: ["i","have","been","interested","in","volunteer activities","."],
+      explanation: "現在完了は過去から続く状態を表すことができます。「主語→have/has been→形容詞→in→対象」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-015",
-      bank: ["was","broken","window","the","the","cat","by","."],
-      answer: ["the","window","was","broken","by","the","cat","."],
-      explanation: "breakの過去分詞はbrokenです。「主語→was→過去分詞→by→動作をする人や物」の順です。",
+      id: "present-perfect-008",
+      bank: ["the train","has","already","left","the station","."],
+      answer: ["the train","has","already","left","the station","."],
+      explanation: "already は「もう~した」と完了を強調する語です。「主語→have/has→already→過去分詞→修飾語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-016",
-      bank: ["temple","this","was","hundred","years","built","ago","a","."],
-      answer: ["this","temple","was","built","a","hundred","years","ago","."],
-      explanation: "時を表す語句は文の最後に置きます。「主語→was→過去分詞→時を表す語句」の順です。",
+      id: "present-perfect-009",
+      bank: ["i","have","decided","to","use","my own shopping bag","."],
+      answer: ["i","have","decided","to","use","my own shopping bag","."],
+      explanation: "現在完了は過去の決定が今の状態に結びつくことを表します。「主語→have/has→過去分詞→to+動詞→目的語」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-017",
-      bank: ["dishes","washed","every","are","these","day","."],
-      answer: ["these","dishes","are","washed","every","day","."],
-      explanation: "washの過去分詞はwashedです。「主語→are→過去分詞→頻度を表す語句」の順です。",
+      id: "present-perfect-010",
+      bank: ["i","have","never","been","to","her concert","."],
+      answer: ["i","have","never","been","to","her concert","."],
+      explanation: "never は「一度も~ない」と経験を否定する語です。「主語→have/has never→過去分詞→to+場所」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "participle",
+  name: "分詞の後置修飾",
+  description: "「〜している◯◯」など分詞が名詞を後ろから修飾する文",
+  questions: [
+    {
+      id: "participle-001",
+      bank: ["i","said","thank you","to","the","people","working","there","."],
+      answer: ["i","said","thank you","to","the","people","working","there","."],
+      explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「the people→working→there」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-018",
-      bank: ["was","door","opened","by","the","tom","."],
-      answer: ["the","door","was","opened","by","tom","."],
-      explanation: "openの過去分詞はopenedです。「主語→was→過去分詞→by→人」の順です。人名tomは大文字にします。",
-      alwaysCapitalize: ["tom"]
-    },
-    {
-      id: "passive-019",
-      bank: ["is","by","this","picture","loved","everyone","."],
-      answer: ["this","picture","is","loved","by","everyone","."],
-      explanation: "loveの過去分詞はlovedです。「主語→is→過去分詞→by→人」の順で表します。",
+      id: "participle-002",
+      bank: ["people","listening to","our songs","looked","very happy","."],
+      answer: ["people","listening to","our songs","looked","very happy","."],
+      explanation: "現在分詞句が主語の名詞を後ろから修飾し、「~している◯◯」という意味になります。「people→listening to our songs→looked」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-020",
-      bank: ["cars","sold","are","many","countries","in","."],
-      answer: ["cars","are","sold","in","many","countries","."],
-      explanation: "sellの過去分詞はsoldです。「主語→are→過去分詞→in→場所」の順です。",
+      id: "participle-003",
+      bank: ["we","are","looking","at","the future","with","hopes and dreams","."],
+      answer: ["we","are","looking","at","the future","with","hopes and dreams","."],
+      explanation: "「be動詞+ing」の現在進行形で「~しているところだ」という今の動作を表します。「we→are looking→at the future」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-021",
-      bank: ["was","room","this","cleaned","mika","by","."],
-      answer: ["this","room","was","cleaned","by","mika","."],
-      explanation: "cleanの過去分詞はcleanedです。「主語→was→過去分詞→by→人」の順です。人名mikaは大文字にします。",
-      alwaysCapitalize: ["mika"]
-    },
-    {
-      id: "passive-022",
-      bank: ["is","this","by","song","sung","students","many","."],
-      answer: ["this","song","is","sung","by","many","students","."],
-      explanation: "singの過去分詞はsungです。「主語→is→過去分詞→by→人」の順で表します。",
+      id: "participle-004",
+      bank: ["many people","from","different countries","are","living","in our city","."],
+      answer: ["many people","from","different countries","are","living","in our city","."],
+      explanation: "「be動詞+ing」の現在進行形で「~している」という今の状態を表します。「many people from different countries→are living→in our city」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-023",
-      bank: ["these","were","toys","made","japan","in","."],
-      answer: ["these","toys","were","made","in","japan","."],
-      explanation: "主語が複数で過去のときはwereを使います。「主語→were→過去分詞→in→場所」の順です。",
+      id: "participle-005",
+      bank: ["the bus driver","was","working","for","the people","on the bus","."],
+      answer: ["the bus driver","was","working","for","the people","on the bus","."],
+      explanation: "「be動詞+ing」の過去進行形で「~していた」という過去のある時点の動作を表します。「the bus driver→was working→for the people」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-024",
-      bank: ["bridge","was","built","hundred","years","this","two","ago","."],
-      answer: ["this","bridge","was","built","two","hundred","years","ago","."],
-      explanation: "buildの過去分詞はbuiltです。「主語→was→過去分詞→時を表す語句」の順で表します。",
+      id: "participle-006",
+      bank: ["i'm","having","a","good","time","here","."],
+      answer: ["i'm","having","a","good","time","here","."],
+      explanation: "「be動詞+ing」の現在進行形で「~しているところだ」という今の状態を表します。「i'm→having→a good time」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-025",
-      bank: ["is","by","classroom","this","used","students","."],
-      answer: ["this","classroom","is","used","by","students","."],
-      explanation: "useの過去分詞はusedです。「主語→is→過去分詞→by→人」の順で表します。",
+      id: "participle-007",
+      bank: ["the students","in canada","are","looking","forward","to","meeting","you","."],
+      answer: ["the students","in canada","are","looking","forward","to","meeting","you","."],
+      explanation: "「look forward to ~ing」で「~することを楽しみにする」という意味になります。「the students in Canada→are looking forward to→meeting you」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-026",
-      bank: ["were","stars","seen","last","night","many","."],
-      answer: ["many","stars","were","seen","last","night","."],
-      explanation: "seeの過去分詞はseenです。「主語→were→過去分詞→時を表す語句」の順です。",
+      id: "participle-008",
+      bank: ["i","was","watching","students","playing","volleyball","."],
+      answer: ["i","was","watching","students","playing","volleyball","."],
+      explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「students→playing→volleyball」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-027",
-      bank: ["is","taught","math","to","us","by","ms.","brown","."],
-      answer: ["math","is","taught","to","us","by","ms.","brown","."],
-      explanation: "teachの過去分詞はtaughtです。「主語→is→過去分詞→to→人→by→人」の順で表します。ms.は共通固有名詞リストの語です。",
-      alwaysCapitalize: ["brown"]
-    },
+      id: "participle-009",
+      bank: ["i","know","the girl","sitting","near","the window","."],
+      answer: ["i","know","the girl","sitting","near","the window","."],
+      explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「the girl→sitting→near the window」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "relative-pronoun",
+  name: "関係代名詞の文",
+  description: "「〜する◯◯」など関係代名詞でつなぐ文",
+  questions: [
     {
-      id: "passive-028",
-      bank: ["is","spoken","this","country","in","japanese","."],
-      answer: ["japanese","is","spoken","in","this","country","."],
-      explanation: "japaneseは共通固有名詞リストの語で、最初を大文字にして表示されます。「主語→is→過去分詞→in→場所」の順です。",
+      id: "relative-pronoun-001",
+      bank: ["i","have","one","thing","i","want","to","do","."],
+      answer: ["i","have","one","thing","i","want","to","do","."],
+      explanation: "目的語の関係代名詞は省略できます。「先行詞(もの)→(that省略)→I→want to do」の順です。",
       alwaysCapitalize: []
     },
     {
-      id: "passive-029",
-      bank: ["was","cup","this","broken","tom","by","."],
-      answer: ["this","cup","was","broken","by","tom","."],
-      explanation: "breakの過去分詞はbrokenです。「主語→was→過去分詞→by→動作をする人」の順です。人名tomは大文字にします。",
-      alwaysCapitalize: ["tom"]
+      id: "relative-pronoun-002",
+      bank: ["this","is","the","best","picture book","that","i","have","ever","read","."],
+      answer: ["this","is","the","best","picture book","that","i","have","ever","read","."],
+      explanation: "that はものを説明する関係代名詞です。「先行詞(もの)→that→I→have ever read」の順です。",
+      alwaysCapitalize: []
     },
     {
-      id: "passive-030",
-      bank: ["are","stores","many","closed","sunday","on","."],
-      answer: ["many","stores","are","closed","on","sunday","."],
-      explanation: "closeの過去分詞はclosedです。「主語→are→過去分詞→on→曜日」の順で表します。sundayは共通固有名詞リストの語です。",
+      id: "relative-pronoun-003",
+      bank: ["we","asked","foreign people","who","live","in","our city","."],
+      answer: ["we","asked","foreign people","who","live","in","our city","."],
+      explanation: "who は人を説明する関係代名詞です。「先行詞(人)→who→live in our city」の順で後ろから説明を加えます。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-004",
+      bank: ["you","can","have","experiences","you","can","never","get","in japan","."],
+      answer: ["you","can","have","experiences","you","can","never","get","in japan","."],
+      explanation: "目的語の関係代名詞は省略できます。「先行詞(もの)→(that省略)→you→can never get」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-005",
+      bank: ["there","are","not","enough","doctors","to","help","people","in need","."],
+      answer: ["there","are","not","enough","doctors","to","help","people","in need","."],
+      explanation: "to不定詞の形容詞的用法で名詞を説明します。「先行詞(もの)→to help→people in need」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-006",
+      bank: ["you","can","learn","some ideas","which","are","different","from","yours","."],
+      answer: ["you","can","learn","some ideas","which","are","different","from","yours","."],
+      explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→are different from yours」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-007",
+      bank: ["i","am","working","for","a company","which","makes","clothes","in fukui","."],
+      answer: ["i","am","working","for","a company","which","makes","clothes","in fukui","."],
+      explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→makes clothes in fukui」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-008",
+      bank: ["that","is","the event","that","moved","me","the most","."],
+      answer: ["that","is","the event","that","moved","me","the most","."],
+      explanation: "that はものを説明する関係代名詞です。「先行詞(もの)→that→moved me the most」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "relative-pronoun-009",
+      bank: ["i","talked","with my father","about the things","which","happened","on that day","."],
+      answer: ["i","talked","with my father","about the things","which","happened","on that day","."],
+      explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→happened on that day」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "idiom",
+  name: "熟語表現の文",
+  description: "come from / look for など複数語で意味をなす表現",
+  questions: [
+    {
+      id: "idiom-001",
+      bank: ["she","keeps","on","trying","new","things",".","."],
+      answer: ["she","keeps","on","trying","new","things",".","."],
+      explanation: "keep on ~ingは「〜し続ける」という意味の熟語です。「主語→keep on→動詞ing」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-002",
+      bank: ["he","comes","from","yamagata","."],
+      answer: ["he","comes","from","yamagata","."],
+      explanation: "come fromは「〜の出身だ」という意味の熟語です。「主語→come from→出身地」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-003",
+      bank: ["she","came","up","with","a","good","idea","."],
+      answer: ["she","came","up","with","a","good","idea","."],
+      explanation: "come up withは「〜を思いつく」という意味の熟語です。「主語→came up with→思いついた内容」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-004",
+      bank: ["i","can't","wait","for","the summer vacation","."],
+      answer: ["i","can't","wait","for","the summer vacation","."],
+      explanation: "can't wait forは「〜が待ちきれない」という意味の熟語です。「主語→can't wait for→待ち望むもの」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-005",
+      bank: ["these","pictures","bring","back","a lot of","memories","."],
+      answer: ["these","pictures","bring","back","a lot of","memories","."],
+      explanation: "bring backは「〜を思い出させる」という意味の熟語です。「主語→bring back→思い出す内容」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-006",
+      bank: ["what","are","you","looking","for","?"],
+      answer: ["what","are","you","looking","for","?"],
+      explanation: "look forは「〜を探す」という意味の熟語です。疑問文では「what→are→主語→looking for」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-007",
+      bank: ["i","agree","with","you","on","this point","."],
+      answer: ["i","agree","with","you","on","this point","."],
+      explanation: "agree withは「〜に賛成する」という意味の熟語です。「主語→agree with→相手→on→話題」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-008",
+      bank: ["you","should","get","off","the train","at the next station","."],
+      answer: ["you","should","get","off","the train","at the next station","."],
+      explanation: "get offは「〜を降りる」という意味の熟語です。「主語→should get off→乗り物→場所」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-009",
+      bank: ["i","depend","on","his","words","."],
+      answer: ["i","depend","on","his","words","."],
+      explanation: "depend onは「〜を頼りにする」という意味の熟語です。「主語→depend on→頼りにする対象」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "idiom-010",
+      bank: ["he","looks","just","like","his","father","."],
+      answer: ["he","looks","just","like","his","father","."],
+      explanation: "look likeは「〜に似ている」という意味の熟語です。「主語→looks just like→似ている相手」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "conjunction",
+  name: "接続詞を使った文",
+  description: "when/if/because/so/butなどでつなぐ文",
+  questions: [
+    {
+      id: "conjunction-001",
+      bank: ["i","am","happy","when","i","play","soccer","."],
+      answer: ["i","am","happy","when","i","play","soccer","."],
+      explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→am happy→when→主語→play soccer」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-002",
+      bank: ["we","did","our","best",",","but","we","didn't","win","first","place","."],
+      answer: ["we","did","our","best",",","but","we","didn't","win","first","place","."],
+      explanation: "but は「しかし」と対立する内容をつなぐ接続詞です。「主語→did our best→,→but→主語→didn't win」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-003",
+      bank: ["we","cooked","curry and rice","before",",","so","we","can","teach","him","."],
+      answer: ["we","cooked","curry and rice","before",",","so","we","can","teach","him","."],
+      explanation: "so は「だから」と結果を表してつなぐ接続詞です。「主語→cooked curry and rice before→,→so→主語→can teach him」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-004",
+      bank: ["we","can","learn","new things","if","we","go","there","."],
+      answer: ["we","can","learn","new things","if","we","go","there","."],
+      explanation: "if は「もし〜すれば」という条件を表してつなぎます。「主語→can learn new things→if→主語→go there」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-005",
+      bank: ["we","should","not","use","smart phones","before","we","go","to","bed","."],
+      answer: ["we","should","not","use","smart phones","before","we","go","to","bed","."],
+      explanation: "before は「〜する前に」という意味で2つの文をつなぎます。「主語→should not use smart phones→before→主語→go to bed」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-006",
+      bank: ["i","felt","sad","after","he","left","."],
+      answer: ["i","felt","sad","after","he","left","."],
+      explanation: "after は「〜した後で」という意味で2つの文をつなぎます。「主語→felt sad→after→主語→left」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-007",
+      bank: ["you","can","see","a","beautiful","view","from here","if","it's","sunny","."],
+      answer: ["you","can","see","a","beautiful","view","from here","if","it's","sunny","."],
+      explanation: "if は「もし〜すれば」という条件を表してつなぎます。「主語→can see a beautiful view→if→it's sunny」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-008",
+      bank: ["my dream","was","to","help","sick people","when","i","was","young","."],
+      answer: ["my dream","was","to","help","sick people","when","i","was","young","."],
+      explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→my dream was to help sick people→when→主語→was young」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-009",
+      bank: ["i","began","to","play basketball","when","i","was","ten","."],
+      answer: ["i","began","to","play basketball","when","i","was","ten","."],
+      explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→began to play basketball→when→主語→was ten」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-010",
+      bank: ["i","didn't","go","there","because","i","was","very","busy","."],
+      answer: ["i","didn't","go","there","because","i","was","very","busy","."],
+      explanation: "because は「なぜなら〜だから」と理由を表してつなぎます。「主語→didn't go there→because→主語→was very busy」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-011",
+      bank: ["do","you","think","my opinion","is","good","?"],
+      answer: ["do","you","think","my opinion","is","good","?"],
+      explanation: "that は「〜ということ」という意味で動詞の目的語となる節を導きます。「Do→主語→think→(that)→my opinion→is good」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-012",
+      bank: ["i'm","sure","this","will","be","a","good","experience","for","your future","."],
+      answer: ["i'm","sure","this","will","be","a","good","experience","for","your future","."],
+      explanation: "that は「〜ということ」という意味で確信の内容を導く節を作ります。「主語→am sure→(that)→this→will be a good experience」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "conjunction-013",
+      bank: ["i","think","this","book","is","useful","for","you","."],
+      answer: ["i","think","this","book","is","useful","for","you","."],
+      explanation: "that は「〜ということ」という意味で動詞の目的語となる節を導きます。「主語→think→(that)→this book→is useful」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "subjunctive",
+  name: "仮定法の文",
+  description: "wish・ifを使った現実とは異なる仮定の文",
+  questions: [
+    {
+      id: "subjunctive-001",
+      bank: ["i","wish","i","could","run","faster","."],
+      answer: ["i","wish","i","could","run","faster","."],
+      explanation: "I wish + 主語 + could + 動詞の原形 で「(実際はできないけど)~できたらなあ」という現在の事実と異なる願望を表します。「I wish→I→could→run」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-002",
+      bank: ["i","wish","i","had","a friend","like","her","."],
+      answer: ["i","wish","i","had","a friend","like","her","."],
+      explanation: "I wish + 主語 + 過去形 で「(実際はいないけど)~がいたらなあ」という現在の事実と異なる願望を表します。「I wish→I→had→a friend」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-003",
+      bank: ["if","i","had","time",",","i","would","go","with","you","."],
+      answer: ["if","i","had","time",",","i","would","go","with","you","."],
+      explanation: "If + 主語 + 過去形, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→had→time→,→I→would→go」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-004",
+      bank: ["if","there","were","no","air","around you",",","you","couldn't","live","."],
+      answer: ["if","there","were","no","air","around you",",","you","couldn't","live","."],
+      explanation: "If + there + were + no + 名詞, 主語 + couldn't + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→there→were→no→air→,→you→couldn't→live」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-005",
+      bank: ["if","i","had","a dog",",","i","would","be","happy","."],
+      answer: ["if","i","had","a dog",",","i","would","be","happy","."],
+      explanation: "If + 主語 + 過去形, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→had→a dog→,→I→would→be→happy」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-006",
+      bank: ["i","wish","i","had","the","ticket","."],
+      answer: ["i","wish","i","had","the","ticket","."],
+      explanation: "I wish + 主語 + 過去形 で「(実際は持っていないけど)~を持っていたらなあ」という現在の事実と異なる願望を表します。「I wish→I→had→the ticket」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-007",
+      bank: ["i","wish","i","could","speak","english","better","."],
+      answer: ["i","wish","i","could","speak","english","better","."],
+      explanation: "I wish + 主語 + could + 動詞の原形 で「(実際はできないけど)~できたらなあ」という現在の事実と異なる願望を表します。「I wish→I→could→speak」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-008",
+      bank: ["i","wish","there","were","a convenience store","in our village","."],
+      answer: ["i","wish","there","were","a convenience store","in our village","."],
+      explanation: "I wish + there + were + 名詞 で「(実際はないけど)~があったらなあ」という現在の事実と異なる願望を表します。「I wish→there→were→a convenience store」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-009",
+      bank: ["if","i","were","rich",",","i","could","buy","a car","for you","."],
+      answer: ["if","i","were","rich",",","i","could","buy","a car","for you","."],
+      explanation: "If + 主語 + were + 補語, 主語 + could + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→were→rich→,→I→could→buy」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-010",
+      bank: ["if","i","knew","her","e-mail","address",",","i","could","send","the pictures","to her","."],
+      answer: ["if","i","knew","her","e-mail","address",",","i","could","send","the pictures","to her","."],
+      explanation: "If + 主語 + 過去形, 主語 + could + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→knew→her→e-mail→address→,→I→could→send」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "subjunctive-011",
+      bank: ["if","i","were","rich",",","i","would","buy","that car","."],
+      answer: ["if","i","were","rich",",","i","would","buy","that car","."],
+      explanation: "If + 主語 + were + 補語, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→were→rich→,→I→would→buy」の順です。",
+      alwaysCapitalize: []
+    }
+  ]
+});
+
+UNITS.push({
+  id: "indirect-question",
+  name: "間接疑問文",
+  description: "疑問文が文の一部に組み込まれた形",
+  questions: [
+    {
+      id: "indirect-question-001",
+      bank: ["my mother","asked","me","where","i","went","yesterday","."],
+      answer: ["my mother","asked","me","where","i","went","yesterday","."],
+      explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「主語→動詞→目的語→疑問詞→主語→動詞」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "indirect-question-002",
+      bank: ["i","understand","how","you","feel","."],
+      answer: ["i","understand","how","you","feel","."],
+      explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「主語→動詞→疑問詞→主語→動詞」の順です。",
+      alwaysCapitalize: []
+    },
+    {
+      id: "indirect-question-003",
+      bank: ["please","tell","me","when","the show","starts","."],
+      answer: ["please","tell","me","when","the show","starts","."],
+      explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「動詞→目的語→疑問詞→主語→動詞」の順です。",
       alwaysCapitalize: []
     }
   ]
@@ -2498,8 +2277,31 @@ UNITS.push({
 </script>
 <script>
 /* ============ CONFIG ============ */
-const QUESTIONS_PER_ROUND = 5;
+const MAX_QUESTIONS_PER_ROUND = 5;
 const RECENT_STORAGE_PREFIX = 'eigo-narabikae-recent-';
+const UNIT_ICONS = {
+  'general-verb-basic': '🏃',
+  'be-verb': '🌱',
+  'general-verb-advanced': '📘',
+  'svoo-svoc': '🎁',
+  'can-will': '🔮',
+  'negative': '🚫',
+  'there-is-are': '📍',
+  'preposition': '🧭',
+  'modal-frequency': '⏰',
+  'comparative': '⚖️',
+  'infinitive': '🎯',
+  'gerund': '🎨',
+  'passive': '🔄',
+  'present-perfect': '⏳',
+  'participle': '👀',
+  'relative-pronoun': '🔗',
+  'idiom': '💬',
+  'conjunction': '🧩',
+  'subjunctive': '🌈',
+  'indirect-question': '❓'
+};
+function unitIcon(unitId){ return UNIT_ICONS[unitId] || '✏️'; }
 
 /* ============ STATE ============ */
 let state = {
@@ -2546,10 +2348,11 @@ function writeRecent(unitId, ids){
   }catch(e){ /* localStorage unavailable, ignore */ }
 }
 function pickRandomQuestions(unit){
+  const roundSize = Math.min(MAX_QUESTIONS_PER_ROUND, unit.questions.length);
   const recentIds = readRecent(unit.id);
   let pool = unit.questions.filter(q=>recentIds.indexOf(q.id)===-1);
-  if(pool.length < QUESTIONS_PER_ROUND){ pool = unit.questions; }
-  const picked = shuffle(pool).slice(0, QUESTIONS_PER_ROUND);
+  if(pool.length < roundSize){ pool = unit.questions; }
+  const picked = shuffle(pool).slice(0, roundSize);
   writeRecent(unit.id, picked.map(q=>q.id));
   return picked;
 }
@@ -2704,17 +2507,20 @@ function renderStart(){
   UNITS.forEach(unit=>{
     cards += ''+
       '<button class="set-card" onclick="startUnit(\''+unit.id+'\')">'+
-        '<div class="set-card-top"><span class="set-num">'+unit.questions.length+'問</span>'+lastScoreBadge(unit.id)+'</div>'+
-        '<div class="set-title">'+unit.name+'</div>'+
-        '<div class="set-tags">'+unit.description+'</div>'+
-        '<div class="set-cta">はじめる →</div>'+
+        '<div class="set-icon">'+unitIcon(unit.id)+'</div>'+
+        '<div class="set-body">'+
+          '<div class="set-card-top"><span class="set-num">'+unit.questions.length+'問</span>'+lastScoreBadge(unit.id)+'</div>'+
+          '<div class="set-title">'+unit.name+'</div>'+
+          '<div class="set-tags">'+unit.description+'</div>'+
+        '</div>'+
+        '<div class="set-cta">→</div>'+
       '</button>';
   });
   return ''+
   '<div class="card">'+
     '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
     '<h1 class="title">ならびかえ<br>トレーニング</h1>'+
-    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに5問出題されるよ。○×判定のあとに解説が出て、まちがえた問題はあとで復習できるよ。</p>'+
+    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに数問（最大5問）出題されるよ。○×判定のあとに解説が出て、まちがえた問題はあとで復習できるよ。</p>'+
     '<div class="set-list">'+cards+'</div>'+
   '</div>';
 }
@@ -2816,7 +2622,7 @@ function renderResults(){
   }
   actions += '<button class="btn-secondary full" onclick="retrySameRound()">もう一度さいしょから</button>';
   if(!state.isReviewRound){
-    actions += '<button class="btn-secondary full" onclick="startUnit(state.unitId)">この単元をもう一度（べつの5問）</button>';
+    actions += '<button class="btn-secondary full" onclick="startUnit(state.unitId)">この単元をもう一度（べつの問題で）</button>';
   }
   actions += '<button class="btn-ghost full" onclick="goHome()">単元一覧にもどる</button>';
 
