@@ -210,15 +210,15 @@
   .dot-correct{background:var(--correct);}
   .dot-incorrect{background:var(--incorrect);}
 
-  .q-tag{
-    display:inline-block;
-    font-size:12px;
-    font-weight:700;
-    color:var(--blue);
+  .jp-hint{
+    font-size:14.5px;
+    font-weight:500;
+    color:var(--ink);
     background:var(--blue-soft);
-    padding:5px 12px;
-    border-radius:999px;
-    margin-bottom:20px;
+    padding:12px 15px;
+    border-radius:var(--radius-md);
+    margin-bottom:18px;
+    line-height:1.6;
     box-shadow:inset 0 0 0 1px rgba(76,111,255,0.12);
   }
 
@@ -267,6 +267,13 @@
     transition:transform .12s ease, box-shadow .12s ease;
   }
   .slot.filled:hover{background:#FFDFC2;transform:translateY(-1px);box-shadow:0 4px 10px rgba(255,138,61,0.3);}
+  .slot.locked{
+    width:30px;
+    background:var(--bg);
+    color:var(--ink-soft);
+    box-shadow:inset 0 0 0 1px var(--line);
+    cursor:default;
+  }
   @keyframes popIn{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
 
   .bank-row{
@@ -401,6 +408,10 @@ const UNITS = [];
 /* 共通の固有名詞・大文字化ルール（docs/data-schema.md 2節） */
 const PROPER_NOUNS = {
   "i": "I",
+  "i'll": "I'll",
+  "i'm": "I'm",
+  "i've": "I've",
+  "i'd": "I'd",
   "english": "English",
   "japan": "Japan",
   "japanese": "Japanese",
@@ -445,6 +456,7 @@ UNITS.push({
     {
       id: "general-verb-basic-001",
       level: 1,
+      jp: "ケンはとても速く走ります。",
       bank: ["ken","runs","very","fast","."],
       answer: ["ken","runs","very","fast","."],
       explanation: "主語が3人称単数（Ken）のとき、一般動詞には s がつきます。並び順は「主語→動詞→様子を表す語句」です。",
@@ -453,6 +465,7 @@ UNITS.push({
     {
       id: "general-verb-basic-002",
       level: 1,
+      jp: "私は友だちといっしょに公園に行きました。",
       bank: ["i","went","to","the","park","with","my friends","."],
       answer: ["i","went","to","the","park","with","my friends","."],
       explanation: "goの過去形はwentという不規則変化です。並び順は「主語→動詞(過去形)→場所→いっしょにいた人」です。",
@@ -461,6 +474,7 @@ UNITS.push({
     {
       id: "general-verb-basic-003",
       level: 1,
+      jp: "私は公園で走ります。",
       bank: ["i","run","in","the","park","."],
       answer: ["i","run","in","the","park","."],
       explanation: "主語がI（1人称）のとき、一般動詞はそのままの形を使います。並び順は「主語→動詞→場所を表す語句」です。",
@@ -469,6 +483,7 @@ UNITS.push({
     {
       id: "general-verb-basic-004",
       level: 1,
+      jp: "私は４月に京都へ行きました。",
       bank: ["i","went","to","kyoto","in","april","."],
       answer: ["i","went","to","kyoto","in","april","."],
       explanation: "goの過去形はwentという不規則変化です。並び順は「主語→動詞(過去形)→場所→時を表す語句」です。",
@@ -477,6 +492,7 @@ UNITS.push({
     {
       id: "general-verb-basic-005",
       level: 1,
+      jp: "パーティーは午前11時に始まります。",
       bank: ["the","party","starts","at","eleven","."],
       answer: ["the","party","starts","at","eleven","."],
       explanation: "主語が3人称単数（the party）のとき、一般動詞には s がつきます。並び順は「主語→動詞→時を表す語句」です。",
@@ -485,6 +501,7 @@ UNITS.push({
     {
       id: "general-verb-basic-006",
       level: 1,
+      jp: "私の姉は福岡に住んでいます。",
       bank: ["my sister","lives","in","fukuoka","."],
       answer: ["my sister","lives","in","fukuoka","."],
       explanation: "主語が3人称単数（my sister）のとき、一般動詞には s がつきます。並び順は「主語→動詞→場所を表す語句」です。",
@@ -501,6 +518,7 @@ UNITS.push({
     {
       id: "be-verb-001",
       level: 1,
+      jp: "私の友だちは親切です。",
       bank: ["my","friends","are","kind","."],
       answer: ["my","friends","are","kind","."],
       explanation: "主語が複数（my friends）のとき、be動詞は are を使います。「主語→be動詞→形容詞」の順になります。",
@@ -509,6 +527,7 @@ UNITS.push({
     {
       id: "be-verb-002",
       level: 1,
+      jp: "私のサッカーボールは祖母からです。",
       bank: ["my","soccer ball","is","from","my","grandmother","."],
       answer: ["my","soccer ball","is","from","my","grandmother","."],
       explanation: "主語が単数（my soccer ball）のとき、be動詞は is を使います。「主語→be動詞→from+人」の順で出どころを表します。",
@@ -517,6 +536,7 @@ UNITS.push({
     {
       id: "be-verb-003",
       level: 1,
+      jp: "そのネコはとてもかわいい。",
       bank: ["that","cat","is","so","cute","."],
       answer: ["that","cat","is","so","cute","."],
       explanation: "主語が単数（that cat）なので be動詞は is になります。「主語→be動詞→so+形容詞」の順です。",
@@ -525,6 +545,7 @@ UNITS.push({
     {
       id: "be-verb-004",
       level: 1,
+      jp: "彼は有名な科学者です。",
       bank: ["he","is","a","famous","scientist","."],
       answer: ["he","is","a","famous","scientist","."],
       explanation: "主語が3人称単数（he）のとき、be動詞は is です。補語が名詞のときは a をつけて表します。「主語→be動詞→a+形容詞+名詞」の順です。",
@@ -533,6 +554,7 @@ UNITS.push({
     {
       id: "be-verb-005",
       level: 1,
+      jp: "私の誕生日は５月５日です。",
       bank: ["my","birthday","is","may 5th","."],
       answer: ["my","birthday","is","may 5th","."],
       explanation: "主語が単数（my birthday）のとき、be動詞は is を使います。「主語→be動詞→日付（名詞）」の順で表します。",
@@ -541,6 +563,7 @@ UNITS.push({
     {
       id: "be-verb-006",
       level: 1,
+      jp: "これが私の週末の予定です。",
       bank: ["this","is","my","weekend","schedule","."],
       answer: ["this","is","my","weekend","schedule","."],
       explanation: "this を主語にすると be動詞は is になります。「主語→be動詞→my+名詞+名詞」の順で補語（名詞）を続けます。",
@@ -549,6 +572,7 @@ UNITS.push({
     {
       id: "be-verb-007",
       level: 1,
+      jp: "私たちの体育祭は９月にありました。",
       bank: ["our","sports day","was","in","september","."],
       answer: ["our","sports day","was","in","september","."],
       explanation: "過去のことを言うときは be動詞を was（単数）にします。「主語→be動詞(was)→in+月」の順です。",
@@ -557,6 +581,7 @@ UNITS.push({
     {
       id: "be-verb-008",
       level: 1,
+      jp: "それはいい考えです。",
       bank: ["that","is","a","good","idea","."],
       answer: ["that","is","a","good","idea","."],
       explanation: "that を主語にすると be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+形容詞+名詞」の順です。",
@@ -565,6 +590,7 @@ UNITS.push({
     {
       id: "be-verb-009",
       level: 1,
+      jp: "今日は雨です。",
       bank: ["it","is","rainy","today","."],
       answer: ["it","is","rainy","today","."],
       explanation: "天気を言うときは it を主語にし、be動詞は is を使います。「主語→be動詞→形容詞→today」の順です。",
@@ -573,6 +599,7 @@ UNITS.push({
     {
       id: "be-verb-010",
       level: 1,
+      jp: "私の母はいそがしい。",
       bank: ["my","mother","is","busy","."],
       answer: ["my","mother","is","busy","."],
       explanation: "主語が単数（my mother）のとき、be動詞は is を使います。「主語→be動詞→形容詞」の順です。",
@@ -581,6 +608,7 @@ UNITS.push({
     {
       id: "be-verb-011",
       level: 1,
+      jp: "私のヒーローは大谷翔平です。",
       bank: ["my","hero","is","shohei","otani","."],
       answer: ["my","hero","is","shohei","otani","."],
       explanation: "主語が単数（my hero）のとき、be動詞は is を使います。「主語→be動詞→人名（名詞）」の順です。",
@@ -589,6 +617,7 @@ UNITS.push({
     {
       id: "be-verb-012",
       level: 1,
+      jp: "私の父は教師です。",
       bank: ["my","father","is","a","teacher","."],
       answer: ["my","father","is","a","teacher","."],
       explanation: "主語が単数（my father）のとき、be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+名詞」の順です。",
@@ -597,6 +626,7 @@ UNITS.push({
     {
       id: "be-verb-013",
       level: 1,
+      jp: "私の弟は元気いっぱいです。",
       bank: ["my","brother","is","very","active","."],
       answer: ["my","brother","is","very","active","."],
       explanation: "主語が単数（my brother）のとき、be動詞は is を使います。「主語→be動詞→very+形容詞」の順です。",
@@ -605,6 +635,7 @@ UNITS.push({
     {
       id: "be-verb-014",
       level: 1,
+      jp: "私はとても悲しかった。",
       bank: ["i","felt","very","sad","."],
       answer: ["i","felt","very","sad","."],
       explanation: "feel（過去形 felt）は be動詞のように「〜と感じる」を表す動詞です。「主語→felt→very+形容詞」の順です。",
@@ -613,6 +644,7 @@ UNITS.push({
     {
       id: "be-verb-015",
       level: 1,
+      jp: "おじいちゃんは若く見える。",
       bank: ["my","grandfather","looks","young","."],
       answer: ["my","grandfather","looks","young","."],
       explanation: "look（3人称単数で looks）は be動詞のように「〜に見える」を表す動詞です。「主語→looks→形容詞」の順です。",
@@ -621,6 +653,7 @@ UNITS.push({
     {
       id: "be-verb-016",
       level: 1,
+      jp: "私たちのチームは強い。",
       bank: ["our","team","is","strong","."],
       answer: ["our","team","is","strong","."],
       explanation: "主語が複数（our team）でも1つの集団を表すときは is を使います。「主語→be動詞→形容詞」の順です。",
@@ -629,6 +662,7 @@ UNITS.push({
     {
       id: "be-verb-017",
       level: 1,
+      jp: "私の大好きな食べ物はスパゲッティです。",
       bank: ["my","favorite","food","is","spaghetti","."],
       answer: ["my","favorite","food","is","spaghetti","."],
       explanation: "主語が単数（my favorite food）のとき、be動詞は is を使います。「主語→be動詞→名詞」の順です。",
@@ -637,6 +671,7 @@ UNITS.push({
     {
       id: "be-verb-018",
       level: 1,
+      jp: "彼女の新しい自転車はとてもよい。",
       bank: ["her","new","bike","is","very","good","."],
       answer: ["her","new","bike","is","very","good","."],
       explanation: "主語が単数（her new bike）のとき、be動詞は is を使います。「主語→be動詞→very+形容詞」の順です。",
@@ -645,6 +680,7 @@ UNITS.push({
     {
       id: "be-verb-019",
       level: 1,
+      jp: "夜、月がきれいです。",
       bank: ["the","moon","is","beautiful","at night","."],
       answer: ["the","moon","is","beautiful","at night","."],
       explanation: "主語が単数（the moon）のとき、be動詞は is を使います。「主語→be動詞→形容詞→at night」の順です。",
@@ -653,6 +689,7 @@ UNITS.push({
     {
       id: "be-verb-020",
       level: 1,
+      jp: "彼は人気がある歌手です。",
       bank: ["he","is","a","popular","singer","."],
       answer: ["he","is","a","popular","singer","."],
       explanation: "主語が3人称単数（he）のとき、be動詞は is です。補語が名詞のときは a をつけます。「主語→be動詞→a+形容詞+名詞」の順です。",
@@ -661,6 +698,7 @@ UNITS.push({
     {
       id: "be-verb-021",
       level: 1,
+      jp: "プラスチックは大きな問題です。",
       bank: ["plastic","is","a","big","problem","."],
       answer: ["plastic","is","a","big","problem","."],
       explanation: "主語が単数（plastic）のとき、be動詞は is を使います。「主語→be動詞→a+形容詞+名詞」の順です。",
@@ -669,6 +707,7 @@ UNITS.push({
     {
       id: "be-verb-022",
       level: 1,
+      jp: "それは難しそうだ。",
       bank: ["it","sounds","difficult","."],
       answer: ["it","sounds","difficult","."],
       explanation: "sound（3人称単数で sounds）は be動詞のように「〜に聞こえる」を表す動詞です。「主語→sounds→形容詞」の順です。",
@@ -677,6 +716,7 @@ UNITS.push({
     {
       id: "be-verb-023",
       level: 1,
+      jp: "それはすばらしい古い家です。",
       bank: ["that","is","a","wonderful","old","house","."],
       answer: ["that","is","a","wonderful","old","house","."],
       explanation: "that を主語にすると be動詞は is です。形容詞が2つ続くときの語順に注意します。「主語→be動詞→a+形容詞+形容詞+名詞」の順です。",
@@ -685,6 +725,7 @@ UNITS.push({
     {
       id: "be-verb-024",
       level: 1,
+      jp: "彼は賢くてかっこいい。",
       bank: ["he","is","smart","and","cool","."],
       answer: ["he","is","smart","and","cool","."],
       explanation: "主語が3人称単数（he）のとき、be動詞は is を使います。2つの形容詞は and でつなぎます。「主語→be動詞→形容詞→and→形容詞」の順です。",
@@ -693,6 +734,7 @@ UNITS.push({
     {
       id: "be-verb-025",
       level: 1,
+      jp: "私の町はおいしいそばで有名です。",
       bank: ["my","town","is","famous","for","soba","."],
       answer: ["my","town","is","famous","for","soba","."],
       explanation: "主語が単数（my town）のとき、be動詞は is を使います。「主語→be動詞→famous→for+名詞」の順で理由を表します。",
@@ -709,6 +751,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-001",
       level: 1,
+      jp: "私はサッカーを練習します。",
       bank: ["i","practice","soccer","."],
       answer: ["i","practice","soccer","."],
       explanation: "一般動詞practiceは「~を練習する」という意味です。並び順は「主語→動詞→目的語」です。",
@@ -717,6 +760,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-002",
       level: 1,
+      jp: "私は５時に起きます。",
       bank: ["i","get","up","at","five","."],
       answer: ["i","get","up","at","five","."],
       explanation: "get upで「起きる」という意味の動詞句になります。並び順は「主語→動詞句→時刻を表す語句」です。",
@@ -725,6 +769,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-003",
       level: 1,
+      jp: "私は新しい自転車がほしい。",
       bank: ["i","want","a","new","bike","."],
       answer: ["i","want","a","new","bike","."],
       explanation: "wantは「~がほしい」という意味の一般動詞です。並び順は「主語→動詞→目的語(冠詞＋形容詞＋名詞)」です。",
@@ -733,6 +778,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-004",
       level: 1,
+      jp: "多くの子どもたちがその博物館を訪れます。",
       bank: ["many","children","visit","the","museum","."],
       answer: ["many","children","visit","the","museum","."],
       explanation: "主語many childrenは複数なので動詞visitにsはつきません。並び順は「主語→動詞→目的語」です。",
@@ -741,6 +787,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-005",
       level: 1,
+      jp: "私はアメリカに行きたい。",
       bank: ["i","want","to","go","to","america","."],
       answer: ["i","want","to","go","to","america","."],
       explanation: "「~したい」はwant to + 動詞の原形で表します。並び順は「主語→want to→動詞の原形→場所を表す語句」です。",
@@ -749,6 +796,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-006",
       level: 1,
+      jp: "彼らは夜ビデオを見ます。",
       bank: ["they","watch","videos","at","night","."],
       answer: ["they","watch","videos","at","night","."],
       explanation: "主語theyは複数なので動詞watchにsはつきません。並び順は「主語→動詞→目的語→時を表す語句」です。",
@@ -757,6 +805,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-007",
       level: 1,
+      jp: "私はときどきフライドチキンを食べる。",
       bank: ["i","sometimes","eat","fried chicken","."],
       answer: ["i","sometimes","eat","fried chicken","."],
       explanation: "sometimesのような頻度を表す副詞は一般動詞の前に置きます。並び順は「主語→頻度を表す語句→動詞→目的語」です。",
@@ -765,6 +814,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-008",
       level: 1,
+      jp: "私たちは体育館でバスケットボールをする。",
       bank: ["we","play","basketball","in","the","gym","."],
       answer: ["we","play","basketball","in","the","gym","."],
       explanation: "play + スポーツ名で「~をする」という意味になります。並び順は「主語→動詞→目的語→場所を表す語句」です。",
@@ -773,6 +823,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-009",
       level: 1,
+      jp: "沙織はとても一生懸命英語を勉強します。",
       bank: ["saori","studies","english","very","hard","."],
       answer: ["saori","studies","english","very","hard","."],
       explanation: "主語が3人称単数（Saori）のとき、一般動詞studyはstudiesになります。並び順は「主語→動詞→目的語→程度を表す語句」です。",
@@ -781,6 +832,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-010",
       level: 1,
+      jp: "彼女はピアノを演奏する。",
       bank: ["she","plays","the","piano","."],
       answer: ["she","plays","the","piano","."],
       explanation: "主語が3人称単数（she）のとき、一般動詞playにはsがつきます。並び順は「主語→動詞→目的語」です。",
@@ -789,6 +841,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-011",
       level: 1,
+      jp: "彼は私たちに数学を教えます。",
       bank: ["he","teaches","us","math","."],
       answer: ["he","teaches","us","math","."],
       explanation: "主語が3人称単数（he）のとき、一般動詞teachにはesがつきます。並び順は「主語→動詞→人→もの」です。",
@@ -797,6 +850,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-012",
       level: 1,
+      jp: "父は家族にぎょうざを作ります。",
       bank: ["my father","makes","gyoza","for","my family","."],
       answer: ["my father","makes","gyoza","for","my family","."],
       explanation: "主語が3人称単数（my father）のとき、一般動詞makeにはsがつきます。並び順は「主語→動詞→目的語→for+人」です。",
@@ -805,6 +859,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-013",
       level: 1,
+      jp: "私は母を尊敬しています。",
       bank: ["i","respect","my","mother","."],
       answer: ["i","respect","my","mother","."],
       explanation: "respectは「~を尊敬する」という意味の一般動詞です。並び順は「主語→動詞→所有格＋名詞」です。",
@@ -813,6 +868,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-014",
       level: 1,
+      jp: "私の叔父はシーフードが大好きです。",
       bank: ["my uncle","likes","seafood","very","much","."],
       answer: ["my uncle","likes","seafood","very","much","."],
       explanation: "主語が3人称単数（my uncle）のとき、一般動詞likeにはsがつきます。並び順は「主語→動詞→目的語→程度を表す語句」です。",
@@ -821,6 +877,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-015",
       level: 1,
+      jp: "私たちは学校のキャンプでカレーライスを作りました。",
       bank: ["we","cooked","curry and rice","at","our school camp","."],
       answer: ["we","cooked","curry and rice","at","our school camp","."],
       explanation: "cookの過去形はcookedという規則変化です。並び順は「主語→動詞(過去形)→目的語→場所を表す語句」です。",
@@ -829,6 +886,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-016",
       level: 2,
+      jp: "私は来週、福井を訪れる予定です。",
       bank: ["i","am going to","visit","fukui","next week","."],
       answer: ["i","am going to","visit","fukui","next week","."],
       explanation: "「~する予定だ」はbe going to + 動詞の原形で表します。並び順は「主語→am going to→動詞の原形→目的語→時を表す語句」です。",
@@ -837,6 +895,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-017",
       level: 1,
+      jp: "彼はひまなときにマンガを読みます。",
       bank: ["he","reads","comic books","in","his","free time","."],
       answer: ["he","reads","comic books","in","his","free time","."],
       explanation: "主語が3人称単数（he）のとき、一般動詞readにはsがつきます。並び順は「主語→動詞→目的語→in his free time」です。",
@@ -845,6 +904,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-018",
       level: 2,
+      jp: "私は一週間ここに滞在するつもりです。",
       bank: ["i","am","going to","stay","here","for","a week","."],
       answer: ["i","am","going to","stay","here","for","a week","."],
       explanation: "「~するつもりだ」はbe going to + 動詞の原形で表します。並び順は「主語→am going to→動詞の原形→場所→期間を表す語句」です。",
@@ -853,6 +913,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-019",
       level: 1,
+      jp: "私は今朝、新聞を読みました。",
       bank: ["i","read","a","newspaper","this","morning","."],
       answer: ["i","read","a","newspaper","this","morning","."],
       explanation: "readの過去形は原形と同じ形ですが発音が変わる不規則変化です。並び順は「主語→動詞(過去形)→目的語→時を表す語句」です。",
@@ -861,6 +922,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-020",
       level: 1,
+      jp: "私は２冊の本を持っています。",
       bank: ["i","have","two","books","."],
       answer: ["i","have","two","books","."],
       explanation: "haveは「~を持っている」という意味の一般動詞です。並び順は「主語→動詞→数量＋名詞」です。",
@@ -869,6 +931,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-021",
       level: 1,
+      jp: "私は今日、たくさんの宿題があります。",
       bank: ["i","have","a lot of","homework","today","."],
       answer: ["i","have","a lot of","homework","today","."],
       explanation: "a lot ofで「たくさんの」という意味になります。並び順は「主語→動詞→数量＋名詞→時を表す語句」です。",
@@ -877,6 +940,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-022",
       level: 1,
+      jp: "男の子が公園で小さな犬を見つけました。",
       bank: ["a","boy","found","a","small","dog","in the park","."],
       answer: ["a","boy","found","a","small","dog","in the park","."],
       explanation: "findの過去形はfoundという不規則変化です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)→場所を表す語句」です。",
@@ -885,6 +949,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-023",
       level: 1,
+      jp: "その夢は私の生活を変えました。",
       bank: ["the","dream","changed","my","life","."],
       answer: ["the","dream","changed","my","life","."],
       explanation: "changeの過去形はchangedという規則変化です。並び順は「主語→動詞(過去形)→所有格＋名詞」です。",
@@ -893,6 +958,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-024",
       level: 1,
+      jp: "私はすばらしい経験をしました。",
       bank: ["i","had","a","great","experience","."],
       answer: ["i","had","a","great","experience","."],
       explanation: "haveの過去形はhadという不規則変化です。並び順は「主語→動詞(過去形)→目的語(冠詞＋形容詞＋名詞)」です。",
@@ -901,6 +967,7 @@ UNITS.push({
     {
       id: "general-verb-advanced-025",
       level: 1,
+      jp: "沖縄にはたくさんの美しいビーチがある。",
       bank: ["okinawa","has","many","beautiful","beaches","."],
       answer: ["okinawa","has","many","beautiful","beaches","."],
       explanation: "主語が3人称単数（Okinawa）のとき、haveはhasになります。並び順は「主語→動詞→目的語(数量＋形容詞＋名詞)」です。",
@@ -917,6 +984,7 @@ UNITS.push({
     {
       id: "svoo-svoc-001",
       level: 2,
+      jp: "私はあなたにクッキーをあげるつもりです。",
       bank: ["i'll","give","you","some","cookies","."],
       answer: ["i'll","give","you","some","cookies","."],
       explanation: "give型（SVOO）の文です。並び順は「主語→動詞→目的語(人)→目的語(もの)」です。",
@@ -925,6 +993,7 @@ UNITS.push({
     {
       id: "svoo-svoc-002",
       level: 1,
+      jp: "彼女はよい助言をくれました。",
       bank: ["she","gave","me","some","good","advice","."],
       answer: ["she","gave","me","some","good","advice","."],
       explanation: "giveの過去形はgaveという不規則変化です。並び順は「主語→動詞(過去形)→目的語(人)→目的語(もの)」です。",
@@ -933,6 +1002,7 @@ UNITS.push({
     {
       id: "svoo-svoc-003",
       level: 1,
+      jp: "私たちは彼をマイクと呼ぶ。",
       bank: ["we","call","him","mike","."],
       answer: ["we","call","him","mike","."],
       explanation: "call型（SVOC）の文で、目的語=補語の関係になります。並び順は「主語→動詞→目的語→補語」です。",
@@ -941,6 +1011,7 @@ UNITS.push({
     {
       id: "svoo-svoc-004",
       level: 1,
+      jp: "音楽は私を幸せにします。",
       bank: ["music","makes","me","happy","."],
       answer: ["music","makes","me","happy","."],
       explanation: "makeを使ったcall型（SVOC）の文で、「〜を…にする」という意味です。並び順は「主語→動詞→目的語→補語」です。",
@@ -949,6 +1020,7 @@ UNITS.push({
     {
       id: "svoo-svoc-005",
       level: 1,
+      jp: "彼女の笑顔は私を前向きにさせます。",
       bank: ["her","smiles","keep","me","positive","."],
       answer: ["her","smiles","keep","me","positive","."],
       explanation: "keepを使ったcall型（SVOC）の文で、「〜を…のままにする」という意味です。並び順は「主語→動詞→目的語→補語」です。",
@@ -965,6 +1037,7 @@ UNITS.push({
     {
       id: "can-will-001",
       level: 1,
+      jp: "あなたは上手に泳ぐことができます。",
       bank: ["you","can","swim","well","."],
       answer: ["you","can","swim","well","."],
       explanation: "can のあとの動詞は原形のまま使います。「主語→can→動詞の原形→修飾語」の順です。",
@@ -973,6 +1046,7 @@ UNITS.push({
     {
       id: "can-will-002",
       level: 2,
+      jp: "これらの経験は私の心に残るでしょう。",
       bank: ["these","experiences","will","stay","in","my","mind","."],
       answer: ["these","experiences","will","stay","in","my","mind","."],
       explanation: "willは「~だろう」という未来の予想を表します。「主語→will→動詞の原形→修飾語」の順です。",
@@ -981,6 +1055,7 @@ UNITS.push({
     {
       id: "can-will-003",
       level: 1,
+      jp: "私たちはそこでたくさんの美しい花を見ることができます。",
       bank: ["we","can","see","many","beautiful","flowers","there","."],
       answer: ["we","can","see","many","beautiful","flowers","there","."],
       explanation: "canのあとには動詞の原形が続き、目的語や修飾語が後ろに並びます。「主語→can→動詞の原形→目的語」の順です。",
@@ -989,6 +1064,7 @@ UNITS.push({
     {
       id: "can-will-004",
       level: 1,
+      jp: "私は上手に踊ることができる。",
       bank: ["i","can","dance","well","."],
       answer: ["i","can","dance","well","."],
       explanation: "「〜できる」というときはcanのあとに動詞の原形を置きます。「主語→can→動詞の原形→修飾語」の順です。",
@@ -997,6 +1073,7 @@ UNITS.push({
     {
       id: "can-will-005",
       level: 2,
+      jp: "私の祖母はビデオで私たちを見れてうれしいだろう。",
       bank: ["my grandmother","will","be","happy","to","see","us","in the video","."],
       answer: ["my grandmother","will","be","happy","to","see","us","in the video","."],
       explanation: "willのあとの動詞は原形beを使い、to以下がうれしい理由を表します。「主語→will→be→形容詞→to不定詞」の順です。",
@@ -1005,6 +1082,7 @@ UNITS.push({
     {
       id: "can-will-006",
       level: 2,
+      jp: "彼は明日家にいるでしょう。",
       bank: ["he","will","be","at home","tomorrow","."],
       answer: ["he","will","be","at home","tomorrow","."],
       explanation: "willは未来の出来事を表し、あとには動詞の原形beが続きます。「主語→will→be→場所→時」の順です。",
@@ -1021,6 +1099,7 @@ UNITS.push({
     {
       id: "negative-001",
       level: 1,
+      jp: "昨日は気分が悪かった。",
       bank: ["i","did","not","feel","well","yesterday","."],
       answer: ["i","did","not","feel","well","yesterday","."],
       explanation: "一般動詞の過去の否定文は did not(didn't) + 動詞の原形 で表します。「主語→did not→動詞の原形→修飾語」の順です。",
@@ -1029,6 +1108,7 @@ UNITS.push({
     {
       id: "negative-002",
       level: 1,
+      jp: "彼らのうちの何人かは日本語がわかりません。",
       bank: ["some","of","them","don't","understand","japanese","."],
       answer: ["some","of","them","don't","understand","japanese","."],
       explanation: "一般動詞の現在の否定文は do not(don't)/does not(doesn't) + 動詞の原形 で表します。「主語→don't→動詞の原形→目的語」の順です。",
@@ -1037,6 +1117,7 @@ UNITS.push({
     {
       id: "negative-003",
       level: 1,
+      jp: "その男の人はそんなに背が高くない。",
       bank: ["the","man","is","not","so","tall","."],
       answer: ["the","man","is","not","so","tall","."],
       explanation: "be動詞の否定文は、be動詞のすぐあとに not を置きます。「主語→be動詞→not→形容詞」の順になります。",
@@ -1053,6 +1134,7 @@ UNITS.push({
     {
       id: "there-is-are-001",
       level: 1,
+      jp: "公園にはたくさんの犬がいます。",
       bank: ["there","are","many","dogs","in","the","park","."],
       answer: ["there","are","many","dogs","in","the","park","."],
       explanation: "「there are + 複数名詞」で「〜がいる／ある」を表します。「there→be動詞→名詞→場所を表す語句」の順です。",
@@ -1061,6 +1143,7 @@ UNITS.push({
     {
       id: "there-is-are-002",
       level: 1,
+      jp: "コップにはあまり水がありません。",
       bank: ["there","isn't","much","water","in","the","glass","."],
       answer: ["there","isn't","much","water","in","the","glass","."],
       explanation: "「there isn't + 数えられない名詞」で「〜がほとんどない」を表す否定文です。「there→be動詞→名詞→場所を表す語句」の順です。",
@@ -1069,6 +1152,7 @@ UNITS.push({
     {
       id: "there-is-are-003",
       level: 1,
+      jp: "私のかばんの中には３冊本があります。",
       bank: ["there","are","three","books","in","my","bag","."],
       answer: ["there","are","three","books","in","my","bag","."],
       explanation: "「there are + 複数名詞」で「〜がある」を表します。「there→be動詞→名詞→場所を表す語句」の順です。",
@@ -1085,6 +1169,7 @@ UNITS.push({
     {
       id: "preposition-001",
       level: 1,
+      jp: "彼女は私といっしょにいます。",
       bank: ["she","is","with","me","."],
       answer: ["she","is","with","me","."],
       explanation: "with は「〜といっしょに」という意味を表す前置詞です。「主語→be動詞→with→人」の順です。",
@@ -1093,6 +1178,7 @@ UNITS.push({
     {
       id: "preposition-002",
       level: 1,
+      jp: "日本はアジアにある。",
       bank: ["japan","is","in","asia","."],
       answer: ["japan","is","in","asia","."],
       explanation: "in は「〜(の中)に」という位置関係を表す前置詞です。「主語→be動詞→in→場所」の順です。",
@@ -1101,6 +1187,7 @@ UNITS.push({
     {
       id: "preposition-003",
       level: 1,
+      jp: "私たちは同じクラスです。",
       bank: ["we","are","in","the","same","class","."],
       answer: ["we","are","in","the","same","class","."],
       explanation: "in は「〜(の中)に」という所属を表す前置詞です。「主語→be動詞→in→所属先」の順です。",
@@ -1109,6 +1196,7 @@ UNITS.push({
     {
       id: "preposition-004",
       level: 1,
+      jp: "彼女は先週東京にいました。",
       bank: ["she","was","in","tokyo","last","week","."],
       answer: ["she","was","in","tokyo","last","week","."],
       explanation: "in は「〜に」という場所を表す前置詞です。「主語→be動詞(過去形)→in→場所→時」の順です。",
@@ -1117,6 +1205,7 @@ UNITS.push({
     {
       id: "preposition-005",
       level: 1,
+      jp: "私たちはサッカーチームに入っています。",
       bank: ["we","are","on","the","soccer team","."],
       answer: ["we","are","on","the","soccer team","."],
       explanation: "「on the soccer team」で「サッカーチームに所属して」という意味になります。「主語→be動詞→on→所属先」の順です。",
@@ -1125,6 +1214,7 @@ UNITS.push({
     {
       id: "preposition-006",
       level: 1,
+      jp: "私は初めてミュージカルを見ました。",
       bank: ["i","watched","a","musical","for the first time","."],
       answer: ["i","watched","a","musical","for the first time","."],
       explanation: "「for the first time」で「初めて」という意味を表します。「主語→動詞→目的語→for the first time」の順です。",
@@ -1133,6 +1223,7 @@ UNITS.push({
     {
       id: "preposition-007",
       level: 1,
+      jp: "私の父は週末につりを楽しむ。",
       bank: ["my father","enjoys","fishing","on weekends","."],
       answer: ["my father","enjoys","fishing","on weekends","."],
       explanation: "「on weekends」で「週末に」という時を表します。「主語→動詞→目的語(動名詞)→on weekends」の順です。",
@@ -1141,6 +1232,7 @@ UNITS.push({
     {
       id: "preposition-008",
       level: 1,
+      jp: "私は自分の夢のために一生懸命努力します。",
       bank: ["i","will","work","hard","for my dream","."],
       answer: ["i","will","work","hard","for my dream","."],
       explanation: "for は「〜のために」という目的を表す前置詞です。「主語→will+動詞→hard→for→目的」の順です。",
@@ -1149,6 +1241,7 @@ UNITS.push({
     {
       id: "preposition-009",
       level: 1,
+      jp: "私のペンは机の上にあります。",
       bank: ["my","pen","is","on","the","desk","."],
       answer: ["my","pen","is","on","the","desk","."],
       explanation: "on は「〜の上に」という位置関係を表す前置詞です。「主語→be動詞→on→場所」の順です。",
@@ -1157,6 +1250,7 @@ UNITS.push({
     {
       id: "preposition-010",
       level: 1,
+      jp: "彼らは朝食にパンを少し食べました。",
       bank: ["they","ate","some","bread","for","breakfast","."],
       answer: ["they","ate","some","bread","for","breakfast","."],
       explanation: "for は「〜に(用いる)」という用途を表す前置詞です。「主語→動詞→目的語→for→breakfast」の順です。",
@@ -1165,6 +1259,7 @@ UNITS.push({
     {
       id: "preposition-011",
       level: 1,
+      jp: "これらの考えはみんなにとって役に立ちます。",
       bank: ["these","ideas","are","helpful","for","everyone","."],
       answer: ["these","ideas","are","helpful","for","everyone","."],
       explanation: "for は「〜にとって」という対象を表す前置詞です。「主語→be動詞→補語→for→対象」の順です。",
@@ -1173,6 +1268,7 @@ UNITS.push({
     {
       id: "preposition-012",
       level: 1,
+      jp: "その二匹の猫はテーブルの下にいます。",
       bank: ["the","two","cats","are","under","the","table","."],
       answer: ["the","two","cats","are","under","the","table","."],
       explanation: "under は「〜の下に」という位置関係を表す前置詞です。「主語→be動詞→under→場所」の順です。",
@@ -1181,6 +1277,7 @@ UNITS.push({
     {
       id: "preposition-013",
       level: 2,
+      jp: "向こうにいるあの少年はケンです。",
       bank: ["that","boy","over there","is","ken","."],
       answer: ["that","boy","over there","is","ken","."],
       explanation: "「over there」で「向こうに」という場所を表し、boy を後ろから修飾します。「主語(that boy over there)→be動詞→補語」の順です。",
@@ -1189,6 +1286,7 @@ UNITS.push({
     {
       id: "preposition-014",
       level: 1,
+      jp: "その映画はアメリカのある犬についてです。",
       bank: ["the","movie","is","about","a","dog","in america","."],
       answer: ["the","movie","is","about","a","dog","in america","."],
       explanation: "about は「〜について」という内容を表す前置詞です。「主語→be動詞→about→a dog→in america」の順です。",
@@ -1197,6 +1295,7 @@ UNITS.push({
     {
       id: "preposition-015",
       level: 1,
+      jp: "彼女はブラスバンドの一員です。",
       bank: ["she","is","a","member","of","the","brass band","."],
       answer: ["she","is","a","member","of","the","brass band","."],
       explanation: "of は「〜の」という所属を表す前置詞です。「主語→be動詞→a member→of→所属先」の順です。",
@@ -1205,6 +1304,7 @@ UNITS.push({
     {
       id: "preposition-016",
       level: 1,
+      jp: "私は緑中学校の生徒です。",
       bank: ["i","am","a","student","at","midori junior high school","."],
       answer: ["i","am","a","student","at","midori junior high school","."],
       explanation: "at は「〜で」という所属先を表す前置詞です。「主語→be動詞→a student→at→所属先」の順です。",
@@ -1213,6 +1313,7 @@ UNITS.push({
     {
       id: "preposition-017",
       level: 1,
+      jp: "他の国の多くの人々が日本を訪れる。",
       bank: ["many people","in","other","countries","visit","japan","."],
       answer: ["many people","in","other","countries","visit","japan","."],
       explanation: "in は「〜の」という所属を表し、in other countries が many people を修飾します。「主語(many people in other countries)→動詞→目的語」の順です。",
@@ -1221,6 +1322,7 @@ UNITS.push({
     {
       id: "preposition-018",
       level: 1,
+      jp: "メンバーはみなこの問題について異なる考えを持っている。",
       bank: ["every","member","has","different","ideas","about","this problem","."],
       answer: ["every","member","has","different","ideas","about","this problem","."],
       explanation: "about は「〜について」という内容を表す前置詞です。「主語→動詞→目的語→about→話題」の順です。",
@@ -1229,6 +1331,7 @@ UNITS.push({
     {
       id: "preposition-019",
       level: 1,
+      jp: "これはあなたへのプレゼントです。",
       bank: ["this","is","a","present","for","you","."],
       answer: ["this","is","a","present","for","you","."],
       explanation: "for は「〜への」という対象を表す前置詞です。「主語→be動詞→a present→for→対象」の順です。",
@@ -1237,6 +1340,7 @@ UNITS.push({
     {
       id: "preposition-020",
       level: 1,
+      jp: "これは私の友だちの写真です。",
       bank: ["this","is","a","picture","of","my friend","."],
       answer: ["this","is","a","picture","of","my friend","."],
       explanation: "of は「〜の」という所属・内容を表す前置詞です。「主語→be動詞→a picture→of→対象」の順です。",
@@ -1245,6 +1349,7 @@ UNITS.push({
     {
       id: "preposition-021",
       level: 1,
+      jp: "その木の下にいる女の子はクミです。",
       bank: ["the","girl","under","the","tree","is","kumi","."],
       answer: ["the","girl","under","the","tree","is","kumi","."],
       explanation: "under は「〜の下に」という位置関係を表し、girl を後ろから修飾します。「主語(the girl under the tree)→be動詞→補語」の順です。",
@@ -1253,6 +1358,7 @@ UNITS.push({
     {
       id: "preposition-022",
       level: 1,
+      jp: "あなたは試合中緊張していました。",
       bank: ["you","were","nervous","during","the","game","."],
       answer: ["you","were","nervous","during","the","game","."],
       explanation: "during は「〜の間ずっと」という期間を表す前置詞です。「主語→be動詞(過去形)→補語→during→期間」の順です。",
@@ -1261,6 +1367,7 @@ UNITS.push({
     {
       id: "preposition-023",
       level: 1,
+      jp: "RPGゲームは私のクラスで人気があります。",
       bank: ["rpg games","are","popular","in","my","class","."],
       answer: ["rpg games","are","popular","in","my","class","."],
       explanation: "in は「〜で」という範囲を表す前置詞です。「主語→be動詞→補語→in→範囲」の順です。",
@@ -1269,6 +1376,7 @@ UNITS.push({
     {
       id: "preposition-024",
       level: 1,
+      jp: "多くの生徒たちは睡眠に問題を抱えています。",
       bank: ["a lot of","students","have","a","problem","with","sleeping","."],
       answer: ["a lot of","students","have","a","problem","with","sleeping","."],
       explanation: "with は「〜に関する」という関連を表す前置詞です。「主語→動詞→a problem→with→内容」の順です。",
@@ -1277,6 +1385,7 @@ UNITS.push({
     {
       id: "preposition-025",
       level: 1,
+      jp: "あなたがたは山の美しい写真を楽しむことができます。",
       bank: ["you","can","enjoy","beautiful","pictures","of","mountains","."],
       answer: ["you","can","enjoy","beautiful","pictures","of","mountains","."],
       explanation: "of は「〜の」という対象を表す前置詞です。「主語→can+動詞→pictures→of→対象」の順です。",
@@ -1285,6 +1394,7 @@ UNITS.push({
     {
       id: "preposition-026",
       level: 3,
+      jp: "私は英語の教師として働いている友だちがいます。",
       bank: ["i","have","a","friend","working","as","an english teacher","."],
       answer: ["i","have","a","friend","working","as","an english teacher","."],
       explanation: "as は「〜として」という立場を表す前置詞です。「主語→動詞→a friend→working as→職業」の順です。",
@@ -1293,6 +1403,7 @@ UNITS.push({
     {
       id: "preposition-027",
       level: 1,
+      jp: "私はこのイベントについての情報が必要です。",
       bank: ["i","need","some","information","about","this event","."],
       answer: ["i","need","some","information","about","this event","."],
       explanation: "about は「〜についての」という内容を表す前置詞です。「主語→動詞→information→about→話題」の順です。",
@@ -1309,6 +1420,7 @@ UNITS.push({
     {
       id: "modal-frequency-001",
       level: 1,
+      jp: "私は明日彼に会うつもりです。",
       bank: ["i","will","see","him","tomorrow","."],
       answer: ["i","will","see","him","tomorrow","."],
       explanation: "「~するつもりだ」は will + 動詞の原形で表します。「主語→will→動詞の原形→目的語」の順です。",
@@ -1317,6 +1429,7 @@ UNITS.push({
     {
       id: "modal-frequency-002",
       level: 1,
+      jp: "私は来月15歳になります。",
       bank: ["i","will","be","fifteen","next month","."],
       answer: ["i","will","be","fifteen","next month","."],
       explanation: "未来の状態は will + be動詞の原形で表します。「主語→will→be→補語」の順です。",
@@ -1325,6 +1438,7 @@ UNITS.push({
     {
       id: "modal-frequency-003",
       level: 1,
+      jp: "私はそこでたくさん写真を撮りました。",
       bank: ["i","took","a lot of","pictures","there","."],
       answer: ["i","took","a lot of","pictures","there","."],
       explanation: "過去の動作は動詞の過去形で表します。「主語→動詞の過去形→目的語→場所」の順です。",
@@ -1333,6 +1447,7 @@ UNITS.push({
     {
       id: "modal-frequency-004",
       level: 1,
+      jp: "彼女はたいてい、10時に寝ます。",
       bank: ["she","usually","goes","to","bed","at","ten","."],
       answer: ["she","usually","goes","to","bed","at","ten","."],
       explanation: "頻度を表す副詞(usually)は一般動詞の前に置きます。「主語→usually→動詞→場所」の順です。",
@@ -1341,6 +1456,7 @@ UNITS.push({
     {
       id: "modal-frequency-005",
       level: 2,
+      jp: "明日は雪が降るでしょう。",
       bank: ["it","will","snow","tomorrow","."],
       answer: ["it","will","snow","tomorrow","."],
       explanation: "未来の予想は will + 動詞の原形で表します。「主語→will→動詞の原形→時を表す語」の順です。",
@@ -1349,6 +1465,7 @@ UNITS.push({
     {
       id: "modal-frequency-006",
       level: 2,
+      jp: "私たちは私たちの歴史についてたくさん知るべきだ。",
       bank: ["we","should","know","a lot","about","our history","."],
       answer: ["we","should","know","a lot","about","our history","."],
       explanation: "「~するべきだ」は should + 動詞の原形。「主語→should→動詞の原形→目的語」の順です。",
@@ -1357,6 +1474,7 @@ UNITS.push({
     {
       id: "modal-frequency-007",
       level: 2,
+      jp: "ここで泳いではいけません。",
       bank: ["you","must","not","swim","here","."],
       answer: ["you","must","not","swim","here","."],
       explanation: "「~してはいけない」は must not + 動詞の原形。「主語→must not→動詞の原形→場所」の順です。",
@@ -1365,6 +1483,7 @@ UNITS.push({
     {
       id: "modal-frequency-008",
       level: 2,
+      jp: "午後は雨が降るかもしれない。",
       bank: ["it","may","rain","in the afternoon","."],
       answer: ["it","may","rain","in the afternoon","."],
       explanation: "「~かもしれない」は may + 動詞の原形で表します。「主語→may→動詞の原形→時を表す語」の順です。",
@@ -1373,6 +1492,7 @@ UNITS.push({
     {
       id: "modal-frequency-009",
       level: 2,
+      jp: "私たちはビニール袋を使うのをやめなければならない。",
       bank: ["we","must","stop","using","plastic bags","."],
       answer: ["we","must","stop","using","plastic bags","."],
       explanation: "「~しなければならない」は must + 動詞の原形。「主語→must→動詞の原形→目的語」の順です。",
@@ -1381,6 +1501,7 @@ UNITS.push({
     {
       id: "modal-frequency-010",
       level: 2,
+      jp: "私はこのイベントを通してたくさんの友だちを作ることができた。",
       bank: ["i","could","make","a lot of friends","through","this event","."],
       answer: ["i","could","make","a lot of friends","through","this event","."],
       explanation: "「~できた」は could + 動詞の原形で表します。「主語→could→動詞の原形→目的語」の順です。",
@@ -1389,6 +1510,7 @@ UNITS.push({
     {
       id: "modal-frequency-011",
       level: 1,
+      jp: "彼はとても怒っていた。",
       bank: ["he","was","so","angry","."],
       answer: ["he","was","so","angry","."],
       explanation: "程度を表す so は形容詞の前に置きます。「主語→be動詞の過去形→so→形容詞」の順です。",
@@ -1397,6 +1519,7 @@ UNITS.push({
     {
       id: "modal-frequency-012",
       level: 1,
+      jp: "彼女はいつも親切です。",
       bank: ["she","is","always","kind","."],
       answer: ["she","is","always","kind","."],
       explanation: "頻度を表す副詞(always)はbe動詞の後ろに置きます。「主語→be動詞→always→形容詞」の順です。",
@@ -1405,6 +1528,7 @@ UNITS.push({
     {
       id: "modal-frequency-013",
       level: 1,
+      jp: "彼女はたびたび私を元気づけてくれます。",
       bank: ["she","often","cheers","me","up","."],
       answer: ["she","often","cheers","me","up","."],
       explanation: "頻度を表す副詞(often)は一般動詞の前に置きます。「主語→often→動詞→目的語」の順です。",
@@ -1413,6 +1537,7 @@ UNITS.push({
     {
       id: "modal-frequency-014",
       level: 1,
+      jp: "私はたいてい夕食前に犬の散歩をします。",
       bank: ["i","usually","walk","my","dog","before dinner","."],
       answer: ["i","usually","walk","my","dog","before dinner","."],
       explanation: "頻度を表す副詞(usually)は一般動詞の前に置きます。「主語→usually→動詞→目的語」の順です。",
@@ -1421,6 +1546,7 @@ UNITS.push({
     {
       id: "modal-frequency-015",
       level: 1,
+      jp: "私は今朝早く起きました。",
       bank: ["i","got","up","early","this","morning","."],
       answer: ["i","got","up","early","this","morning","."],
       explanation: "過去の動作は動詞の過去形で表します。「主語→got up→early→時を表す語」の順です。",
@@ -1429,6 +1555,7 @@ UNITS.push({
     {
       id: "modal-frequency-016",
       level: 1,
+      jp: "私たちは公園でいっしょに遊びました。",
       bank: ["we","played","together","in the park","."],
       answer: ["we","played","together","in the park","."],
       explanation: "過去の動作は動詞の過去形で表します。「主語→played→together→場所」の順です。",
@@ -1437,6 +1564,7 @@ UNITS.push({
     {
       id: "modal-frequency-017",
       level: 1,
+      jp: "あそこの人たちは本当に親切です。",
       bank: ["the","people","there","are","really","friendly","."],
       answer: ["the","people","there","are","really","friendly","."],
       explanation: "程度を表す really は形容詞の前に置きます。「主語→be動詞→really→形容詞」の順です。",
@@ -1445,6 +1573,7 @@ UNITS.push({
     {
       id: "modal-frequency-018",
       level: 1,
+      jp: "彼は当時仙台に住んでいました。",
       bank: ["he","lived","in","sendai","then","."],
       answer: ["he","lived","in","sendai","then","."],
       explanation: "過去の状態は動詞の過去形で表します。「主語→lived→in+場所→時を表す語」の順です。",
@@ -1453,6 +1582,7 @@ UNITS.push({
     {
       id: "modal-frequency-019",
       level: 1,
+      jp: "私は昨日は一日中家にいました。",
       bank: ["i","stayed","home","all day","yesterday","."],
       answer: ["i","stayed","home","all day","yesterday","."],
       explanation: "過去の動作は動詞の過去形で表します。「主語→stayed→home→時を表す語」の順です。",
@@ -1469,6 +1599,7 @@ UNITS.push({
     {
       id: "comparative-001",
       level: 2,
+      jp: "バスケットボールは最もワクワクするスポーツです。",
       bank: ["basketball","is","the","most","exciting","sport","."],
       answer: ["basketball","is","the","most","exciting","sport","."],
       explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞」の順です。",
@@ -1477,6 +1608,7 @@ UNITS.push({
     {
       id: "comparative-002",
       level: 2,
+      jp: "日本は世界で最も人気がある国の一つです。",
       bank: ["japan","is","one of","the most popular","countries","in the world","."],
       answer: ["japan","is","one of","the most popular","countries","in the world","."],
       explanation: "「最も~な…の一つ」は「one of the most+形容詞+複数名詞」で表します。「主語→be動詞→one of the most+形容詞→複数名詞」の順です。",
@@ -1485,6 +1617,7 @@ UNITS.push({
     {
       id: "comparative-003",
       level: 2,
+      jp: "私は料理をすることよりも食べることが好きです。",
       bank: ["i","like","eating","better","than","cooking","."],
       answer: ["i","like","eating","better","than","cooking","."],
       explanation: "「…より~の方が好きだ」は「like ~ better than …」で表します。「主語→like→動名詞→better→than→比べる相手」の順です。",
@@ -1493,6 +1626,7 @@ UNITS.push({
     {
       id: "comparative-004",
       level: 2,
+      jp: "沙也加は前より一生懸命ピアノを練習し始めました。",
       bank: ["sayaka","began","to","practice","the piano","harder","than","before","."],
       answer: ["sayaka","began","to","practice","the piano","harder","than","before","."],
       explanation: "「…より~だ」は「比較級+than」で表します。「主語→動詞→比較級(harder)→than→before」の順です。",
@@ -1501,6 +1635,7 @@ UNITS.push({
     {
       id: "comparative-005",
       level: 2,
+      jp: "私の一番の思い出は修学旅行です。",
       bank: ["my","best","memory","is","our","school trip","."],
       answer: ["my","best","memory","is","our","school trip","."],
       explanation: "「一番の~」は最上級のbestで表します。「主語(my best memory)→be動詞→名詞(school trip)」の順です。",
@@ -1509,6 +1644,7 @@ UNITS.push({
     {
       id: "comparative-006",
       level: 2,
+      jp: "命は他の何よりも大切です。",
       bank: ["life","is","more","important","than","anything","else","."],
       answer: ["life","is","more","important","than","anything","else","."],
       explanation: "「…より~だ」は「more+形容詞+than」で表します。「主語→be動詞→more+important→than→anything else」の順です。",
@@ -1517,6 +1653,7 @@ UNITS.push({
     {
       id: "comparative-007",
       level: 2,
+      jp: "ハンバーガー２つはサンドイッチ２つより安い。",
       bank: ["two hamburgers","are","cheaper","than","two sandwiches","."],
       answer: ["two hamburgers","are","cheaper","than","two sandwiches","."],
       explanation: "「…より~だ」は「比較級(er)+than」で表します。「主語→be動詞→比較級(cheaper)→than→比べる相手」の順です。",
@@ -1525,6 +1662,7 @@ UNITS.push({
     {
       id: "comparative-008",
       level: 2,
+      jp: "これが私にとって一番重要なことです。",
       bank: ["this","is","the","most","important","thing","for","me","."],
       answer: ["this","is","the","most","important","thing","for","me","."],
       explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞→for me」の順です。",
@@ -1533,6 +1671,7 @@ UNITS.push({
     {
       id: "comparative-009",
       level: 2,
+      jp: "私は彼女の考えが私のより良いと思います。",
       bank: ["i","think","her idea","is","better","than","mine","."],
       answer: ["i","think","her idea","is","better","than","mine","."],
       explanation: "「…より良い」は比較級betterで表します。「主語→think→her idea→be動詞→better→than→mine」の順です。",
@@ -1541,6 +1680,7 @@ UNITS.push({
     {
       id: "comparative-010",
       level: 2,
+      jp: "理科は数学ほど難しくないと思います。",
       bank: ["i think","science","is","not","as","difficult","as","math","."],
       answer: ["i think","science","is","not","as","difficult","as","math","."],
       explanation: "not as ~ as で「…ほど~ではない」という同等比較の否定を表します。「主語→be動詞→not as→difficult→as→比べる相手」の順です。",
@@ -1549,6 +1689,7 @@ UNITS.push({
     {
       id: "comparative-011",
       level: 2,
+      jp: "私は私たちの学校があなたにとって一番良い学校だと思います。",
       bank: ["i","think","our school","is","the best school","for you","."],
       answer: ["i","think","our school","is","the best school","for you","."],
       explanation: "「最も~だ」は「the+最上級」で表します。「主語→think→our school→be動詞→the best school→for you」の順です。",
@@ -1557,6 +1698,7 @@ UNITS.push({
     {
       id: "comparative-012",
       level: 2,
+      jp: "歴史を勉強することが私にとってもっとおもしろい。",
       bank: ["studying","history","is","more","interesting","for","me","."],
       answer: ["studying","history","is","more","interesting","for","me","."],
       explanation: "「もっと~だ」は「more+形容詞」で表します。「主語(動名詞句)→be動詞→more+interesting→for me」の順です。",
@@ -1565,6 +1707,7 @@ UNITS.push({
     {
       id: "comparative-013",
       level: 2,
+      jp: "私は英語を話すことが、以前よりずっと好きです。",
       bank: ["i","like","speaking","english","much","better","than","before","."],
       answer: ["i","like","speaking","english","much","better","than","before","."],
       explanation: "「ずっと~の方が好きだ」は「like ~ much better than …」で表します。「主語→like→動名詞句→much better→than→before」の順です。",
@@ -1573,6 +1716,7 @@ UNITS.push({
     {
       id: "comparative-014",
       level: 2,
+      jp: "このかばんはそのかばんほど高くありません。",
       bank: ["this bag","is","not","as","expensive","as","that one","."],
       answer: ["this bag","is","not","as","expensive","as","that one","."],
       explanation: "not as ~ as で「…ほど~ではない」という同等比較の否定を表します。「主語→be動詞→not as→expensive→as→比べる相手」の順です。",
@@ -1581,6 +1725,7 @@ UNITS.push({
     {
       id: "comparative-015",
       level: 2,
+      jp: "数学は私にとって最も難しい教科です。",
       bank: ["math","is","the","most","difficult","subject","for me","."],
       answer: ["math","is","the","most","difficult","subject","for me","."],
       explanation: "「最も~だ」は「the+most+形容詞」で表します。「主語→be動詞→the most+形容詞→名詞→for me」の順です。",
@@ -1597,6 +1742,7 @@ UNITS.push({
     {
       id: "infinitive-001",
       level: 1,
+      jp: "彼女はギターを習いたい。",
       bank: ["she","wants","to","learn","the guitar","."],
       answer: ["she","wants","to","learn","the guitar","."],
       explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→動詞の原形」の順です。",
@@ -1605,6 +1751,7 @@ UNITS.push({
     {
       id: "infinitive-002",
       level: 1,
+      jp: "彼は料理をすることが大好きです。",
       bank: ["he","loves","to","cook","."],
       answer: ["he","loves","to","cook","."],
       explanation: "love to+動詞の原形 で「~することが大好きだ」という意味になります。「主語→love→to→動詞の原形」の順です。",
@@ -1613,6 +1760,7 @@ UNITS.push({
     {
       id: "infinitive-003",
       level: 2,
+      jp: "自転車に乗ることはとても楽しい。",
       bank: ["to","ride","a","bike","is","a lot of","fun","."],
       answer: ["to","ride","a","bike","is","a lot of","fun","."],
       explanation: "「to+動詞の原形」が文の主語になり「~することは」という意味を表します。「to→動詞の原形→is→形容詞」の順です。",
@@ -1621,6 +1769,7 @@ UNITS.push({
     {
       id: "infinitive-004",
       level: 1,
+      jp: "私は彼のようになりたい。",
       bank: ["i","want","to","be","like","him","."],
       answer: ["i","want","to","be","like","him","."],
       explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→be→like」の順です。",
@@ -1629,6 +1778,7 @@ UNITS.push({
     {
       id: "infinitive-005",
       level: 1,
+      jp: "またお会いできることを望みます。",
       bank: ["i","hope","to","see","you","again","."],
       answer: ["i","hope","to","see","you","again","."],
       explanation: "hope to+動詞の原形 で「~することを望む」という意味になります。「主語→hope→to→動詞の原形」の順です。",
@@ -1637,6 +1787,7 @@ UNITS.push({
     {
       id: "infinitive-006",
       level: 1,
+      jp: "彼女の夢は宇宙旅行をすることだ。",
       bank: ["her","dream","is","to","travel","in space","."],
       answer: ["her","dream","is","to","travel","in space","."],
       explanation: "「to+動詞の原形」が be動詞の補語になり「~することだ」という意味を表します。「主語→is→to→動詞の原形」の順です。",
@@ -1645,6 +1796,7 @@ UNITS.push({
     {
       id: "infinitive-007",
       level: 1,
+      jp: "私は何か新しいことをやってみたい。",
       bank: ["i","want","to","try","something","new","."],
       answer: ["i","want","to","try","something","new","."],
       explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→try→something new」の順です。",
@@ -1653,6 +1805,7 @@ UNITS.push({
     {
       id: "infinitive-008",
       level: 2,
+      jp: "彼らは眠るための十分な時間がありません。",
       bank: ["they","don't","have","enough","time","to","sleep","."],
       answer: ["they","don't","have","enough","time","to","sleep","."],
       explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「主語→have→enough time→to→動詞の原形」の順です。",
@@ -1661,6 +1814,7 @@ UNITS.push({
     {
       id: "infinitive-009",
       level: 2,
+      jp: "京都には訪れるのによい場所がたくさんあります。",
       bank: ["there","are","many","good","places","to","visit","in kyoto","."],
       answer: ["there","are","many","good","places","to","visit","in kyoto","."],
       explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「there→are→places→to→動詞の原形」の順です。",
@@ -1669,6 +1823,7 @@ UNITS.push({
     {
       id: "infinitive-010",
       level: 2,
+      jp: "多くの生徒たちはゲームをするためにインターネットを使います。",
       bank: ["many sttudents","use","the internet","to","play games","."],
       answer: ["many sttudents","use","the internet","to","play games","."],
       explanation: "「~するために」という目的は「to+動詞の原形」で表します。「主語→use→the internet→to→動詞の原形」の順です。",
@@ -1677,6 +1832,7 @@ UNITS.push({
     {
       id: "infinitive-011",
       level: 2,
+      jp: "私はそれを聞いてうれしい。",
       bank: ["i'm","glad","to","hear","that","."],
       answer: ["i'm","glad","to","hear","that","."],
       explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→be動詞→glad→to→動詞の原形」の順です。",
@@ -1685,6 +1841,7 @@ UNITS.push({
     {
       id: "infinitive-012",
       level: 2,
+      jp: "多くのビデオは理解するのが簡単です。",
       bank: ["many","videos","are","easy","to","understand",".","."],
       answer: ["many","videos","are","easy","to","understand",".","."],
       explanation: "easy to+動詞の原形 で「~するのが簡単だ」という意味になります。「主語→are→easy→to→動詞の原形」の順です。",
@@ -1693,6 +1850,7 @@ UNITS.push({
     {
       id: "infinitive-013",
       level: 2,
+      jp: "私たちは家に帰るためにバスに乗った。",
       bank: ["we","took","a","bus","to","go","home","."],
       answer: ["we","took","a","bus","to","go","home","."],
       explanation: "「~するために」という目的は「to+動詞の原形」で表します。「主語→took→a bus→to→動詞の原形」の順です。",
@@ -1701,6 +1859,7 @@ UNITS.push({
     {
       id: "infinitive-014",
       level: 2,
+      jp: "彼はきっと来ます。",
       bank: ["he","is","sure","to","come","."],
       answer: ["he","is","sure","to","come","."],
       explanation: "sure to+動詞の原形 で「きっと~する」という意味になります。「主語→is→sure→to→動詞の原形」の順です。",
@@ -1709,6 +1868,7 @@ UNITS.push({
     {
       id: "infinitive-015",
       level: 2,
+      jp: "ご面倒をおかけしてすみません。",
       bank: ["i","am","sorry","to","trouble","you","."],
       answer: ["i","am","sorry","to","trouble","you","."],
       explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→am→sorry→to→動詞の原形」の順です。",
@@ -1717,6 +1877,7 @@ UNITS.push({
     {
       id: "infinitive-016",
       level: 2,
+      jp: "母はそれを見て心配そうに見えた。",
       bank: ["my mother","looked","worried","to","see","that","."],
       answer: ["my mother","looked","worried","to","see","that","."],
       explanation: "感情を表す形容詞の後の「to+動詞の原形」は「~して」という原因を表します。「主語→looked→worried→to→動詞の原形」の順です。",
@@ -1725,6 +1886,7 @@ UNITS.push({
     {
       id: "infinitive-017",
       level: 2,
+      jp: "私たちは車の運転ができる年齢です。",
       bank: ["we","are","old","enough","to","drive","."],
       answer: ["we","are","old","enough","to","drive","."],
       explanation: "形容詞+enough+to+動詞の原形 で「~するのに十分…だ」という意味になります。「主語→are→old→enough→to→動詞の原形」の順です。",
@@ -1733,6 +1895,7 @@ UNITS.push({
     {
       id: "infinitive-018",
       level: 3,
+      jp: "二度とそういう間違いをしないよう、注意しなければならない。",
       bank: ["you","must","be","careful","not","to","do","such a mistake","again","."],
       answer: ["you","must","be","careful","not","to","do","such a mistake","again","."],
       explanation: "not to+動詞の原形 で「~しないように」という否定の目的を表します。「主語→must be careful→not→to→動詞の原形」の順です。",
@@ -1741,6 +1904,7 @@ UNITS.push({
     {
       id: "infinitive-019",
       level: 2,
+      jp: "私はその温泉に行きたい。",
       bank: ["i","want","to","go","to","the onsen","."],
       answer: ["i","want","to","go","to","the onsen","."],
       explanation: "want to+動詞の原形 で「~したい」という意味になります。「主語→want→to→go→to→場所」の順です。",
@@ -1749,6 +1913,7 @@ UNITS.push({
     {
       id: "infinitive-020",
       level: 2,
+      jp: "私の夢はいつかイタリアを訪れることです。",
       bank: ["my dream","is","to","visit","italy","someday","."],
       answer: ["my dream","is","to","visit","italy","someday","."],
       explanation: "「to+動詞の原形」が be動詞の補語になり「~することだ」という意味を表します。「主語→is→to→visit→italy」の順です。",
@@ -1757,6 +1922,7 @@ UNITS.push({
     {
       id: "infinitive-021",
       level: 2,
+      jp: "夢を持つことは大事です。",
       bank: ["it","is","important","to","have","dreams","."],
       answer: ["it","is","important","to","have","dreams","."],
       explanation: "It is ... to ~ で「~することは…だ」という形式主語構文になります。「It→is→important→to→動詞の原形」の順です。",
@@ -1765,6 +1931,7 @@ UNITS.push({
     {
       id: "infinitive-022",
       level: 2,
+      jp: "私にとって彼女の音楽を聴くことはとても楽しい。",
       bank: ["it","is","a lot of","fun","to","listen","to","music","."],
       answer: ["it","is","a lot of","fun","to","listen","to","music","."],
       explanation: "It is ... to ~ で「~することは…だ」という形式主語構文になります。「It→is→a lot of fun→to→動詞の原形」の順です。",
@@ -1773,6 +1940,7 @@ UNITS.push({
     {
       id: "infinitive-023",
       level: 2,
+      jp: "ボランティア活動は私たちがほかの人々のためにできることについて考えるいい機会になるでしょう。",
       bank: ["volunteer activities","will","be","a good chance","to","think about","things","we","can","do","for other people","."],
       answer: ["volunteer activities","will","be","a good chance","to","think about","things","we","can","do","for other people","."],
       explanation: "「to+動詞の原形」が名詞を後ろから修飾し「~するための」という意味を表します。「主語→will be→a good chance→to→動詞の原形」の順です。",
@@ -1781,6 +1949,7 @@ UNITS.push({
     {
       id: "infinitive-024",
       level: 3,
+      jp: "若い人たちにとって外国語を学ぶことは大切です。",
       bank: ["it","is","important","for","young people","to","learn","foreign languages",".","."],
       answer: ["it","is","important","for","young people","to","learn","foreign languages",".","."],
       explanation: "It is ... for 人 to ~ で「(人)にとって~することは…だ」という意味になります。「It→is→important→for→young people→to→動詞の原形」の順です。",
@@ -1789,6 +1958,7 @@ UNITS.push({
     {
       id: "infinitive-025",
       level: 2,
+      jp: "私はいつか世界中を旅したいと思っています。",
       bank: ["i","hope","to","travel","around the world","someday",".","."],
       answer: ["i","hope","to","travel","around the world","someday",".","."],
       explanation: "hope to+動詞の原形 で「~することを望む」という意味になります。「主語→hope→to→travel→around the world」の順です。",
@@ -1797,6 +1967,7 @@ UNITS.push({
     {
       id: "infinitive-026",
       level: 3,
+      jp: "私は君に助けに来てほしい。",
       bank: ["i","want","you","to","come","and","help","me","."],
       answer: ["i","want","you","to","come","and","help","me","."],
       explanation: "want + 人 + to + 動詞の原形 で「(人)に~してほしい」という意味になります。「主語→want→人→to→動詞の原形」の順です。",
@@ -1805,6 +1976,7 @@ UNITS.push({
     {
       id: "infinitive-027",
       level: 3,
+      jp: "母は私にひとりでそこへ行くなと言った。",
       bank: ["my mother","told","me","not","to","go","there","alone","."],
       answer: ["my mother","told","me","not","to","go","there","alone","."],
       explanation: "tell + 人 + not to + 動詞の原形 で「(人)に~しないように言う」という意味になります。「主語→told→人→not→to→動詞の原形」の順です。",
@@ -1813,6 +1985,7 @@ UNITS.push({
     {
       id: "infinitive-028",
       level: 3,
+      jp: "部屋を掃除するのを手伝ってください。",
       bank: ["please","help","me","clean","the","room","."],
       answer: ["please","help","me","clean","the","room","."],
       explanation: "help + 人 + 動詞の原形 で「(人)が~するのを手伝う」という意味になります。「please→help→人→動詞の原形」の順です。",
@@ -1821,6 +1994,7 @@ UNITS.push({
     {
       id: "infinitive-029",
       level: 3,
+      jp: "恵子はマイクが日本語の本を読むのを助けた。",
       bank: ["keiko","helped","mike","read","japanese","books","."],
       answer: ["keiko","helped","mike","read","japanese","books","."],
       explanation: "help + 人 + 動詞の原形 で「(人)が~するのを手伝う」という意味になります。「主語→helped→人→動詞の原形」の順です。",
@@ -1829,6 +2003,7 @@ UNITS.push({
     {
       id: "infinitive-030",
       level: 3,
+      jp: "助けが必要な場合には、知らせてください。",
       bank: ["let","me","know","if","you","need","any","help","."],
       answer: ["let","me","know","if","you","need","any","help","."],
       explanation: "let + 人 + 動詞の原形 で「(人)に~させる」という使役の意味になります。「let→me→know」の順です。",
@@ -1837,6 +2012,7 @@ UNITS.push({
     {
       id: "infinitive-031",
       level: 3,
+      jp: "私は彼に二度とそんなことはさせません。",
       bank: ["i","won't","let","him","do","that","again","."],
       answer: ["i","won't","let","him","do","that","again","."],
       explanation: "let + 人 + 動詞の原形 で「(人)に~させる」という使役の意味になります。「主語→won't let→him→動詞の原形」の順です。",
@@ -1853,6 +2029,7 @@ UNITS.push({
     {
       id: "gerund-001",
       level: 2,
+      jp: "私は本を読むことがとても好きです。",
       bank: ["i","like","reading","books","very","much","."],
       answer: ["i","like","reading","books","very","much","."],
       explanation: "like のあとは動名詞（動詞のing形）が続きます。「主語→like→動詞ing→目的語」の順です。",
@@ -1861,6 +2038,7 @@ UNITS.push({
     {
       id: "gerund-002",
       level: 2,
+      jp: "あなたといっしょに走ることは楽しい思い出でした。",
       bank: ["running","with","you","was","a","happy","memory",".","."],
       answer: ["running","with","you","was","a","happy","memory",".","."],
       explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
@@ -1869,6 +2047,7 @@ UNITS.push({
     {
       id: "gerund-003",
       level: 2,
+      jp: "私はピアノの練習を始めました。",
       bank: ["i","started","practicing","the","piano","."],
       answer: ["i","started","practicing","the","piano","."],
       explanation: "start のあとは動名詞（動詞のing形）が続きます。「主語→start→動詞ing→目的語」の順です。",
@@ -1877,6 +2056,7 @@ UNITS.push({
     {
       id: "gerund-004",
       level: 2,
+      jp: "私はラグビーの試合を見ることを楽しみました。",
       bank: ["i","enjoyed","watching","a","rugby game",".","."],
       answer: ["i","enjoyed","watching","a","rugby game",".","."],
       explanation: "enjoy のあとは動名詞（動詞のing形）が続きます。「主語→enjoy→動詞ing→目的語」の順です。",
@@ -1885,6 +2065,7 @@ UNITS.push({
     {
       id: "gerund-005",
       level: 2,
+      jp: "彼女はアメリカで勉強することに興奮した。",
       bank: ["she","was","excited","about","studying","in america",".","."],
       answer: ["she","was","excited","about","studying","in america",".","."],
       explanation: "前置詞 about のあとにも動名詞（動詞のing形）が続きます。「主語→be動詞→excited about→動詞ing」の順です。",
@@ -1893,6 +2074,7 @@ UNITS.push({
     {
       id: "gerund-006",
       level: 2,
+      jp: "サッカーをすることは私をしあわせにします。",
       bank: ["playing","soccer","makes","me","happy","."],
       answer: ["playing","soccer","makes","me","happy","."],
       explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→動詞→目的語→補語」の順です。",
@@ -1901,6 +2083,7 @@ UNITS.push({
     {
       id: "gerund-007",
       level: 2,
+      jp: "たくさん眠ることはよい方法です。",
       bank: ["sleeping","a lot","is","a","good","way",".","."],
       answer: ["sleeping","a lot","is","a","good","way",".","."],
       explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
@@ -1909,6 +2092,7 @@ UNITS.push({
     {
       id: "gerund-008",
       level: 2,
+      jp: "勉強をすることは私たちにとってとても大切です。",
       bank: ["studying","is","very","important","for","us","."],
       answer: ["studying","is","very","important","for","us","."],
       explanation: "動詞のing形（動名詞）は「~すること」という意味の主語になります。「動名詞→be動詞→補語」の順です。",
@@ -1917,6 +2101,7 @@ UNITS.push({
     {
       id: "gerund-009",
       level: 1,
+      jp: "私は新しい友だちを作ることを楽しんでいます。",
       bank: ["i","enjoy","making","new","friends","."],
       answer: ["i","enjoy","making","new","friends","."],
       explanation: "enjoy のあとは動名詞（動詞のing形）が続きます。「主語→enjoy→動詞ing→目的語」の順です。",
@@ -1933,6 +2118,7 @@ UNITS.push({
     {
       id: "passive-001",
       level: 2,
+      jp: "これは若い人たちに愛されている歌です。",
       bank: ["this","is","a","song","loved","by","young people","."],
       answer: ["this","is","a","song","loved","by","young people","."],
       explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
@@ -1941,6 +2127,7 @@ UNITS.push({
     {
       id: "passive-002",
       level: 2,
+      jp: "その公園はみどり公園と呼ばれています。",
       bank: ["that","park","is","called","midori park","."],
       answer: ["that","park","is","called","midori park","."],
       explanation: "動作をする人が示されない受け身の文です。「主語→be動詞→過去分詞→補語」の順です。",
@@ -1949,6 +2136,7 @@ UNITS.push({
     {
       id: "passive-003",
       level: 2,
+      jp: "サッカーは多くの人々に愛されています。",
       bank: ["soccer","is","loved","by","many people","."],
       answer: ["soccer","is","loved","by","many people","."],
       explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
@@ -1957,6 +2145,7 @@ UNITS.push({
     {
       id: "passive-004",
       level: 2,
+      jp: "私たちはそのニュースに驚きました。",
       bank: ["we","were","surprised","at","the news","."],
       answer: ["we","were","surprised","at","the news","."],
       explanation: "byではなくatを使う受け身の熟語表現です。「主語→be動詞(過去形)→過去分詞→at→原因」の順です。",
@@ -1965,6 +2154,7 @@ UNITS.push({
     {
       id: "passive-005",
       level: 2,
+      jp: "アイデアコンテストが来月開かれる。",
       bank: ["an idea contest","will","be","held","next month","."],
       answer: ["an idea contest","will","be","held","next month","."],
       explanation: "未来の受け身は「will+be+過去分詞」の形。「主語→will→be→過去分詞→時を表す語句」の順です。",
@@ -1973,6 +2163,7 @@ UNITS.push({
     {
       id: "passive-006",
       level: 2,
+      jp: "この本は世界中の多くの人々に読まれています。",
       bank: ["this","book","is","read","by","many","people","around","the world","."],
       answer: ["this","book","is","read","by","many","people","around","the world","."],
       explanation: "受け身は「be動詞+過去分詞+by~」の形。「主語→be動詞→過去分詞→by→動作をする人」の順です。",
@@ -1989,6 +2180,7 @@ UNITS.push({
     {
       id: "present-perfect-001",
       level: 3,
+      jp: "彼女は10年間ピアノを弾いています。",
       bank: ["she","has","played","the piano","for","ten","years","."],
       answer: ["she","has","played","the piano","for","ten","years","."],
       explanation: "現在完了は「have/has+過去分詞」の形で、継続を表します。「主語→have/has→過去分詞→期間」の順です。",
@@ -1997,6 +2189,7 @@ UNITS.push({
     {
       id: "present-perfect-002",
       level: 3,
+      jp: "私の母は私の人生に大いに影響を与えています。",
       bank: ["my mother","has","influenced","my life","a lot","."],
       answer: ["my mother","has","influenced","my life","a lot","."],
       explanation: "現在完了は過去の行為が今も影響を及ぼしていることを表します。「主語→have/has→過去分詞→目的語→修飾語」の順です。",
@@ -2005,6 +2198,7 @@ UNITS.push({
     {
       id: "present-perfect-003",
       level: 3,
+      jp: "私は小学生の時からずっとテニスをしてきました。",
       bank: ["i","have","been","playing","tennis","since","i","was","in elementary school","."],
       answer: ["i","have","been","playing","tennis","since","i","was","in elementary school","."],
       explanation: "現在完了進行形は「have/has been+動詞ing」で、動作が今も続いていることを表します。「主語→have/has been→動詞ing→since→期間」の順です。",
@@ -2013,6 +2207,7 @@ UNITS.push({
     {
       id: "present-perfect-004",
       level: 3,
+      jp: "私はその映画を何度も見たことがあります。",
       bank: ["i","have","seen","the movie","many","times","."],
       answer: ["i","have","seen","the movie","many","times","."],
       explanation: "現在完了の経験用法は「~したことがある」という意味を表します。「主語→have/has→過去分詞→目的語→回数」の順です。",
@@ -2021,6 +2216,7 @@ UNITS.push({
     {
       id: "present-perfect-005",
       level: 3,
+      jp: "昨日からずっと雨が降っています。",
       bank: ["it","has","been","raining","since","yesterday","."],
       answer: ["it","has","been","raining","since","yesterday","."],
       explanation: "現在完了進行形は「have/has been+動詞ing」で、動作が今も続いていることを表します。「主語→have/has been→動詞ing→since→起点」の順です。",
@@ -2029,6 +2225,7 @@ UNITS.push({
     {
       id: "present-perfect-006",
       level: 3,
+      jp: "私たちはまだビニール袋を使うことをやめていません。",
       bank: ["we","have","not","stopped","using","plastic bags","."],
       answer: ["we","have","not","stopped","using","plastic bags","."],
       explanation: "現在完了の否定形は「まだ~していない」という完了用法を表します。「主語→have/has not→過去分詞→目的語」の順です。",
@@ -2037,6 +2234,7 @@ UNITS.push({
     {
       id: "present-perfect-007",
       level: 3,
+      jp: "私はボランティア活動に興味があります。",
       bank: ["i","have","been","interested","in","volunteer activities","."],
       answer: ["i","have","been","interested","in","volunteer activities","."],
       explanation: "現在完了は過去から続く状態を表すことができます。「主語→have/has been→形容詞→in→対象」の順です。",
@@ -2045,6 +2243,7 @@ UNITS.push({
     {
       id: "present-perfect-008",
       level: 3,
+      jp: "電車はもう駅を出てしまいました。",
       bank: ["the train","has","already","left","the station","."],
       answer: ["the train","has","already","left","the station","."],
       explanation: "already は「もう~した」と完了を強調する語です。「主語→have/has→already→過去分詞→修飾語」の順です。",
@@ -2053,6 +2252,7 @@ UNITS.push({
     {
       id: "present-perfect-009",
       level: 3,
+      jp: "私は私自身の買い物袋を使うことに決めました。",
       bank: ["i","have","decided","to","use","my own shopping bag","."],
       answer: ["i","have","decided","to","use","my own shopping bag","."],
       explanation: "現在完了は過去の決定が今の状態に結びつくことを表します。「主語→have/has→過去分詞→to+動詞→目的語」の順です。",
@@ -2061,6 +2261,7 @@ UNITS.push({
     {
       id: "present-perfect-010",
       level: 3,
+      jp: "私は彼女のコンサートに行ったことがない。",
       bank: ["i","have","never","been","to","her concert","."],
       answer: ["i","have","never","been","to","her concert","."],
       explanation: "never は「一度も~ない」と経験を否定する語です。「主語→have/has never→過去分詞→to+場所」の順です。",
@@ -2077,6 +2278,7 @@ UNITS.push({
     {
       id: "participle-001",
       level: 3,
+      jp: "私はそこで働いている人々にありがとうと言いました。",
       bank: ["i","said","thank you","to","the","people","working","there","."],
       answer: ["i","said","thank you","to","the","people","working","there","."],
       explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「the people→working→there」の順です。",
@@ -2085,6 +2287,7 @@ UNITS.push({
     {
       id: "participle-002",
       level: 3,
+      jp: "私たちの歌を聞いている人々はとても幸せそうに見えました。",
       bank: ["people","listening to","our songs","looked","very happy","."],
       answer: ["people","listening to","our songs","looked","very happy","."],
       explanation: "現在分詞句が主語の名詞を後ろから修飾し、「~している◯◯」という意味になります。「people→listening to our songs→looked」の順です。",
@@ -2093,6 +2296,7 @@ UNITS.push({
     {
       id: "participle-003",
       level: 3,
+      jp: "私たちは希望と夢をもって未来を見ています。",
       bank: ["we","are","looking","at","the future","with","hopes and dreams","."],
       answer: ["we","are","looking","at","the future","with","hopes and dreams","."],
       explanation: "「be動詞+ing」の現在進行形で「~しているところだ」という今の動作を表します。「we→are looking→at the future」の順です。",
@@ -2101,6 +2305,7 @@ UNITS.push({
     {
       id: "participle-004",
       level: 2,
+      jp: "いろいろな国の出身の多くの人々が私たちの市で生活しています。",
       bank: ["many people","from","different countries","are","living","in our city","."],
       answer: ["many people","from","different countries","are","living","in our city","."],
       explanation: "「be動詞+ing」の現在進行形で「~している」という今の状態を表します。「many people from different countries→are living→in our city」の順です。",
@@ -2109,6 +2314,7 @@ UNITS.push({
     {
       id: "participle-005",
       level: 2,
+      jp: "バスの運転手はバスに乗る人々のために働いていた。",
       bank: ["the bus driver","was","working","for","the people","on the bus","."],
       answer: ["the bus driver","was","working","for","the people","on the bus","."],
       explanation: "「be動詞+ing」の過去進行形で「~していた」という過去のある時点の動作を表します。「the bus driver→was working→for the people」の順です。",
@@ -2117,6 +2323,7 @@ UNITS.push({
     {
       id: "participle-006",
       level: 2,
+      jp: "私はここで楽しいときを過ごしています。",
       bank: ["i'm","having","a","good","time","here","."],
       answer: ["i'm","having","a","good","time","here","."],
       explanation: "「be動詞+ing」の現在進行形で「~しているところだ」という今の状態を表します。「i'm→having→a good time」の順です。",
@@ -2125,6 +2332,7 @@ UNITS.push({
     {
       id: "participle-007",
       level: 1,
+      jp: "カナダの生徒たちはあなた方に会えるのを楽しみにしています。",
       bank: ["the students","in canada","are","looking","forward","to","meeting","you","."],
       answer: ["the students","in canada","are","looking","forward","to","meeting","you","."],
       explanation: "「look forward to ~ing」で「~することを楽しみにする」という意味になります。「the students in Canada→are looking forward to→meeting you」の順です。",
@@ -2133,6 +2341,7 @@ UNITS.push({
     {
       id: "participle-008",
       level: 2,
+      jp: "私はバレーボールをしている生徒たちを見ていました。",
       bank: ["i","was","watching","students","playing","volleyball","."],
       answer: ["i","was","watching","students","playing","volleyball","."],
       explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「students→playing→volleyball」の順です。",
@@ -2141,6 +2350,7 @@ UNITS.push({
     {
       id: "participle-009",
       level: 3,
+      jp: "私は窓の近くに座っている少女を知っています。",
       bank: ["i","know","the girl","sitting","near","the window","."],
       answer: ["i","know","the girl","sitting","near","the window","."],
       explanation: "動詞のing形（現在分詞）が名詞の後ろについて「~している◯◯」という意味を加えます。「the girl→sitting→near the window」の順です。",
@@ -2157,6 +2367,7 @@ UNITS.push({
     {
       id: "relative-pronoun-001",
       level: 3,
+      jp: "私はやりたいことが一つあります。",
       bank: ["i","have","one","thing","i","want","to","do","."],
       answer: ["i","have","one","thing","i","want","to","do","."],
       explanation: "目的語の関係代名詞は省略できます。「先行詞(もの)→(that省略)→I→want to do」の順です。",
@@ -2165,6 +2376,7 @@ UNITS.push({
     {
       id: "relative-pronoun-002",
       level: 3,
+      jp: "これは私がこれまでに読んだ中で一番の絵本です。",
       bank: ["this","is","the","best","picture book","that","i","have","ever","read","."],
       answer: ["this","is","the","best","picture book","that","i","have","ever","read","."],
       explanation: "that はものを説明する関係代名詞です。「先行詞(もの)→that→I→have ever read」の順です。",
@@ -2173,6 +2385,7 @@ UNITS.push({
     {
       id: "relative-pronoun-003",
       level: 3,
+      jp: "私たちは私たちの市に住んでいる外国人にたずねました。",
       bank: ["we","asked","foreign people","who","live","in","our city","."],
       answer: ["we","asked","foreign people","who","live","in","our city","."],
       explanation: "who は人を説明する関係代名詞です。「先行詞(人)→who→live in our city」の順で後ろから説明を加えます。",
@@ -2181,6 +2394,7 @@ UNITS.push({
     {
       id: "relative-pronoun-004",
       level: 3,
+      jp: "あなたは日本では得られない経験をすることができる。",
       bank: ["you","can","have","experiences","you","can","never","get","in japan","."],
       answer: ["you","can","have","experiences","you","can","never","get","in japan","."],
       explanation: "目的語の関係代名詞は省略できます。「先行詞(もの)→(that省略)→you→can never get」の順です。",
@@ -2189,6 +2403,7 @@ UNITS.push({
     {
       id: "relative-pronoun-005",
       level: 3,
+      jp: "困っている人々を助けることができる十分な医者がいません。",
       bank: ["there","are","not","enough","doctors","to","help","people","in need","."],
       answer: ["there","are","not","enough","doctors","to","help","people","in need","."],
       explanation: "to不定詞の形容詞的用法で名詞を説明します。「先行詞(もの)→to help→people in need」の順です。",
@@ -2197,6 +2412,7 @@ UNITS.push({
     {
       id: "relative-pronoun-006",
       level: 3,
+      jp: "あなたはあなたのとは違う考えを学ぶことができる。",
       bank: ["you","can","learn","some ideas","which","are","different","from","yours","."],
       answer: ["you","can","learn","some ideas","which","are","different","from","yours","."],
       explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→are different from yours」の順です。",
@@ -2205,6 +2421,7 @@ UNITS.push({
     {
       id: "relative-pronoun-007",
       level: 3,
+      jp: "私は福井で服を作る会社で働いています。",
       bank: ["i","am","working","for","a company","which","makes","clothes","in fukui","."],
       answer: ["i","am","working","for","a company","which","makes","clothes","in fukui","."],
       explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→makes clothes in fukui」の順です。",
@@ -2213,6 +2430,7 @@ UNITS.push({
     {
       id: "relative-pronoun-008",
       level: 3,
+      jp: "それは私をもっとも感動させたイベントです。",
       bank: ["that","is","the event","that","moved","me","the most","."],
       answer: ["that","is","the event","that","moved","me","the most","."],
       explanation: "that はものを説明する関係代名詞です。「先行詞(もの)→that→moved me the most」の順です。",
@@ -2221,6 +2439,7 @@ UNITS.push({
     {
       id: "relative-pronoun-009",
       level: 3,
+      jp: "私は父とその日に起こったことについて話しました。",
       bank: ["i","talked","with my father","about the things","which","happened","on that day","."],
       answer: ["i","talked","with my father","about the things","which","happened","on that day","."],
       explanation: "which はものを説明する関係代名詞です。「先行詞(もの)→which→happened on that day」の順です。",
@@ -2237,6 +2456,7 @@ UNITS.push({
     {
       id: "idiom-001",
       level: 2,
+      jp: "彼女は新しいことをやり続けています。",
       bank: ["she","keeps","on","trying","new","things",".","."],
       answer: ["she","keeps","on","trying","new","things",".","."],
       explanation: "keep on ~ingは「〜し続ける」という意味の熟語です。「主語→keep on→動詞ing」の順です。",
@@ -2245,6 +2465,7 @@ UNITS.push({
     {
       id: "idiom-002",
       level: 1,
+      jp: "彼は山形の出身です。",
       bank: ["he","comes","from","yamagata","."],
       answer: ["he","comes","from","yamagata","."],
       explanation: "come fromは「〜の出身だ」という意味の熟語です。「主語→come from→出身地」の順です。",
@@ -2253,6 +2474,7 @@ UNITS.push({
     {
       id: "idiom-003",
       level: 3,
+      jp: "彼女はよいアイデアを思いつきました。",
       bank: ["she","came","up","with","a","good","idea","."],
       answer: ["she","came","up","with","a","good","idea","."],
       explanation: "come up withは「〜を思いつく」という意味の熟語です。「主語→came up with→思いついた内容」の順です。",
@@ -2261,6 +2483,7 @@ UNITS.push({
     {
       id: "idiom-004",
       level: 2,
+      jp: "私は夏休みを待てません。",
       bank: ["i","can't","wait","for","the summer vacation","."],
       answer: ["i","can't","wait","for","the summer vacation","."],
       explanation: "can't wait forは「〜が待ちきれない」という意味の熟語です。「主語→can't wait for→待ち望むもの」の順です。",
@@ -2269,6 +2492,7 @@ UNITS.push({
     {
       id: "idiom-005",
       level: 2,
+      jp: "これらの写真はたくさんの思い出を呼び戻します。",
       bank: ["these","pictures","bring","back","a lot of","memories","."],
       answer: ["these","pictures","bring","back","a lot of","memories","."],
       explanation: "bring backは「〜を思い出させる」という意味の熟語です。「主語→bring back→思い出す内容」の順です。",
@@ -2277,6 +2501,7 @@ UNITS.push({
     {
       id: "idiom-006",
       level: 1,
+      jp: "あなたは何を探しているんですか。",
       bank: ["what","are","you","looking","for","?"],
       answer: ["what","are","you","looking","for","?"],
       explanation: "look forは「〜を探す」という意味の熟語です。疑問文では「what→are→主語→looking for」の順です。",
@@ -2285,6 +2510,7 @@ UNITS.push({
     {
       id: "idiom-007",
       level: 2,
+      jp: "この点については私はあなたに賛成です。",
       bank: ["i","agree","with","you","on","this point","."],
       answer: ["i","agree","with","you","on","this point","."],
       explanation: "agree withは「〜に賛成する」という意味の熟語です。「主語→agree with→相手→on→話題」の順です。",
@@ -2293,6 +2519,7 @@ UNITS.push({
     {
       id: "idiom-008",
       level: 2,
+      jp: "あなたは次の駅で電車を降りたほうがいい。",
       bank: ["you","should","get","off","the train","at the next station","."],
       answer: ["you","should","get","off","the train","at the next station","."],
       explanation: "get offは「〜を降りる」という意味の熟語です。「主語→should get off→乗り物→場所」の順です。",
@@ -2301,6 +2528,7 @@ UNITS.push({
     {
       id: "idiom-009",
       level: 2,
+      jp: "私は彼の言葉を信頼しています。",
       bank: ["i","depend","on","his","words","."],
       answer: ["i","depend","on","his","words","."],
       explanation: "depend onは「〜を頼りにする」という意味の熟語です。「主語→depend on→頼りにする対象」の順です。",
@@ -2309,6 +2537,7 @@ UNITS.push({
     {
       id: "idiom-010",
       level: 2,
+      jp: "彼は父親にそっくりだ。",
       bank: ["he","looks","just","like","his","father","."],
       answer: ["he","looks","just","like","his","father","."],
       explanation: "look likeは「〜に似ている」という意味の熟語です。「主語→looks just like→似ている相手」の順です。",
@@ -2325,6 +2554,7 @@ UNITS.push({
     {
       id: "conjunction-001",
       level: 2,
+      jp: "私はサッカーをしているとき、幸せです。",
       bank: ["i","am","happy","when","i","play","soccer","."],
       answer: ["i","am","happy","when","i","play","soccer","."],
       explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→am happy→when→主語→play soccer」の順です。",
@@ -2333,6 +2563,7 @@ UNITS.push({
     {
       id: "conjunction-002",
       level: 2,
+      jp: "私たちは全力を尽くした。でも１位になれなかった。",
       bank: ["we","did","our","best",",","but","we","didn't","win","first","place","."],
       answer: ["we","did","our","best",",","but","we","didn't","win","first","place","."],
       explanation: "but は「しかし」と対立する内容をつなぐ接続詞です。「主語→did our best→,→but→主語→didn't win」の順です。",
@@ -2341,6 +2572,7 @@ UNITS.push({
     {
       id: "conjunction-003",
       level: 2,
+      jp: "私たちは以前、カレーライスを作った。だから彼に教えることができる。",
       bank: ["we","cooked","curry and rice","before",",","so","we","can","teach","him","."],
       answer: ["we","cooked","curry and rice","before",",","so","we","can","teach","him","."],
       explanation: "so は「だから」と結果を表してつなぐ接続詞です。「主語→cooked curry and rice before→,→so→主語→can teach him」の順です。",
@@ -2349,6 +2581,7 @@ UNITS.push({
     {
       id: "conjunction-004",
       level: 2,
+      jp: "私たちがそこに行けば、新しいことを学ぶことができる。",
       bank: ["we","can","learn","new things","if","we","go","there","."],
       answer: ["we","can","learn","new things","if","we","go","there","."],
       explanation: "if は「もし〜すれば」という条件を表してつなぎます。「主語→can learn new things→if→主語→go there」の順です。",
@@ -2357,6 +2590,7 @@ UNITS.push({
     {
       id: "conjunction-005",
       level: 2,
+      jp: "私たちは寝る前にスマートフォンを使うべきではない。",
       bank: ["we","should","not","use","smart phones","before","we","go","to","bed","."],
       answer: ["we","should","not","use","smart phones","before","we","go","to","bed","."],
       explanation: "before は「〜する前に」という意味で2つの文をつなぎます。「主語→should not use smart phones→before→主語→go to bed」の順です。",
@@ -2365,6 +2599,7 @@ UNITS.push({
     {
       id: "conjunction-006",
       level: 2,
+      jp: "私は彼が去った後、悲しくなった。",
       bank: ["i","felt","sad","after","he","left","."],
       answer: ["i","felt","sad","after","he","left","."],
       explanation: "after は「〜した後で」という意味で2つの文をつなぎます。「主語→felt sad→after→主語→left」の順です。",
@@ -2373,6 +2608,7 @@ UNITS.push({
     {
       id: "conjunction-007",
       level: 2,
+      jp: "もし晴れれば、ここから美しい眺めを見ることができます。",
       bank: ["you","can","see","a","beautiful","view","from here","if","it's","sunny","."],
       answer: ["you","can","see","a","beautiful","view","from here","if","it's","sunny","."],
       explanation: "if は「もし〜すれば」という条件を表してつなぎます。「主語→can see a beautiful view→if→it's sunny」の順です。",
@@ -2381,6 +2617,7 @@ UNITS.push({
     {
       id: "conjunction-008",
       level: 2,
+      jp: "私が若いとき、私の夢は病気の人を助けることだった。",
       bank: ["my dream","was","to","help","sick people","when","i","was","young","."],
       answer: ["my dream","was","to","help","sick people","when","i","was","young","."],
       explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→my dream was to help sick people→when→主語→was young」の順です。",
@@ -2389,6 +2626,7 @@ UNITS.push({
     {
       id: "conjunction-009",
       level: 2,
+      jp: "私は10歳の時、バスケットボールをし始めました。",
       bank: ["i","began","to","play basketball","when","i","was","ten","."],
       answer: ["i","began","to","play basketball","when","i","was","ten","."],
       explanation: "when は「〜するとき」という意味で2つの文をつなぎます。「主語→began to play basketball→when→主語→was ten」の順です。",
@@ -2397,6 +2635,7 @@ UNITS.push({
     {
       id: "conjunction-010",
       level: 2,
+      jp: "私はとても忙しかったのでそこに行かなかった。",
       bank: ["i","didn't","go","there","because","i","was","very","busy","."],
       answer: ["i","didn't","go","there","because","i","was","very","busy","."],
       explanation: "because は「なぜなら〜だから」と理由を表してつなぎます。「主語→didn't go there→because→主語→was very busy」の順です。",
@@ -2405,6 +2644,7 @@ UNITS.push({
     {
       id: "conjunction-011",
       level: 2,
+      jp: "私の意見はいいと思いますか。",
       bank: ["do","you","think","my opinion","is","good","?"],
       answer: ["do","you","think","my opinion","is","good","?"],
       explanation: "that は「〜ということ」という意味で動詞の目的語となる節を導きます。「Do→主語→think→(that)→my opinion→is good」の順です。",
@@ -2413,6 +2653,7 @@ UNITS.push({
     {
       id: "conjunction-012",
       level: 2,
+      jp: "私は、これがあなたの将来にとってよい経験になると確信しています。",
       bank: ["i'm","sure","this","will","be","a","good","experience","for","your future","."],
       answer: ["i'm","sure","this","will","be","a","good","experience","for","your future","."],
       explanation: "that は「〜ということ」という意味で確信の内容を導く節を作ります。「主語→am sure→(that)→this→will be a good experience」の順です。",
@@ -2421,6 +2662,7 @@ UNITS.push({
     {
       id: "conjunction-013",
       level: 2,
+      jp: "私はこの本があなたにとって役に立つと思います。",
       bank: ["i","think","this","book","is","useful","for","you","."],
       answer: ["i","think","this","book","is","useful","for","you","."],
       explanation: "that は「〜ということ」という意味で動詞の目的語となる節を導きます。「主語→think→(that)→this book→is useful」の順です。",
@@ -2437,6 +2679,7 @@ UNITS.push({
     {
       id: "subjunctive-001",
       level: 3,
+      jp: "もっと速く走ることができたらなあ。",
       bank: ["i","wish","i","could","run","faster","."],
       answer: ["i","wish","i","could","run","faster","."],
       explanation: "I wish + 主語 + could + 動詞の原形 で「(実際はできないけど)~できたらなあ」という現在の事実と異なる願望を表します。「I wish→I→could→run」の順です。",
@@ -2445,6 +2688,7 @@ UNITS.push({
     {
       id: "subjunctive-002",
       level: 3,
+      jp: "彼女のような友だちがいたらなあ。",
       bank: ["i","wish","i","had","a friend","like","her","."],
       answer: ["i","wish","i","had","a friend","like","her","."],
       explanation: "I wish + 主語 + 過去形 で「(実際はいないけど)~がいたらなあ」という現在の事実と異なる願望を表します。「I wish→I→had→a friend」の順です。",
@@ -2453,6 +2697,7 @@ UNITS.push({
     {
       id: "subjunctive-003",
       level: 3,
+      jp: "もし時間があったら、あなたといっしょに行くのになあ。",
       bank: ["if","i","had","time",",","i","would","go","with","you","."],
       answer: ["if","i","had","time",",","i","would","go","with","you","."],
       explanation: "If + 主語 + 過去形, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→had→time→,→I→would→go」の順です。",
@@ -2461,6 +2706,7 @@ UNITS.push({
     {
       id: "subjunctive-004",
       level: 3,
+      jp: "もしあなたたちの周りに空気がなければ、あなたたちは生きることができないだろう。",
       bank: ["if","there","were","no","air","around you",",","you","couldn't","live","."],
       answer: ["if","there","were","no","air","around you",",","you","couldn't","live","."],
       explanation: "If + there + were + no + 名詞, 主語 + couldn't + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→there→were→no→air→,→you→couldn't→live」の順です。",
@@ -2469,6 +2715,7 @@ UNITS.push({
     {
       id: "subjunctive-005",
       level: 3,
+      jp: "もし私が犬を飼っているなら、幸せだろうに。",
       bank: ["if","i","had","a dog",",","i","would","be","happy","."],
       answer: ["if","i","had","a dog",",","i","would","be","happy","."],
       explanation: "If + 主語 + 過去形, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→had→a dog→,→I→would→be→happy」の順です。",
@@ -2477,6 +2724,7 @@ UNITS.push({
     {
       id: "subjunctive-006",
       level: 3,
+      jp: "そのチケットを持っていればなあ。",
       bank: ["i","wish","i","had","the","ticket","."],
       answer: ["i","wish","i","had","the","ticket","."],
       explanation: "I wish + 主語 + 過去形 で「(実際は持っていないけど)~を持っていたらなあ」という現在の事実と異なる願望を表します。「I wish→I→had→the ticket」の順です。",
@@ -2485,6 +2733,7 @@ UNITS.push({
     {
       id: "subjunctive-007",
       level: 3,
+      jp: "もっと上手に英語をはなすことができたらなら。",
       bank: ["i","wish","i","could","speak","english","better","."],
       answer: ["i","wish","i","could","speak","english","better","."],
       explanation: "I wish + 主語 + could + 動詞の原形 で「(実際はできないけど)~できたらなあ」という現在の事実と異なる願望を表します。「I wish→I→could→speak」の順です。",
@@ -2493,6 +2742,7 @@ UNITS.push({
     {
       id: "subjunctive-008",
       level: 3,
+      jp: "私たちの村にコンビニがあったらなあ。",
       bank: ["i","wish","there","were","a convenience store","in our village","."],
       answer: ["i","wish","there","were","a convenience store","in our village","."],
       explanation: "I wish + there + were + 名詞 で「(実際はないけど)~があったらなあ」という現在の事実と異なる願望を表します。「I wish→there→were→a convenience store」の順です。",
@@ -2501,6 +2751,7 @@ UNITS.push({
     {
       id: "subjunctive-009",
       level: 3,
+      jp: "もし私がお金もちなら、あなたに車を買ってあげられるのに。",
       bank: ["if","i","were","rich",",","i","could","buy","a car","for you","."],
       answer: ["if","i","were","rich",",","i","could","buy","a car","for you","."],
       explanation: "If + 主語 + were + 補語, 主語 + could + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→were→rich→,→I→could→buy」の順です。",
@@ -2509,6 +2760,7 @@ UNITS.push({
     {
       id: "subjunctive-010",
       level: 3,
+      jp: "もし私が彼女のメールアドレスを知っていれば、私は彼女に写真を送ることができるのに。",
       bank: ["if","i","knew","her","e-mail","address",",","i","could","send","the pictures","to her","."],
       answer: ["if","i","knew","her","e-mail","address",",","i","could","send","the pictures","to her","."],
       explanation: "If + 主語 + 過去形, 主語 + could + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→knew→her→e-mail→address→,→I→could→send」の順です。",
@@ -2517,6 +2769,7 @@ UNITS.push({
     {
       id: "subjunctive-011",
       level: 3,
+      jp: "もし私がお金持ちなら、その車を買うのに。",
       bank: ["if","i","were","rich",",","i","would","buy","that car","."],
       answer: ["if","i","were","rich",",","i","would","buy","that car","."],
       explanation: "If + 主語 + were + 補語, 主語 + would + 動詞の原形 で、現実とは違う仮定を表します（仮定法過去）。「If→I→were→rich→,→I→would→buy」の順です。",
@@ -2533,6 +2786,7 @@ UNITS.push({
     {
       id: "indirect-question-001",
       level: 3,
+      jp: "私の母は私に、昨日どこに行ったかをたずねました。",
       bank: ["my mother","asked","me","where","i","went","yesterday","."],
       answer: ["my mother","asked","me","where","i","went","yesterday","."],
       explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「主語→動詞→目的語→疑問詞→主語→動詞」の順です。",
@@ -2541,6 +2795,7 @@ UNITS.push({
     {
       id: "indirect-question-002",
       level: 3,
+      jp: "私はあなたがどんな気持ちか理解できます。",
       bank: ["i","understand","how","you","feel","."],
       answer: ["i","understand","how","you","feel","."],
       explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「主語→動詞→疑問詞→主語→動詞」の順です。",
@@ -2549,6 +2804,7 @@ UNITS.push({
     {
       id: "indirect-question-003",
       level: 3,
+      jp: "いつショーが始まるか私に教えてください。",
       bank: ["please","tell","me","when","the show","starts","."],
       answer: ["please","tell","me","when","the show","starts","."],
       explanation: "疑問詞で始まる疑問文が文の一部に組み込まれるとき、語順は「疑問詞→主語→動詞」に変わります（間接疑問文）。「動詞→目的語→疑問詞→主語→動詞」の順です。",
@@ -2693,22 +2949,36 @@ function tileLabel(token, question){
   }
   return token;
 }
+function capitalizeFirst(label){
+  return label.charAt(0).toUpperCase()+label.slice(1);
+}
 function formatDisplay(tokens, question){
   let out='';
   tokens.forEach((t,i)=>{
     let label = tileLabel(t, question);
-    if(i===0){ label = label.charAt(0).toUpperCase()+label.slice(1); }
+    if(i===0){ label = capitalizeFirst(label); }
     if(i>0 && (t==='.'||t==='?'||t===',')){ out += label; }
     else if(i===0){ out += label; }
     else { out += ' ' + label; }
   });
   return out;
 }
+function tailPunct(question){
+  const last = question.answer[question.answer.length-1];
+  return (last==='.' || last==='?') ? last : null;
+}
 function makeBankTiles(question){
-  let shuffled = shuffle(question.bank);
+  const tp = tailPunct(question);
+  let bankTokens = question.bank.slice();
+  if(tp){
+    const idx = bankTokens.indexOf(tp);
+    if(idx!==-1){ bankTokens.splice(idx,1); }
+  }
+  const targetAnswer = tp ? question.answer.slice(0,-1) : question.answer;
+  let shuffled = shuffle(bankTokens);
   let attempts=0;
-  while(sameOrder(shuffled, question.answer) && attempts<10){
-    shuffled = shuffle(question.bank);
+  while(sameOrder(shuffled, targetAnswer) && attempts<10){
+    shuffled = shuffle(bankTokens);
     attempts++;
   }
   return shuffled.map((token,i)=>({
@@ -2827,7 +3097,8 @@ function resetBuilt(){
 }
 function submitAnswer(){
   const q = state.queue[state.qIndex];
-  const builtTokens = state.built.map(t=>t.token);
+  const tp = tailPunct(q);
+  const builtTokens = state.built.map(t=>t.token).concat(tp ? [tp] : []);
   const isCorrect = sameOrder(builtTokens, q.answer);
   if(isCorrect){
     state.score++;
@@ -2970,7 +3241,7 @@ function renderLevelList(){
 
 function renderQuiz(){
   const q = state.queue[state.qIndex];
-  const tagUnit = unitOf(q);
+  const tp = tailPunct(q);
   const totalSlots = state.currentBank.length;
   const canSubmit = state.built.length === totalSlots && totalSlots>0;
 
@@ -2978,10 +3249,15 @@ function renderQuiz(){
   for(let i=0;i<totalSlots;i++){
     const tile = state.built[i];
     if(tile){
-      slots += '<button class="slot filled" onclick="removeTile('+i+')">'+tileLabel(tile.token, q)+'</button>';
+      let label = tileLabel(tile.token, q);
+      if(i===0){ label = capitalizeFirst(label); }
+      slots += '<button class="slot filled" onclick="removeTile('+i+')">'+label+'</button>';
     } else {
       slots += '<span class="slot empty"></span>';
     }
+  }
+  if(tp){
+    slots += '<span class="slot locked">'+tp+'</span>';
   }
 
   let bank='';
@@ -3019,7 +3295,7 @@ function renderQuiz(){
       '<div class="progress-dots">'+dots+'</div>'+
     '</div>'+
     '<div class="round-label" style="margin-bottom:14px;">'+roundLabel+'</div>'+
-    '<div class="q-tag">'+tagUnit.name+'</div>'+
+    '<div class="jp-hint">'+q.jp+'</div>'+
     '<div class="slot-row">'+slots+'</div>'+
     '<div class="bank-row">'+bank+'</div>'+
     '<div class="action-row">'+

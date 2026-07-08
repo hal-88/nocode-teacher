@@ -1,6 +1,10 @@
 /* 共通の固有名詞・大文字化ルール（docs/data-schema.md 2節） */
 const PROPER_NOUNS = {
   "i": "I",
+  "i'll": "I'll",
+  "i'm": "I'm",
+  "i've": "I've",
+  "i'd": "I'd",
   "english": "English",
   "japan": "Japan",
   "japanese": "Japanese",

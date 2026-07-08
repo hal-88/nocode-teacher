@@ -82,6 +82,9 @@ UNITS.forEach(unit => {
     if (![1, 2, 3].includes(q.level)) {
       errors.push(label + ': level must be 1, 2, or 3 (got ' + JSON.stringify(q.level) + ')');
     }
+    if (!q.jp || q.jp.length < 2) {
+      errors.push(label + ': jp (Japanese translation) missing or too short');
+    }
     if (!sameMultiset(q.bank, q.answer)) {
       errors.push(label + ': bank/answer token multiset mismatch — bank=[' + q.bank.join(',') + '] answer=[' + q.answer.join(',') + ']');
     }
