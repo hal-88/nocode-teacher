@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>円の面積ラボ 〜うごかして はっけん！〜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F5F0;
+    --surface:#FFFFFF;
+    --ink:#33413F;
+    --ink-soft:#6E7F7C;
+    --line:#DDE3DE;
+    --shaded:#C2D6DC;          /* 色のついた部分（求める面積） */
+    --shaded-line:#8FA9B2;
+    --a-fill:#F0A24B;          /* ア：動かすパーツ */
+    --a-line:#C97B1E;
+    --a-soft:#FCEBD5;
+    --i-fill:#3AA79B;          /* イ：引く図形・移動先 */
+    --i-line:#22766D;
+    --i-soft:#DDF2EF;
+    --good:#2FAE66;
+    --good-bg:#E6F7ED;
+    --near:#F2C14E;
+    --radius-lg:24px;
+    --radius-md:14px;
+    --shadow:0 4px 14px rgba(51,65,63,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Zen Maru Gothic','Noto Sans JP','Hiragino Maru Gothic ProN',sans-serif;
+    -webkit-user-select:none;user-select:none;
+    overflow:hidden;
+  }
+  .screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+  .screen.active{display:flex}
+
+  /* ===== メニュー ===== */
+  #menu{overflow-y:auto;padding:20px 16px 40px}
+  .menu-head{text-align:center;margin:12px 0 4px}
+  .menu-head h1{font-size:clamp(26px,4.5vw,40px);font-weight:900;margin:0;letter-spacing:.04em}
+  .menu-head h1 .accent{color:var(--i-line)}
+  .menu-head p{color:var(--ink-soft);font-size:clamp(14px,2.2vw,18px);font-weight:700;margin:8px 0 0}
+  .cards{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:16px;width:100%;max-width:920px;margin:22px auto 0;
+  }
+  .card{
+    background:var(--surface);border:2px solid var(--line);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);padding:14px 14px 12px;cursor:pointer;text-align:center;
+    transition:transform .15s, border-color .15s;
+  }
+  .card:active{transform:scale(.97)}
+  .card .no{
+    display:inline-block;background:var(--i-soft);color:var(--i-line);
+    font-weight:900;font-size:15px;border-radius:999px;padding:3px 14px;margin-bottom:6px;
+  }
+  .card svg{width:100%;height:130px;display:block}
+  .card svg text{display:none}
+  .card svg .dim-line,.card svg .dot{display:none}
+  .card .t{font-weight:900;font-size:18px;margin-top:6px}
+
+  /* ===== 問題画面 ===== */
+  .topbar{
+    display:flex;align-items:center;gap:8px;
+    padding:10px 12px;background:var(--surface);border-bottom:2px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .topbar .no-badge{
+    background:var(--i-line);color:#fff;font-weight:900;border-radius:10px;
+    padding:6px 12px;font-size:18px;white-space:nowrap;
+  }
+  .topbar .ttl{font-weight:900;font-size:clamp(17px,2.6vw,24px);flex:1;min-width:0}
+  .nav-btn{
+    min-height:48px;min-width:48px;padding:6px 14px;border-radius:var(--radius-md);
+    border:2px solid var(--line);background:var(--surface);color:var(--ink);
+    font-family:inherit;font-weight:900;font-size:16px;cursor:pointer;
+  }
+  .nav-btn:disabled{opacity:.35}
+  .nav-btn:active{background:var(--bg)}
+  .qtext{
+    text-align:center;padding:8px 14px 2px;font-weight:700;
+    font-size:clamp(16px,2.4vw,22px);
+  }
+  .qtext .hint{color:var(--ink-soft);font-size:clamp(13px,1.9vw,17px);display:block;margin-top:2px}
+  .stage-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;padding:4px 8px}
+  #stage{width:100%;height:100%;touch-action:none;display:block}
+
+  .controls{
+    display:flex;gap:12px;justify-content:center;align-items:center;
+    padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  .btn{
+    min-height:58px;padding:10px 26px;border-radius:999px;border:none;cursor:pointer;
+    font-family:inherit;font-weight:900;font-size:clamp(17px,2.4vw,21px);
+    box-shadow:var(--shadow);
+  }
+  .btn:active{transform:translateY(2px)}
+  .btn-reset{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+  .btn-rotate{background:var(--a-fill);color:#fff;display:none}
+  .btn-rotate.show{display:inline-block}
+  .btn-check{background:var(--i-line);color:#fff}
+
+  /* ===== SVG 図形 ===== */
+  .shaded{fill:var(--shaded);stroke:var(--shaded-line);stroke-width:2}
+  .outline{fill:none;stroke:var(--ink);stroke-width:2.5}
+  .thinline{fill:none;stroke:var(--ink);stroke-width:1.6}
+  .dot{fill:var(--ink)}
+  .dim-line{stroke:var(--ink-soft);stroke-width:1.8}
+  .dim-text{fill:var(--ink);font-size:19px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
+  .region-label{font-size:22px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif}
+  .target-ghost{fill:none;stroke:var(--i-line);stroke-width:2.6;stroke-dasharray:7 6;opacity:.75}
+  .target-ghost.near{stroke:var(--near);stroke-width:4;opacity:1;animation:pulse .5s infinite alternate}
+  .target-ghost.done{stroke:var(--good);stroke-dasharray:none;opacity:.9}
+  @keyframes pulse{from{opacity:.55}to{opacity:1}}
+
+  .piece{cursor:grab;transition:transform .28s cubic-bezier(.34,1.5,.64,1)}
+  .piece.dragging{transition:none;cursor:grabbing}
+  .piece.snapped{cursor:default}
+  .piece .body-a{fill:var(--a-fill);fill-opacity:.85;stroke:var(--a-line);stroke-width:2.6}
+  .piece .body-i{fill:var(--i-fill);fill-opacity:.72;stroke:var(--i-line);stroke-width:2.6}
+  .piece.selected .body-a,.piece.selected .body-i{stroke-width:5}
+  .piece.snapped .body-a,.piece.snapped .body-i{fill-opacity:.92;stroke-width:2.6}
+  .piece .plabel{font-size:24px;font-weight:900;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.28);stroke-width:3;font-family:'Zen Maru Gothic',sans-serif}
+  .piece .hit{fill:none;stroke:transparent;stroke-width:44;pointer-events:stroke}
+  @keyframes snapPop{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+  .pop{animation:snapPop .4s ease}
+
+  /* ===== トースト・バナー ===== */
+  #toast{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%) scale(.9);
+    background:var(--ink);color:#fff;font-weight:900;font-size:20px;
+    padding:10px 26px;border-radius:999px;opacity:0;pointer-events:none;
+    transition:opacity .2s, transform .2s;z-index:5;white-space:nowrap;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) scale(1)}
+  #toast.good{background:var(--good)}
+  #toast.near{background:var(--near);color:var(--ink)}
+  #banner{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--good-bg);color:var(--good);border:2.5px solid var(--good);
+    font-weight:900;font-size:clamp(17px,2.6vw,23px);padding:10px 24px;border-radius:var(--radius-lg);
+    opacity:0;pointer-events:none;transition:all .35s;z-index:5;text-align:center;
+  }
+  #banner.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ===== 答えシート ===== */
+  #sheet-bg{
+    position:fixed;inset:0;background:rgba(40,55,52,.45);opacity:0;pointer-events:none;
+    transition:opacity .25s;z-index:9;
+  }
+  #sheet-bg.show{opacity:1;pointer-events:auto}
+  #sheet{
+    position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);
+    width:min(680px,94vw);background:var(--surface);
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);
+    padding:22px 26px calc(22px + env(safe-area-inset-bottom));z-index:10;
+    transition:transform .35s cubic-bezier(.32,1.2,.62,1);
+    max-height:78vh;overflow-y:auto;
+  }
+  #sheet.show{transform:translate(-50%,0)}
+  #sheet h2{margin:0 0 4px;font-size:21px;font-weight:900;color:var(--i-line)}
+  #sheet-fig{
+    background:var(--bg);border:2px solid var(--line);border-radius:var(--radius-md);
+    margin:8px 0 4px;padding:4px;
+  }
+  #sheet-fig svg{display:block;width:100%;max-height:200px}
+  #sheet .think{
+    background:var(--i-soft);border-radius:var(--radius-md);padding:10px 16px;
+    font-weight:700;font-size:17px;margin:10px 0 14px;color:var(--ink);
+  }
+  .f-line{
+    font-size:clamp(19px,3vw,25px);font-weight:700;padding:7px 4px;
+    opacity:0;transform:translateY(8px);transition:all .4s;
+    font-family:'Noto Sans JP',sans-serif;letter-spacing:.02em;
+  }
+  .f-line.reveal{opacity:1;transform:none}
+  .f-line .f-note{font-size:15px;color:var(--ink-soft);font-weight:700;margin-right:10px;font-family:'Zen Maru Gothic',sans-serif}
+  .f-answer{
+    margin-top:12px;background:var(--a-soft);border:2.5px solid var(--a-line);
+    border-radius:var(--radius-md);text-align:center;padding:12px;
+    font-size:clamp(24px,4vw,32px);font-weight:900;color:var(--a-line);
+    opacity:0;transform:translateY(8px);transition:all .4s;
+  }
+  .f-answer.reveal{opacity:1;transform:none}
+  #sheet .close-row{text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+
+<!-- ============ メニュー画面 ============ -->
+<div id="menu" class="screen active">
+  <div class="menu-head">
+    <h1>円の面積<span class="accent">ラボ</span></h1>
+    <p>色のついた部分の面積を もとめよう 〜うごかして はっけん！〜</p>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- ============ 問題画面 ============ -->
+<div id="play" class="screen">
+  <div class="topbar">
+    <button class="nav-btn" id="btn-menu">◀ メニュー</button>
+    <span class="no-badge" id="q-no">問1</span>
+    <span class="ttl" id="q-title"></span>
+    <button class="nav-btn" id="btn-prev">◀ 前</button>
+    <button class="nav-btn" id="btn-next">次 ▶</button>
+  </div>
+  <div class="qtext">
+    色のついた部分の面積を もとめましょう。
+    <span class="hint" id="q-hint"></span>
+  </div>
+  <div class="stage-wrap">
+    <svg id="stage" viewBox="0 0 780 560" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="toast"></div>
+    <div id="banner"></div>
+  </div>
+  <div class="controls">
+    <button class="btn btn-reset" id="btn-reset">リセット</button>
+    <button class="btn btn-rotate" id="btn-rotate">⟳ まわす</button>
+    <button class="btn btn-check" id="btn-check">答えを たしかめる</button>
+  </div>
+</div>
+
+<!-- ============ 答えシート ============ -->
+<div id="sheet-bg"></div>
+<div id="sheet">
+  <h2>たしかめよう</h2>
+  <div id="sheet-fig"></div>
+  <div class="think" id="sheet-think"></div>
+  <div id="sheet-lines"></div>
+  <div class="f-answer" id="sheet-answer"></div>
+  <div class="close-row"><button class="btn btn-reset" id="btn-sheet-close">とじる</button></div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   円の面積ラボ — 等積移動・重ねて発見する教材
+   図形はすべて cm 座標で定義し、問題ごとの scale(px/cm) と
+   origin(px) でステージに配置する。y は下向き正。
+   ========================================================= */
+
+// ---------- パス生成ヘルパ ----------
+// 扇形（中心=原点、2辺の端点 p1,p2、半径r、sweep）
+function sector(s, r, x1, y1, x2, y2, sweep){
+  return `M0 0 L${x1*s} ${y1*s} A${r*s} ${r*s} 0 0 ${sweep} ${x2*s} ${y2*s} Z`;
+}
+// 半円（弦の中点=原点、弦は縦横どちらか、bulge方向は呼び出し側で指定）
+function semicircleDown(s, r){ // 弦が水平、下ふくらみ
+  return `M${-r*s} 0 A${r*s} ${r*s} 0 0 0 ${r*s} 0 Z`;
+}
+function semicircleRight(s, r){ // 弦が垂直、右ふくらみ
+  return `M0 ${-r*s} A${r*s} ${r*s} 0 0 1 0 ${r*s} Z`;
+}
+function circlePath(s, r){
+  const R = r*s;
+  return `M${-R} 0 A${R} ${R} 0 1 0 ${R} 0 A${R} ${R} 0 1 0 ${-R} 0 Z`;
+}
+
+// 寸法表示（両端に点、中央にラベル）
+function dim(X, Y, x1,y1, x2,y2, label, tx, ty, anchor){
+  return `<line class="dim-line" x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"/>
+    <circle class="dot" cx="${X(x1)}" cy="${Y(y1)}" r="3.2"/>
+    <circle class="dot" cx="${X(x2)}" cy="${Y(y2)}" r="3.2"/>
+    <text class="dim-text" x="${X(tx)}" y="${Y(ty)}" text-anchor="${anchor||'middle'}">${label}</text>`;
+}
+
+// ---------- 6問の定義 ----------
+const problems = [
+  { // ===== 問1 =====
+    id:1, title:'正方形と 扇形', interaction:'overlay',
+    hint:'あおい 扇形を 点線の ところに ぴったり はめてみよう',
+    scale:52, origin:[150,160],
+    thumbView:[140,150,180,180], sheetView:[110,60,390,280],
+    statics(s, X, Y){
+      // 色部分 = 正方形 −（右下頂点中心・半径3の四分円）
+      const shaded = `M${X(0)} ${Y(0)} L${X(3)} ${Y(0)} A${3*s} ${3*s} 0 0 0 ${X(0)} ${Y(3)} Z`;
+      return `<path class="shaded" d="${shaded}"/>
+        <rect class="outline" x="${X(0)}" y="${Y(0)}" width="${3*s}" height="${3*s}"/>
+        <path class="target-ghost" data-ghost="sector" d="M${X(3)} ${Y(3)} L${X(0)} ${Y(3)} A${3*s} ${3*s} 0 0 1 ${X(3)} ${Y(0)} Z"/>
+        ${dim(X,Y, 0,-0.35, 3,-0.35, '3cm', 1.5, -0.6)}
+        ${dim(X,Y, 3.35,0, 3.35,3, '3cm', 3.62, 1.62, 'start')}
+        <text class="region-label" fill="var(--shaded-line)" x="${X(0.42)}" y="${Y(0.72)}">ア</text>`;
+    },
+    pieces:[{
+      label:'イ', labelAt:[-1.05,-0.85], color:'i',
+      path:(s)=>sector(s,3, -3,0, 0,-3, 1),  // 原点=扇形の中心（正方形の右下角）
+      start:{x:6.3,y:1.3,rot:0}, target:{x:3,y:3,rot:0},
+    }],
+    rotatable:false,
+    successMsg:'ぴったり！ 正方形から 扇形を 引いた形だね',
+    think:'正方形（ア）から 扇形（イ）を 引くと、色の部分が のこるね。',
+    formula:[
+      ['ア 正方形','3×3＝9'],
+      ['イ 扇形','3×3×3.14÷4＝7.065'],
+      ['色の部分','9－7.065＝1.935'],
+    ],
+    answer:'1.935cm²',
+  },
+  { // ===== 問2 =====
+    id:2, title:'葉っぱの形', interaction:'overlay',
+    hint:'2つの パーツで 葉っぱの形を つくってみよう（⟳で むきを かえられるよ）',
+    scale:44, origin:[130,150],
+    thumbView:[120,140,200,200], sheetView:[80,105,400,260],
+    statics(s, X, Y){
+      const lens = `M${X(0)} ${Y(0)} A${4*s} ${4*s} 0 0 1 ${X(4)} ${Y(4)} A${4*s} ${4*s} 0 0 1 ${X(0)} ${Y(0)} Z`;
+      return `<path class="shaded" d="${lens}"/>
+        <rect class="outline" x="${X(0)}" y="${Y(0)}" width="${4*s}" height="${4*s}"/>
+        <path class="target-ghost" data-ghost="lens" d="${lens}"/>
+        ${dim(X,Y, 0,-0.35, 4,-0.35, '4cm', 2, -0.6)}
+        ${dim(X,Y, -0.35,0, -0.35,4, '4cm', -0.55, 2.15, 'end')}`;
+    },
+    pieces:[
+      { label:'', labelAt:[0,0], color:'i',
+        // 弓形（レンズの半分）。原点=弦の中点
+        path:(s)=>`M${-2*s} ${-2*s} A${4*s} ${4*s} 0 0 1 ${2*s} ${2*s} L${-2*s} ${-2*s} Z`,
+        start:{x:6.6,y:0.9,rot:0}, target:{x:2,y:2,rot:0} },
+      { label:'', labelAt:[0,0], color:'i',
+        path:(s)=>`M${-2*s} ${-2*s} A${4*s} ${4*s} 0 0 1 ${2*s} ${2*s} L${-2*s} ${-2*s} Z`,
+        start:{x:6.6,y:3.4,rot:0}, target:{x:2,y:2,rot:180} },
+    ],
+    rotatable:true,
+    successMsg:'ぴったり！ 葉っぱは おなじ弓形 2まい分だ',
+    think:'弓形は「扇形（ア）－ 三角形（イ）」。それが 2まいで 葉っぱに なるね。',
+    formula:[
+      ['ア 扇形','4×4×3.14÷4＝12.56'],
+      ['イ 三角形','4×4÷2＝8'],
+      ['色の部分','(12.56－8)×2＝9.12'],
+    ],
+    answer:'9.12cm²',
+  },
+  { // ===== 問3 =====
+    id:3, title:'星の形', interaction:'collect',
+    hint:'四すみの 扇形を あつめると、どんな形に なるかな？',
+    scale:40, origin:[110,170],
+    thumbView:[100,160,180,180], thumbPieces:true, sheetView:[85,130,410,240],
+    statics(s, X, Y){
+      // 星形 = 正方形 − 四すみの四分円4つ
+      const star = `M${X(2)} ${Y(0)} A${2*s} ${2*s} 0 0 0 ${X(4)} ${Y(2)}
+        A${2*s} ${2*s} 0 0 0 ${X(2)} ${Y(4)}
+        A${2*s} ${2*s} 0 0 0 ${X(0)} ${Y(2)}
+        A${2*s} ${2*s} 0 0 0 ${X(2)} ${Y(0)} Z`;
+      const C = [7.6, 2]; // あつめる円の中心
+      return `<path class="shaded" d="${star}"/>
+        <rect class="outline" x="${X(0)}" y="${Y(0)}" width="${4*s}" height="${4*s}"/>
+        <circle class="target-ghost" data-ghost="circle" cx="${X(C[0])}" cy="${Y(C[1])}" r="${2*s}"/>
+        <text class="dim-text" x="${X(C[0])}" y="${Y(C[1]-2.45)}" text-anchor="middle">ここに あつめてみよう</text>
+        ${dim(X,Y, 0,4.4, 4,4.4, '4cm', 2, 4.95)}
+        ${dim(X,Y, 4,0, 4,2, '', 0,0)}
+        <text class="dim-text" x="${X(4.15)}" y="${Y(1.15)}" text-anchor="start">2cm</text>`;
+    },
+    pieces:[
+      { label:'', labelAt:[0,0], color:'i', path:(s)=>sector(s,2, 2,0, 0,2, 1),
+        start:{x:0,y:0,rot:0}, target:{x:7.6,y:2,rot:0} },   // 左上角 → 円の右下1/4
+      { label:'', labelAt:[0,0], color:'i', path:(s)=>sector(s,2, 0,2, -2,0, 1),
+        start:{x:4,y:0,rot:0}, target:{x:7.6,y:2,rot:0} },   // 右上角 → 円の左下1/4
+      { label:'', labelAt:[0,0], color:'i', path:(s)=>sector(s,2, -2,0, 0,-2, 1),
+        start:{x:4,y:4,rot:0}, target:{x:7.6,y:2,rot:0} },   // 右下角 → 円の左上1/4
+      { label:'', labelAt:[0,0], color:'i', path:(s)=>sector(s,2, 0,-2, 2,0, 1),
+        start:{x:0,y:4,rot:0}, target:{x:7.6,y:2,rot:0} },   // 左下角 → 円の右上1/4
+    ],
+    rotatable:false,
+    successMsg:'すごい！ 扇形4つで ちょうど 円1つ分！',
+    think:'四すみの 扇形4つを あつめると、半径2cmの 円1つ分（イ）に なるね。',
+    formula:[
+      ['ア 正方形','4×4＝16'],
+      ['イ 円1つ分','2×2×3.14＝12.56'],
+      ['色の部分','16－12.56＝3.44'],
+    ],
+    answer:'3.44cm²',
+  },
+  { // ===== 問4 =====
+    id:4, title:'円の中の 円', interaction:'overlay',
+    hint:'小さい円を 点線の ところに ぴったり はめてみよう',
+    scale:32, origin:[250,300],
+    thumbView:[50,100,400,400], sheetView:[40,90,580,420],
+    statics(s, X, Y){
+      // 色部分 = 大円 − 小円（上に内接）: evenoddで穴をあける
+      const R = 6*s, r = 3*s;
+      const d = `M${X(-6)} ${Y(0)} A${R} ${R} 0 1 0 ${X(6)} ${Y(0)} A${R} ${R} 0 1 0 ${X(-6)} ${Y(0)} Z
+                 M${X(-3)} ${Y(-3)} A${r} ${r} 0 1 0 ${X(3)} ${Y(-3)} A${r} ${r} 0 1 0 ${X(-3)} ${Y(-3)} Z`;
+      return `<path class="shaded" fill-rule="evenodd" d="${d}"/>
+        <circle class="outline" cx="${X(0)}" cy="${Y(0)}" r="${R}"/>
+        <line class="thinline" x1="${X(0)}" y1="${Y(-6)}" x2="${X(0)}" y2="${Y(6)}"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(0)}" r="4"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(-3)}" r="4"/>
+        <circle class="target-ghost" data-ghost="small" cx="${X(0)}" cy="${Y(-3)}" r="${r}"/>
+        ${dim(X,Y, 0,0, 6,0, '6cm', 3, 0.7)}
+        ${dim(X,Y, 0,-3, 3,-3, '3cm', 1.5, -3.4)}`;
+    },
+    pieces:[{
+      label:'イ', labelAt:[0,0.25], color:'i',
+      path:(s)=>circlePath(s,3),  // 原点=小円の中心
+      start:{x:9.6,y:2.6,rot:0}, target:{x:0,y:-3,rot:0},
+    }],
+    rotatable:false,
+    successMsg:'ぴったり！ 大きい円から 小さい円を 引いた形だね',
+    think:'大きい円（ア）から 小さい円（イ）を 引くと、色の部分が のこるね。',
+    formula:[
+      ['ア 大きい円','6×6×3.14＝113.04'],
+      ['イ 小さい円','3×3×3.14＝28.26'],
+      ['色の部分','113.04－28.26＝84.78'],
+    ],
+    answer:'84.78cm²',
+  },
+  { // ===== 問5 =====
+    id:5, title:'まが玉の形', interaction:'move',
+    hint:'ア を うごかして、かんたんな形に できるかな？（⟳で むきを かえられるよ）',
+    scale:38, origin:[390,285],
+    thumbView:[150,45,480,480], thumbPieces:true, sheetView:[140,35,500,500],
+    statics(s, X, Y){
+      const R = 6*s, r = 3*s;
+      // 色部分（アをのぞく）= 大円の上半分 − 左の小半円
+      const d = `M${X(-6)} ${Y(0)} A${R} ${R} 0 0 1 ${X(6)} ${Y(0)} L${X(0)} ${Y(0)}
+                 A${r} ${r} 0 0 0 ${X(-6)} ${Y(0)} Z`;
+      return `<path class="shaded" d="${d}"/>
+        <circle class="outline" cx="${X(0)}" cy="${Y(0)}" r="${R}"/>
+        <line class="thinline" x1="${X(-6)}" y1="${Y(0)}" x2="${X(6)}" y2="${Y(0)}"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(0)}" r="4"/>
+        <circle class="dot" cx="${X(-3)}" cy="${Y(0)}" r="4"/>
+        <circle class="dot" cx="${X(3)}" cy="${Y(0)}" r="4"/>
+        <path class="target-ghost" data-ghost="semi" d="M${X(-6)} ${Y(0)} A${r} ${r} 0 0 1 ${X(0)} ${Y(0)}"/>
+        <text class="region-label" fill="var(--i-line)" x="${X(-3.2)}" y="${Y(-1.05)}">イ</text>
+        ${dim(X,Y, 0,0, 6,0, '', 0,0)}
+        <text class="dim-text" x="${X(4.4)}" y="${Y(-0.45)}" text-anchor="middle">6cm</text>
+        <text class="dim-text" x="${X(-4.4)}" y="${Y(1.15)}" text-anchor="middle">直径6cm</text>`;
+    },
+    pieces:[{
+      label:'ア', labelAt:[0,1.65], color:'a',
+      path:(s)=>semicircleDown(s,3),  // 原点=弦の中点、下ふくらみ
+      start:{x:3,y:0,rot:0}, target:{x:-3,y:0,rot:180},
+    }],
+    rotatable:true,
+    successMsg:'はっけん！ 大きい円の ちょうど半分に なった！',
+    think:'ア は イ の場所に ぴったり うつせる。だから 色の部分は「半径6cmの円の 半分」と おなじ広さ！',
+    formula:[
+      ['円の半分','6×6×3.14÷2＝56.52'],
+    ],
+    answer:'56.52cm²',
+  },
+  { // ===== 問6 =====
+    id:6, title:'でこぼこの 円', interaction:'move',
+    hint:'ア を うごかして、かんたんな形に できるかな？（⟳で むきを かえられるよ）',
+    scale:38, origin:[390,285],
+    thumbView:[150,45,480,480], thumbPieces:true, sheetView:[140,35,500,500],
+    statics(s, X, Y){
+      const R = 6*s, r = 2*s;
+      // 色部分（アをのぞく）= 左半分 − 中央の切りこみ ＋ 上の出っぱり
+      const d = `M${X(0)} ${Y(-6)} A${R} ${R} 0 0 0 ${X(0)} ${Y(6)} L${X(0)} ${Y(2)}
+                 A${r} ${r} 0 0 1 ${X(0)} ${Y(-2)}
+                 A${r} ${r} 0 0 0 ${X(0)} ${Y(-6)} Z`;
+      return `<path class="shaded" d="${d}"/>
+        <circle class="outline" cx="${X(0)}" cy="${Y(0)}" r="${R}"/>
+        <line class="thinline" x1="${X(0)}" y1="${Y(-6)}" x2="${X(0)}" y2="${Y(6)}"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(-4)}" r="4"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(0)}" r="4"/>
+        <circle class="dot" cx="${X(0)}" cy="${Y(4)}" r="4"/>
+        <path class="target-ghost" data-ghost="notch" d="M${X(0)} ${Y(-2)} A${r} ${r} 0 0 0 ${X(0)} ${Y(2)}"/>
+        <text class="region-label" fill="var(--i-line)" x="${X(-1.75)}" y="${Y(0.3)}">イ</text>
+        ${dim(X,Y, 0,-4, 2,-4, '', 0,0)}
+        <text class="dim-text" x="${X(2.25)}" y="${Y(-3.75)}" text-anchor="start">2cm</text>
+        ${dim(X,Y, 0,0, 6,0, '', 0,0)}
+        <text class="dim-text" x="${X(3.7)}" y="${Y(-0.45)}" text-anchor="middle">6cm</text>`;
+    },
+    pieces:[{
+      label:'ア', labelAt:[1.05,0.28], color:'a',
+      path:(s)=>semicircleRight(s,2),  // 原点=弦の中点、右ふくらみ
+      start:{x:0,y:4,rot:0}, target:{x:0,y:0,rot:180},
+    }],
+    rotatable:true,
+    successMsg:'はっけん！「半円 ＋ 小さい半円」の形に なった！',
+    think:'ア を イ の場所に うつすと、「半径6cmの半円」と「半径2cmの半円」を あわせた形に なるね。',
+    formula:[
+      ['大きい半円','6×6×3.14÷2＝56.52'],
+      ['小さい半円','2×2×3.14÷2＝6.28'],
+      ['あわせて','56.52＋6.28＝62.8'],
+    ],
+    answer:'62.8cm²',
+  },
+];
+
+// ---------- 状態 ----------
+let current = -1;           // 表示中の問題index
+let pieceStates = [];       // {x,y,rot,snapped}
+let selectedPiece = -1;
+let renderGen = 0;          // 再描画世代（遅延コールバックの無効化用）
+const SNAP_CM = 0.9;        // スナップ距離(cm)
+const NEAR_CM = 2.3;        // 「おしい」距離(cm)
+
+const $ = (id)=>document.getElementById(id);
+const stage = $('stage');
+
+// ---------- メニュー生成 ----------
+function figureThumb(p){
+  const s = p.scale, [ox,oy] = p.origin;
+  const X = c=>ox+c*s, Y = c=>oy+c*s;
+  let inner = p.statics(s, X, Y);
+  if(p.thumbPieces){
+    // 図の一部になっているパーツだけ初期位置に描く
+    p.pieces.forEach(pc=>{
+      inner += `<g transform="translate(${X(pc.start.x)},${Y(pc.start.y)}) rotate(${pc.start.rot})">
+        <path style="fill:var(--${pc.color}-fill);fill-opacity:.85;stroke:var(--${pc.color}-line);stroke-width:2.6" d="${pc.path(s)}"/></g>`;
+    });
+  }
+  const v = p.thumbView.join(' ');
+  // サムネイルでは文字ラベルを消してすっきり見せる
+  return `<svg class="thumb" viewBox="${v}" preserveAspectRatio="xMidYMid meet">${inner}</svg>`;
+}
+function buildMenu(){
+  $('cards').innerHTML = problems.map((p,i)=>`
+    <div class="card" data-idx="${i}">
+      <span class="no">問${p.id}</span>
+      ${figureThumb(p)}
+      <div class="t">${p.title}</div>
+    </div>`).join('');
+  document.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('click', ()=>showProblem(+c.dataset.idx));
+  });
+}
+
+// ---------- 問題描画 ----------
+function showProblem(idx){
+  current = idx;
+  const p = problems[idx];
+  $('menu').classList.remove('active');
+  $('play').classList.add('active');
+  $('q-no').textContent = `問${p.id}`;
+  $('q-title').textContent = p.title;
+  $('q-hint').textContent = p.hint;
+  $('btn-prev').disabled = (idx===0);
+  $('btn-next').disabled = (idx===problems.length-1);
+  $('btn-rotate').classList.toggle('show', p.rotatable);
+  hideSheet(); hideBanner();
+  resetProblem();
+}
+
+function resetProblem(){
+  renderGen++;
+  const p = problems[current];
+  const s = p.scale, [ox,oy] = p.origin;
+  const X = c=>ox+c*s, Y = c=>oy+c*s;
+  selectedPiece = -1;
+  pieceStates = p.pieces.map(pc=>({x:pc.start.x, y:pc.start.y, rot:pc.start.rot, snapped:false}));
+  let svg = `<g id="static-layer">${p.statics(s, X, Y)}</g><g id="piece-layer">`;
+  p.pieces.forEach((pc,i)=>{
+    const d = pc.path(s);
+    svg += `<g class="piece" data-i="${i}" transform="translate(${X(pc.start.x)},${Y(pc.start.y)}) rotate(${pc.start.rot})">
+      <path class="hit" d="${d}"/>
+      <path class="body-${pc.color}" d="${d}"/>
+      ${pc.label?`<text class="plabel" text-anchor="middle" x="${pc.labelAt[0]*s}" y="${pc.labelAt[1]*s}">${pc.label}</text>`:''}
+    </g>`;
+  });
+  svg += `</g>`;
+  stage.innerHTML = svg;
+  hideBanner();
+  attachDrag();
+}
+
+// ---------- ドラッグ ----------
+function svgPoint(e){
+  const pt = stage.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(stage.getScreenCTM().inverse());
+}
+function applyTransform(i){
+  const p = problems[current], s = p.scale, [ox,oy] = p.origin;
+  const st = pieceStates[i];
+  const g = stage.querySelector(`.piece[data-i="${i}"]`);
+  g.setAttribute('transform', `translate(${ox+st.x*s},${oy+st.y*s}) rotate(${st.rot})`);
+}
+function rotOk(i){
+  const p = problems[current];
+  if(!p.rotatable) return true;
+  const diff = ((pieceStates[i].rot - p.pieces[i].target.rot) % 360 + 360) % 360;
+  return diff === 0;
+}
+function distToTarget(i){
+  const t = problems[current].pieces[i].target;
+  const st = pieceStates[i];
+  return Math.hypot(st.x - t.x, st.y - t.y);
+}
+function ghostEls(){ return stage.querySelectorAll('.target-ghost'); }
+
+function attachDrag(){
+  let dragI = -1, offX = 0, offY = 0;
+  stage.querySelectorAll('.piece').forEach(g=>{
+    g.addEventListener('pointerdown', (e)=>{
+      const i = +g.dataset.i;
+      if(pieceStates[i].snapped) return;
+      e.preventDefault();
+      dragI = i;
+      selectPiece(i);
+      const p = problems[current], s = p.scale, [ox,oy] = p.origin;
+      const pt = svgPoint(e);
+      offX = pt.x - (ox + pieceStates[i].x*s);
+      offY = pt.y - (oy + pieceStates[i].y*s);
+      g.classList.add('dragging');
+      g.setPointerCapture(e.pointerId);
+      // 最前面へ
+      g.parentNode.appendChild(g);
+    });
+    g.addEventListener('pointermove', (e)=>{
+      if(dragI < 0) return;
+      const p = problems[current], s = p.scale, [ox,oy] = p.origin;
+      const pt = svgPoint(e);
+      pieceStates[dragI].x = (pt.x - offX - ox)/s;
+      pieceStates[dragI].y = (pt.y - offY - oy)/s;
+      applyTransform(dragI);
+      // 近接フィードバック
+      const near = distToTarget(dragI) < NEAR_CM;
+      ghostEls().forEach(el=>el.classList.toggle('near', near && !allSnapped()));
+    });
+    g.addEventListener('pointerup', (e)=>{
+      if(dragI < 0) return;
+      const i = dragI; dragI = -1;
+      g.classList.remove('dragging');
+      ghostEls().forEach(el=>el.classList.remove('near'));
+      const d = distToTarget(i);
+      if(d < SNAP_CM && rotOk(i)){
+        snapPiece(i);
+      }else if(d < NEAR_CM){
+        if(problems[current].rotatable && !rotOk(i)){
+          toast('おしい！ ⟳で むきを かえてみよう', 'near');
+        }else{
+          toast('おしい！ もうすこし', 'near');
+        }
+      }
+    });
+    g.addEventListener('pointercancel', ()=>{
+      if(dragI>=0){ stage.querySelector(`.piece[data-i="${dragI}"]`)?.classList.remove('dragging'); dragI = -1; }
+      ghostEls().forEach(el=>el.classList.remove('near'));
+    });
+  });
+}
+function selectPiece(i){
+  selectedPiece = i;
+  stage.querySelectorAll('.piece').forEach(g=>{
+    g.classList.toggle('selected', +g.dataset.i === i && !pieceStates[i].snapped);
+  });
+}
+function snapPiece(i){
+  const t = problems[current].pieces[i].target;
+  pieceStates[i].x = t.x; pieceStates[i].y = t.y;
+  pieceStates[i].rot = t.rot;
+  pieceStates[i].snapped = true;
+  applyTransform(i);
+  const g = stage.querySelector(`.piece[data-i="${i}"]`);
+  g.classList.add('snapped'); g.classList.remove('selected');
+  g.classList.add('pop');
+  setTimeout(()=>g.classList.remove('pop'), 450);
+  toast('ぴったり！', 'good');
+  if(allSnapped()){
+    ghostEls().forEach(el=>{ el.classList.add('done'); el.classList.remove('near'); });
+    const gen = renderGen;
+    setTimeout(()=>{ if(gen === renderGen) showBanner(problems[current].successMsg); }, 500);
+  }
+}
+function allSnapped(){ return pieceStates.every(st=>st.snapped); }
+
+// ---------- 回転 ----------
+$('btn-rotate').addEventListener('click', ()=>{
+  let i = selectedPiece;
+  // 未選択なら、まだスナップしていない最初のパーツ
+  if(i < 0 || pieceStates[i]?.snapped){
+    i = pieceStates.findIndex(st=>!st.snapped);
+    if(i < 0) return;
+    selectPiece(i);
+  }
+  pieceStates[i].rot = (pieceStates[i].rot + 180) % 360;
+  applyTransform(i);
+});
+
+// ---------- トースト・バナー ----------
+let toastTimer = null;
+function toast(msg, kind){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (kind||'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.className = ''; }, 1400);
+}
+function showBanner(msg){ const b = $('banner'); b.textContent = msg; b.classList.add('show'); }
+function hideBanner(){ $('banner').classList.remove('show'); }
+
+// ---------- 答えシート ----------
+function showSheet(){
+  const p = problems[current];
+  // 図形を答えの上に表示（パーツは今の位置のまま）
+  const s = p.scale, [ox,oy] = p.origin;
+  const X = c=>ox+c*s, Y = c=>oy+c*s;
+  let fig = p.statics(s, X, Y);
+  p.pieces.forEach((pc,i)=>{
+    const st = pieceStates[i];
+    fig += `<g transform="translate(${X(st.x)},${Y(st.y)}) rotate(${st.rot})">
+      <path style="fill:var(--${pc.color}-fill);fill-opacity:.85;stroke:var(--${pc.color}-line);stroke-width:2.6" d="${pc.path(s)}"/>
+      ${pc.label?`<text class="plabel" style="font-size:24px;font-weight:900;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.28);stroke-width:3" text-anchor="middle" x="${pc.labelAt[0]*s}" y="${pc.labelAt[1]*s}">${pc.label}</text>`:''}
+    </g>`;
+  });
+  $('sheet-fig').innerHTML =
+    `<svg viewBox="${p.sheetView.join(' ')}" preserveAspectRatio="xMidYMid meet">${fig}</svg>`;
+  $('sheet-think').textContent = p.think;
+  $('sheet-lines').innerHTML = p.formula.map(([note,f])=>
+    `<div class="f-line"><span class="f-note">${note}</span>${f}</div>`).join('');
+  $('sheet-answer').textContent = `答え ${p.answer}`;
+  $('sheet-answer').classList.remove('reveal');
+  $('sheet-bg').classList.add('show');
+  $('sheet').classList.add('show');
+  // 1行ずつ順番に表示（問題が切り替わったら中断）
+  const gen = renderGen;
+  const lines = document.querySelectorAll('#sheet .f-line');
+  lines.forEach((el,i)=>setTimeout(()=>{ if(gen===renderGen) el.classList.add('reveal'); }, 500 + i*700));
+  setTimeout(()=>{ if(gen===renderGen) $('sheet-answer').classList.add('reveal'); }, 500 + lines.length*700);
+}
+function hideSheet(){
+  $('sheet-bg').classList.remove('show');
+  $('sheet').classList.remove('show');
+}
+$('btn-check').addEventListener('click', showSheet);
+$('btn-sheet-close').addEventListener('click', hideSheet);
+$('sheet-bg').addEventListener('click', hideSheet);
+
+// ---------- ナビゲーション ----------
+$('btn-menu').addEventListener('click', ()=>{
+  hideSheet();
+  $('play').classList.remove('active');
+  $('menu').classList.add('active');
+});
+$('btn-prev').addEventListener('click', ()=>{ if(current>0) showProblem(current-1); });
+$('btn-next').addEventListener('click', ()=>{ if(current<problems.length-1) showProblem(current+1); });
+$('btn-reset').addEventListener('click', resetProblem);
+
+// ---------- 起動 ----------
+buildMenu();
+</script>
+</body>
+</html>
