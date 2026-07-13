@@ -404,52 +404,20 @@
 <!-- ============ DATA (unit files) ============ -->
 <script>const UNITS = [];</script>
 <script src="data/proper-nouns.js"></script>
-<script src="data/general-verb-basic.js"></script>
-<script src="data/be-verb.js"></script>
-<script src="data/general-verb-advanced.js"></script>
-<script src="data/svoo-svoc.js"></script>
-<script src="data/can-will.js"></script>
-<script src="data/negative.js"></script>
-<script src="data/there-is-are.js"></script>
-<script src="data/preposition.js"></script>
-<script src="data/modal-frequency.js"></script>
-<script src="data/comparative.js"></script>
-<script src="data/infinitive.js"></script>
-<script src="data/gerund.js"></script>
-<script src="data/passive.js"></script>
-<script src="data/present-perfect.js"></script>
-<script src="data/participle.js"></script>
-<script src="data/relative-pronoun.js"></script>
-<script src="data/idiom.js"></script>
-<script src="data/conjunction.js"></script>
-<script src="data/subjunctive.js"></script>
-<script src="data/indirect-question.js"></script>
+<script src="data/sentence-core.js"></script>
+<script src="data/noun-chunk.js"></script>
+<script src="data/verb-plus.js"></script>
+<script src="data/time.js"></script>
 
 <script>
 /* ============ CONFIG ============ */
-const MAX_QUESTIONS_PER_ROUND = 5;
+const MAX_QUESTIONS_PER_ROUND = 8;
 const RECENT_STORAGE_PREFIX = 'eigo-narabikae-recent-';
 const UNIT_ICONS = {
-  'general-verb-basic': '🏃',
-  'be-verb': '🌱',
-  'general-verb-advanced': '📘',
-  'svoo-svoc': '🎁',
-  'can-will': '🔮',
-  'negative': '🚫',
-  'there-is-are': '📍',
-  'preposition': '🧭',
-  'modal-frequency': '⏰',
-  'comparative': '⚖️',
-  'infinitive': '🎯',
-  'gerund': '🎨',
-  'passive': '🔄',
-  'present-perfect': '⏳',
-  'participle': '👀',
-  'relative-pronoun': '🔗',
-  'idiom': '💬',
-  'conjunction': '🧩',
-  'subjunctive': '🌈',
-  'indirect-question': '❓'
+  'sentence-core': '🏗️',
+  'noun-chunk': '🧺',
+  'verb-plus': '🔧',
+  'time': '⏰'
 };
 function unitIcon(unitId){ return UNIT_ICONS[unitId] || '✏️'; }
 
@@ -820,7 +788,7 @@ function renderStart(){
     '<button class="home-link" onclick="goToModeSelect()" style="margin-bottom:16px;">← モードをえらびなおす</button>'+
     '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
     '<h1 class="title">単元でえらぶ</h1>'+
-    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに数問（最大5問）出題されるよ。</p>'+
+    '<p class="lead">単元をえらんで、かっこの中の単語をタップして正しい英文を組み立てよう。毎回ランダムに8問出題されるよ。</p>'+
     '<div class="set-list">'+cards+'</div>'+
   '</div>';
 }
@@ -846,7 +814,7 @@ function renderLevelList(){
     '<button class="home-link" onclick="goToModeSelect()" style="margin-bottom:16px;">← モードをえらびなおす</button>'+
     '<div class="eyebrow">JUNIOR HIGH ENGLISH GRAMMAR</div>'+
     '<h1 class="title">レベルでえらぶ</h1>'+
-    '<p class="lead">レベルをえらぶと、いろいろな単元から数問（最大5問）ランダムに出題されるよ。</p>'+
+    '<p class="lead">レベルをえらぶと、いろいろな単元から8問ランダムに出題されるよ。</p>'+
     '<div class="set-list">'+cards+'</div>'+
   '</div>';
 }

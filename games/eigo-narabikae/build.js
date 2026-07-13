@@ -17,32 +17,16 @@ const htmlPath = path.join(root, 'index.html');
 
 const unitFiles = [
   'proper-nouns.js',
-  'general-verb-basic.js',
-  'be-verb.js',
-  'general-verb-advanced.js',
-  'svoo-svoc.js',
-  'can-will.js',
-  'negative.js',
-  'there-is-are.js',
-  'preposition.js',
-  'modal-frequency.js',
-  'comparative.js',
-  'infinitive.js',
-  'gerund.js',
-  'passive.js',
-  'present-perfect.js',
-  'participle.js',
-  'relative-pronoun.js',
-  'idiom.js',
-  'conjunction.js',
-  'subjunctive.js',
-  'indirect-question.js'
+  'sentence-core.js',
+  'noun-chunk.js',
+  'verb-plus.js',
+  'time.js'
 ];
 
 let html = fs.readFileSync(templatePath, 'utf8');
 
 const startMarker = '<!-- ============ DATA (unit files) ============ -->';
-const endMarkerPattern = /<script src="data\/indirect-question\.js"><\/script>\s*/;
+const endMarkerPattern = /<script src="data\/time\.js"><\/script>\s*/;
 
 const startIdx = html.indexOf(startMarker);
 const endMatch = html.match(endMarkerPattern);

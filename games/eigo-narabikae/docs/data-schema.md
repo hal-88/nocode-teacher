@@ -70,38 +70,22 @@ function sameMultiset(a, b) {
 
 - **データ側の責務**：各単元の問題プールの用意のみ（単元ごとに問題数は異なってよい）。
 - **UI/ロジック側の責務**：
-  - 単元選択時、`Math.min(MAX_QUESTIONS_PER_ROUND, unit.questions.length)` 問（`MAX_QUESTIONS_PER_ROUND = 5`）をランダム抽出する。問題数がそれ未満の単元は保有する全問を出題する。
+  - 単元選択時、`Math.min(MAX_QUESTIONS_PER_ROUND, unit.questions.length)` 問（`MAX_QUESTIONS_PER_ROUND = 8`、2026-07-13に5→8へ変更）をランダム抽出する。問題数がそれ未満の単元は保有する全問を出題する。
   - 直近に出題した問題IDを `localStorage`（キー：`eigo-narabikae-recent-<unitId>`）に保存し、次回抽出時は直近セットに含まれていた問題を除いたプールを優先的にシャッフル対象にする（除外後のプールが必要数未満なら通常の全プールシャッフルにフォールバック）。
   - 復習ラウンド（間違えた問題の再出題）は `recent` 除外ロジックの対象外。
 
-## 5. 単元一覧（2026-07-08 CSV差し替え後）
+## 5. 単元一覧（2026-07-13 CSV差し替え後）
 
-CSV（245文、元は23個の「LEVEL/グループ番号」に分類）を、内容から判断した20単元に再編した（一部グループは問題数が少なかったため近い文法テーマへ統合）。表示順は `build.js` の `unitFiles` 配列の順。
+CSV（258文）の「カテゴリ」列をそのまま4単元として採用した。表示順は `build.js` の `unitFiles` 配列の順。
 
-| id | 単元名 | 問題数 | 元CSVグループ番号 |
-|---|---|---|---|
-| general-verb-basic | 一般動詞の文（基本） | 6 | 1 |
-| be-verb | be動詞の文 | 25 | 2 |
-| general-verb-advanced | 一般動詞の文（応用） | 25 | 3 |
-| svoo-svoc | 文型（give型・call型） | 5 | 4+5 |
-| can-will | can・willの文 | 6 | 6 |
-| negative | 否定文 | 3 | 7 |
-| there-is-are | There is/areの文 | 3 | 8 |
-| preposition | 前置詞を使った文 | 27 | 11 |
-| modal-frequency | 助動詞・頻度の文 | 19 | 12 |
-| comparative | 比較の文 | 15 | 13 |
-| infinitive | 不定詞の文 | 31 | 14+25 |
-| gerund | 動名詞の文 | 9 | 15 |
-| passive | 受け身の文 | 6 | 16 |
-| present-perfect | 現在完了の文 | 10 | 17+71 |
-| participle | 分詞の後置修飾 | 9 | 18 |
-| relative-pronoun | 関係代名詞の文 | 9 | 19 |
-| idiom | 熟語表現の文 | 10 | 21 |
-| conjunction | 接続詞を使った文 | 13 | 22 |
-| subjunctive | 仮定法の文 | 11 | 23 |
-| indirect-question | 間接疑問文 | 3 | 26 |
+| id | 単元名 | 問題数 |
+|---|---|---|
+| sentence-core | 文の骨格 | 39 |
+| noun-chunk | 名詞のまとまり | 78 |
+| verb-plus | 動詞を補う | 87 |
+| time | 時間 | 54 |
 
-合計245問。
+合計258問。
 
 新しい単元を追加する場合は `data/<new-unit-id>.js` を1ファイル追加し、`build.js` の `unitFiles` 配列に1行追加すればよい（3節のQAスクリプトが自動で整合性を検証する）。
 
@@ -111,13 +95,15 @@ CSV（245文、元は23個の「LEVEL/グループ番号」に分類）を、内
 
 ## 7. 問題データの出典
 
-現行の245問は教員から提供されたCSV（`単語並び替えゲームデータ - シート1 (1).csv`）を変換したもの。変換時の自動処理内容：
-- 各セルの前後空白除去、末尾の終端記号（`.`/`?`）欠落を補完
-- 明らかなスペルミスの修正（例："MIdori Juior High School"→"Midori Junior High School"、"socccer"→"soccer" など）
-- 文頭以外に出現する大文字始まりトークンを固有名詞として自動検出し `PROPER_NOUNS` に登録
+現行の258問は教員から提供されたCSV（`単語並び替えゲームデータ - シート1 (2).csv`、2026-07-13版）を変換したもの。変換時の自動処理内容：
+- 各セルの前後空白除去・空セル除去、文中に迷い込んだ「.」トークンの除去、文末の終端記号（`.`/`?`）の自動付与
+- 明らかなスペルミスの修正（例："yooung"→"young"、"sttudents"→"students"、"enviornment"→"environment"、"school backs/packs"→"school backpacks" など）
+- 日本語訳と英文トークンの不一致の修正（例：No.36「日本の歴史」なのに our history → japanese history、No.220「音楽」なのに song → music、No.240「十分な睡眠」の enough 欠落を補完）
+- No.67の "Midori"+"Junior High School" を1トークンに結合（分割したままだとNo.228の一般名詞 "junior high school students" まで大文字化されてしまうため）
+- 文中に現れる大文字を含むトークン（"in Canada" のような語中大文字も含む）を固有名詞として自動検出し `PROPER_NOUNS` に登録。文頭にしか現れない人名・地名（Sayaka, Keiko, Aimyon, Okinawa など）は手動登録
 - `bank`は`answer`をそのままコピーして生成（表示時にシャッフルするため、CSV側の並び順は保持不要）
-- `explanation`（文法解説）は単元ごとにcontentエージェントが執筆
-- CSV側の「LEVEL」列（1〜3）を各questionの `level` フィールドとして保持（8節参照）。異常値（1〜3の範囲外のもの、元データに2件だけ混入していた `6`）は `1` に正規化した
+- `explanation`（文法解説）は、旧データ（245問版）と同一英文のものは引き継ぎ、新規81問は単元ごとのcontentエージェントが執筆
+- CSV側の「LEVEL」列を各questionの `level` フィールドとして保持（8節参照）。全角数字（２・３）は半角に、異常値（"３２"）は `2` に正規化した
 
 ## 8. 学習モード（単元／レベル／苦手復習）と `level` フィールド
 

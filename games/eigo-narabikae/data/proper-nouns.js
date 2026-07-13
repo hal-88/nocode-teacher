@@ -22,6 +22,7 @@ const PROPER_NOUNS = {
   "mr.": "Mr.",
   "mrs.": "Mrs.",
   "rpg games": "RPG games",
+  "ai": "AI",
   "kyoto": "Kyoto",
   "april": "April",
   "fukuoka": "Fukuoka",
@@ -38,5 +39,17 @@ const PROPER_NOUNS = {
   "sendai": "Sendai",
   "italy": "Italy",
   "midori park": "Midori Park",
-  "yamagata": "Yamagata"
+  "yamagata": "Yamagata",
+  "sayaka": "Sayaka",
+  "keiko": "Keiko",
+  "aimyon": "Aimyon",
+  "okinawa": "Okinawa",
+  "takeshi": "Takeshi",
+  "kagoshima": "Kagoshima",
+  "london": "London",
+  "i think": "I think",
+  "an english teacher": "an English teacher",
+  "in kyoto": "in Kyoto",
+  "in canada": "in Canada",
+  "in fukui": "in Fukui"
 };

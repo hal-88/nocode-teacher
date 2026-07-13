@@ -4,14 +4,9 @@ const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
 const unitFiles = [
-  'general-verb-basic.js', 'be-verb.js', 'general-verb-advanced.js',
-  'svoo-svoc.js', 'can-will.js', 'negative.js', 'there-is-are.js',
-  'preposition.js', 'modal-frequency.js', 'comparative.js', 'infinitive.js',
-  'gerund.js', 'passive.js', 'present-perfect.js', 'participle.js',
-  'relative-pronoun.js', 'idiom.js', 'conjunction.js', 'subjunctive.js',
-  'indirect-question.js'
+  'sentence-core.js', 'noun-chunk.js', 'verb-plus.js', 'time.js'
 ];
-const EXPECTED_TOTAL_QUESTIONS = 245;
+const EXPECTED_TOTAL_QUESTIONS = 258;
 const MIN_QUESTIONS_PER_UNIT = 1;
 
 const UNITS = [];
