@@ -3,493 +3,527 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ハルの教育ゲーム基地</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <title>先生の道具箱</title>
+  <meta name="description" content="現役の小学校担任がつくった、授業でも授業の外でも使える先生の道具箱。全部ブラウザで動いて、無料で、いますぐ触れます。">
+
+  <!-- OGP（後日、実画像に差し替え前提のプレースホルダー） -->
+  <meta property="og:title" content="先生の道具箱">
+  <meta property="og:description" content="授業で使う教材も、席替えのように授業の外で助かる道具も。現役の担任がつくった、すぐ使える道具箱。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hal-88.github.io/nocode-teacher/">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kurenaido&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
   <style>
+    /* =========================================================
+       デザイントークン ── モチーフ「方眼ノート × 赤ペン添削」
+       配色は4〜6色。回避リスト（クリーム×セリフ×テラコッタ／
+       黒×蛍光／罫線だらけ／行政ブルー）を意図的に外している。
+       ========================================================= */
     :root {
-      --bg: #07060f;
-      --surface: #0f0d1e;
-      --border: rgba(255,255,255,0.07);
-      --text: #e8e8f0;
-      --muted: rgba(232,232,240,0.4);
-      --cyan: #00f5e4;
-      --purple: #9b6dff;
-      --accent: #00f5e4;
+      --paper:      #f5f6f0;   /* 方眼紙の生成り地（クリームではなく淡い緑寄りの白） */
+      --paper-card: #fdfdfb;   /* 付箋・カードの面 */
+      --grid:       #dbe4ea;   /* 方眼の線（淡い青） */
+      --grid-strong:#c9d6de;   /* 5マスごとの太線 */
+      --ink:        #22303a;   /* 濃紺インク（本文・見出し） */
+      --ink-soft:   #5d6f79;   /* 補助テキスト */
+      --red:        #e5484d;   /* 赤ペン（添削・下線・チェック） */
+      --blue:       #3d6fb4;   /* 青鉛筆（リンク・構造） */
+      --marker:     #ffe066;   /* 蛍光マーカー黄（見出しハイライト） */
+      --green:      #3f9d6d;   /* 花丸グリーン（ごく差し色） */
+
+      --maxw: 940px;
+      --radius: 14px;
+      --shadow: 0 2px 0 rgba(34,48,58,0.06), 0 10px 24px -12px rgba(34,48,58,0.28);
+
+      --font-head: 'Zen Maru Gothic', system-ui, sans-serif;
+      --font-body: 'Noto Sans JP', system-ui, sans-serif;
+      --font-hand: 'Zen Kurenaido', 'Noto Sans JP', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    }
+
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans JP', sans-serif;
-      font-weight: 300;
-      min-height: 100vh;
-      overflow-x: hidden;
+      font-family: var(--font-body);
+      color: var(--ink);
+      line-height: 1.9;
+      -webkit-font-smoothing: antialiased;
+      /* 方眼ノートの地。全面に薄いグリッドを敷く */
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 26px 26px;
     }
 
-    /* Stars */
-    .stars {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
-    }
-    @keyframes twinkle {
-      0%, 100% { opacity: var(--min-op, 0.3); }
-      50% { opacity: var(--max-op, 1); }
+    /* アクセシビリティ：キーボードフォーカスをはっきり可視化 */
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+      border-radius: 4px;
     }
 
-    /* Layout */
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 80px 24px 120px;
-    }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
 
-    /* Header */
-    header {
-      margin-bottom: 72px;
-    }
+    a { color: var(--blue); text-decoration-color: rgba(61,111,180,0.35); text-underline-offset: 3px; }
 
-    .penguin-icon {
-      width: 56px;
-      height: 56px;
-      margin-bottom: 28px;
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    .site-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--cyan);
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      opacity: 0.8;
-    }
-
-    h1 {
-      font-size: clamp(22px, 4vw, 30px);
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1.4;
-      margin-bottom: 16px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.8;
-      max-width: 480px;
-    }
-
-    .subtitle a {
-      color: var(--cyan);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(0,245,228,0.3);
-      transition: border-color 0.2s;
-    }
-    .subtitle a:hover {
-      border-color: var(--cyan);
-    }
-
-    /* Day counter */
-    .day-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 24px;
-      padding: 6px 14px;
-      border: 1px solid rgba(0,245,228,0.25);
-      border-radius: 100px;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: var(--cyan);
-      letter-spacing: 1px;
-    }
-    .day-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--cyan);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    /* Section */
-    .section-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 3px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    /* Game grid */
-    .games-section {
-      margin-bottom: 64px;
-    }
-
-    .game-grid {
-      display: grid;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .game-card {
-      background: var(--surface);
-      padding: 24px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      text-decoration: none;
-      color: var(--text);
-      transition: background 0.2s;
-      cursor: pointer;
-    }
-    .game-card:hover {
-      background: rgba(0,245,228,0.04);
-    }
-    .game-card:hover .card-arrow {
-      transform: translateX(4px);
-      color: var(--cyan);
-    }
-
-    .card-left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .card-num {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      min-width: 24px;
-    }
-
-    .card-info {}
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 400;
-      margin-bottom: 4px;
-    }
-
-    .card-meta {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .card-tag {
+    /* 見出し下の赤ペン手描き下線 */
+    .pen-underline {
       display: inline-block;
-      padding: 2px 8px;
-      font-size: 10px;
-      border-radius: 3px;
-      margin-left: 8px;
-      font-family: 'Space Mono', monospace;
-      letter-spacing: 0.5px;
+      position: relative;
+      padding-bottom: 10px;
     }
-    .tag-game { background: rgba(0,245,228,0.1); color: var(--cyan); }
-    .tag-tool { background: rgba(155,109,255,0.12); color: var(--purple); }
-
-    .card-arrow {
-      font-size: 16px;
-      color: var(--muted);
-      transition: all 0.2s;
-      flex-shrink: 0;
+    .pen-underline::after {
+      content: "";
+      position: absolute;
+      left: -2px; right: -2px; bottom: 0;
+      height: 10px;
+      background: no-repeat center/100% 100%
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C 60 2, 120 12, 180 6 S 260 3, 298 7' fill='none' stroke='%23e5484d' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
     }
 
-    /* Coming soon card */
-    .game-card.coming-soon {
-      opacity: 0.4;
-      cursor: default;
-    }
-    .game-card.coming-soon:hover {
-      background: var(--surface);
-    }
-    .coming-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 1px;
+    /* 蛍光マーカーハイライト（重要語の裏） */
+    .marker {
+      background: linear-gradient(transparent 58%, var(--marker) 58%, var(--marker) 92%, transparent 92%);
+      padding: 0 2px;
+      font-weight: 700;
     }
 
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 48px 0;
+    .eyebrow {
+      font-family: var(--font-hand);
+      font-size: 15px;
+      color: var(--ink-soft);
+      letter-spacing: 0.02em;
     }
 
-    /* Links section */
-    .links-section {}
+    /* ==================== トップバー / ナビ ==================== */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(245,246,240,0.86);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--grid-strong);
+    }
+    .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; color: var(--ink); text-decoration: none; font-size: 16px; }
+    .brand svg { width: 30px; height: 30px; flex-shrink: 0; }
+    .nav { display: flex; gap: 22px; }
+    .nav a { font-size: 14px; color: var(--ink); text-decoration: none; }
+    .nav a:hover { color: var(--red); }
+    @media (max-width: 640px){ .nav { display: none; } }
 
-    .link-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-      text-decoration: none;
-      color: var(--text);
-      transition: color 0.2s;
-    }
-    .link-row:hover {
-      color: var(--cyan);
-    }
-    .link-row:last-child {
-      border-bottom: none;
-    }
-
-    .link-label {
-      font-size: 14px;
-    }
-
-    .link-arrow {
-      font-size: 14px;
-      color: var(--muted);
-      transition: all 0.2s;
-    }
-    .link-row:hover .link-arrow {
-      transform: translateX(4px);
-      color: var(--cyan);
+    /* ==================== ヒーロー ==================== */
+    .hero { padding: 68px 0 40px; }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-hand); font-size: 15px; color: var(--ink);
+      background: var(--paper-card); border: 2px solid var(--ink); border-radius: 100px;
+      padding: 4px 16px; transform: rotate(-1.2deg);
     }
 
-    /* Footer */
-    footer {
-      margin-top: 80px;
-      padding-top: 32px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+    .hero h1 {
+      font-family: var(--font-head);
+      font-weight: 900;
+      font-size: clamp(28px, 6vw, 54px);
+      line-height: 1.38;
+      letter-spacing: -0.01em;
+      margin: 22px 0 20px;
+    }
+    .hero h1 .nib { color: var(--red); }
+    .hero p.lead { font-size: clamp(15px, 2.2vw, 18px); max-width: 640px; color: var(--ink); }
+    .hero .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-head); font-weight: 700; font-size: 15px;
+      padding: 13px 24px; border-radius: 100px; text-decoration: none;
+      border: 2px solid var(--ink); transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-primary { background: var(--ink); color: var(--paper); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -8px rgba(34,48,58,0.5); }
+    .btn-ghost { background: var(--paper-card); color: var(--ink); }
+    .btn-ghost:hover { transform: translateY(-2px); border-color: var(--red); color: var(--red); }
+
+    /* ヒーローの手描きメモ（付箋） */
+    .hero-note {
+      margin-top: 40px;
+      display: inline-block;
+      font-family: var(--font-hand); font-size: 16px; color: var(--ink);
+      background: var(--marker); padding: 14px 20px 16px;
+      border-radius: 4px; transform: rotate(-1.5deg);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .hero-note::before {
+      content: ""; position: absolute; top: -9px; left: 50%; transform: translateX(-50%) rotate(3deg);
+      width: 62px; height: 20px; background: rgba(255,255,255,0.45);
+      border: 1px dashed rgba(34,48,58,0.25);
     }
 
-    .footer-text {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
+    /* ==================== セクション共通 ==================== */
+    section { padding: 54px 0; }
+    .section-head { margin-bottom: 32px; }
+    .section-head h2 {
+      font-family: var(--font-head); font-weight: 900;
+      font-size: clamp(23px, 4vw, 34px); line-height: 1.4; color: var(--ink);
+    }
+    .section-head .sub { margin-top: 12px; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+
+    /* ==================== 課題提起：ノートのチェックリスト ==================== */
+    #problem .paper-sheet {
+      background: var(--paper-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 34px clamp(22px, 4vw, 44px) 38px;
+      background-image: repeating-linear-gradient(var(--paper-card) 0 45px, var(--grid) 45px 46px);
+      background-position: 0 60px;
+    }
+    .checklist { list-style: none; margin-top: 6px; }
+    .checklist li {
+      display: flex; gap: 16px; align-items: flex-start;
+      font-size: clamp(15px, 2.3vw, 18px);
+      padding: 11px 0; line-height: 1.6;
+    }
+    .checklist .box {
+      flex-shrink: 0; width: 26px; height: 26px; margin-top: 3px;
+      border: 2.5px solid var(--ink); border-radius: 5px;
+      position: relative; background: var(--paper-card);
+    }
+    .checklist .box::after {
+      content: ""; position: absolute; inset: -6px -4px;
+      background: no-repeat center/100% 100%
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M6 22 L16 32 L34 6' fill='none' stroke='%23e5484d' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+    .checklist .punch { color: var(--red); font-weight: 700; }
+    #problem .closing {
+      font-family: var(--font-hand); font-size: clamp(17px, 3vw, 22px);
+      margin-top: 30px; text-align: center; color: var(--ink);
     }
 
-    /* Fade in */
-    .fade-in {
-      opacity: 0;
-      transform: translateY(16px);
-      animation: fadeIn 0.6s ease forwards;
-    }
-    .fade-in:nth-child(1) { animation-delay: 0.1s; }
-    .fade-in:nth-child(2) { animation-delay: 0.2s; }
-    .fade-in:nth-child(3) { animation-delay: 0.3s; }
-    .fade-in:nth-child(4) { animation-delay: 0.4s; }
-    @keyframes fadeIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    /* ==================== ツール一覧：付箋カード ==================== */
+    .group-head { display: flex; align-items: baseline; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
+    .group-head h3 { font-family: var(--font-head); font-weight: 900; font-size: clamp(19px, 3.2vw, 24px); }
+    .group-head .count { font-family: var(--font-hand); color: var(--ink-soft); font-size: 15px; }
+    .group + .group { margin-top: 48px; }
 
-    /* Nebula bg */
-    .nebula {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
+    .tool-card {
+      position: relative; display: flex; flex-direction: column;
+      background: var(--paper-card); border-radius: var(--radius);
+      padding: 24px 22px 22px; text-decoration: none; color: var(--ink);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--grid-strong);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .tool-card:nth-child(even){ transform: rotate(0.6deg); }
+    .tool-card:nth-child(3n){ transform: rotate(-0.7deg); }
+    .tool-card:hover { transform: translateY(-5px) rotate(0deg); box-shadow: 0 18px 34px -14px rgba(34,48,58,0.4); }
+    .tool-card .stamp {
+      position: absolute; top: -14px; right: -10px; width: 52px; height: 52px;
+      opacity: 0; transform: scale(0.5) rotate(-20deg); transition: all .2s ease;
       pointer-events: none;
-      z-index: 0;
     }
-    .nebula-1 {
-      width: 500px; height: 400px;
-      background: rgba(61,0,102,0.25);
-      top: -100px; left: -150px;
+    .tool-card:hover .stamp, .tool-card:focus-visible .stamp { opacity: 1; transform: scale(1) rotate(-8deg); }
+
+    .tool-emoji { font-size: 30px; line-height: 1; margin-bottom: 14px; }
+    .tool-card h4 { font-family: var(--font-head); font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+    .tool-memo { font-family: var(--font-hand); font-size: 15px; color: var(--ink); line-height: 1.6; margin-bottom: 16px; flex-grow: 1; }
+    .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: 100px; font-family: var(--font-body); }
+    .tag-grade { background: rgba(34,48,58,0.07); color: var(--ink-soft); }
+    .tag-subject { background: rgba(63,157,109,0.14); color: #2f7d55; }
+
+    /* 近日公開カード */
+    .tool-card.soon { background: repeating-linear-gradient(45deg, var(--paper-card) 0 12px, #f0f1ea 12px 24px); }
+    .tool-card.soon:hover { transform: none; box-shadow: var(--shadow); }
+    .soon-ribbon {
+      position: absolute; top: 14px; right: -6px;
+      font-family: var(--font-hand); font-size: 13px; color: #fff; background: var(--ink-soft);
+      padding: 2px 12px; transform: rotate(3deg);
     }
-    .nebula-2 {
-      width: 400px; height: 300px;
-      background: rgba(0,34,102,0.2);
-      bottom: 0; right: -100px;
+
+    .tool-note-placeholder {
+      margin-top: 30px; font-family: var(--font-hand); font-size: 14px; color: var(--ink-soft);
+      border: 2px dashed var(--grid-strong); border-radius: 10px; padding: 12px 16px;
     }
+
+    /* ==================== つくっている人（軽い信頼の一言） ==================== */
+    #maker .maker-band {
+      background: var(--paper-card); border: 1px solid var(--grid-strong); border-left: 6px solid var(--red);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: clamp(24px, 4vw, 36px);
+    }
+    #maker p { font-size: clamp(15px, 2.2vw, 17px); }
+    #maker p + p { margin-top: 14px; }
+    #maker .sign { font-family: var(--font-hand); font-size: 18px; margin-top: 18px; color: var(--ink); }
+
+    /* ==================== リクエスト募集 ==================== */
+    #feedback .fb-inner {
+      text-align: center; background: var(--paper-card); border: 2px dashed var(--red);
+      border-radius: var(--radius); padding: clamp(30px, 5vw, 52px);
+    }
+    #feedback h2 { font-family: var(--font-head); font-weight: 900; font-size: clamp(22px, 4vw, 30px); line-height: 1.4; }
+    #feedback p { color: var(--ink-soft); margin: 14px auto 26px; max-width: 540px; }
+
+    /* ==================== フッター ==================== */
+    footer { border-top: 1px solid var(--grid-strong); padding: 40px 0 60px; margin-top: 30px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+    .foot-brand { font-family: var(--font-head); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .foot-links { display: flex; gap: 20px; }
+    .foot-links a { font-size: 14px; text-decoration: none; color: var(--ink); }
+    .foot-links a:hover { color: var(--red); }
+    .foot-copy { width: 100%; font-size: 12px; color: var(--ink-soft); font-family: var(--font-hand); }
+
+    /* 出現アニメ（reduced-motionでは無効化） */
+    .reveal { opacity: 0; transform: translateY(18px); }
+    .reveal.in { animation: rise .6s ease forwards; }
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-<!-- Nebula -->
-<div class="nebula nebula-1"></div>
-<div class="nebula nebula-2"></div>
-
-<!-- Stars -->
-<div class="stars" id="stars"></div>
-
-<div class="container">
-
-  <!-- Header -->
-  <header class="fade-in">
-    <!-- Inline penguin SVG -->
-    <svg class="penguin-icon" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="b" cx="35%" cy="30%" r="65%"><stop offset="0%" stop-color="#1a1f3d"/><stop offset="100%" stop-color="#06060f"/></radialGradient>
-        <radialGradient id="w" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#e8f0ff"/><stop offset="100%" stop-color="#aabbdd"/></radialGradient>
-        <linearGradient id="v" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00ffee" stop-opacity=".95"/><stop offset="50%" stop-color="#0044ff" stop-opacity=".8"/><stop offset="100%" stop-color="#cc00ff" stop-opacity=".95"/></linearGradient>
-        <filter id="g"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      </defs>
-      <circle cx="200" cy="200" r="195" fill="#07060f"/>
-      <ellipse cx="200" cy="252" rx="88" ry="98" fill="url(#b)"/>
-      <ellipse cx="200" cy="265" rx="54" ry="70" fill="url(#w)" opacity=".92"/>
-      <circle cx="200" cy="160" r="76" fill="url(#b)"/>
-      <ellipse cx="116" cy="258" rx="21" ry="50" fill="#06060f" transform="rotate(-10 116 258)"/>
-      <ellipse cx="284" cy="258" rx="21" ry="50" fill="#06060f" transform="rotate(10 284 258)"/>
-      <ellipse cx="173" cy="344" rx="30" ry="11" fill="#cc8800" transform="rotate(-8 173 344)"/>
-      <ellipse cx="227" cy="344" rx="30" ry="11" fill="#cc8800" transform="rotate(8 227 344)"/>
-      <rect x="155" y="135" width="90" height="32" rx="16" fill="url(#v)" opacity=".95" filter="url(#g)"/>
-      <polygon points="200,170 184,182 216,182" fill="#cc8800"/>
-      <circle cx="200" cy="200" r="192" fill="none" stroke="#00ffee" stroke-width="1.5" opacity=".3"/>
-    </svg>
-
-    <div class="site-label">HAL's Lab</div>
-    <h1><br>AIで教育ゲームや支援サイトを作る</h1>
-
-    </p>
-    <div class="day-badge">
-      <div class="day-dot"></div>
-      <span id="dayCounter">DAY 001 / 100</span>
+  <!-- ==================== トップバー ==================== -->
+  <div class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="先生の道具箱 トップへ">
+        <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="30" cy="36" rx="17" ry="20" fill="#fdfdfb" stroke="#22303a" stroke-width="2.5"/>
+          <path d="M15 34 a15 20 0 0 1 30 0 v2 a15 6 0 0 1 -30 0 z" fill="#22303a"/>
+          <ellipse cx="30" cy="40" rx="9" ry="13" fill="#fdfdfb"/>
+          <circle cx="24" cy="30" r="2.3" fill="#22303a"/>
+          <circle cx="36" cy="30" r="2.3" fill="#22303a"/>
+          <path d="M27 35 l3 3 l3 -3 z" fill="#e5a23d"/>
+          <path d="M22 52 h6 M32 52 h6" stroke="#e5a23d" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M20 44 l-5 4 M40 44 l5 4" stroke="#22303a" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span>先生の道具箱</span>
+      </a>
+      <nav class="nav" aria-label="メインナビゲーション">
+        <a href="#jugyo">授業で使う</a>
+        <a href="#komu">授業の外で</a>
+        <a href="#feedback">ほしい道具を送る</a>
+      </nav>
     </div>
-  </header>
+  </div>
 
-  <!-- Games -->
-  <section class="games-section fade-in">
-    <div class="section-label">Works</div>
-    <div class="game-grid">
+  <main id="top">
 
-      <a class="game-card" href="games/kanji-sugoroku/index.html">
-        <div class="card-left">
-          <span class="card-num">01</span>
-          <div class="card-info">
-            <div class="card-title">漢字すごろく<span class="card-tag tag-game">GAME</span></div>
-            <div class="card-meta">小学4・5・6年生対応。読み・書き問題に答えながらゴールを目指そう！</div>
+    <!-- ==================== ヒーロー ==================== -->
+    <header class="hero">
+      <div class="wrap">
+        <span class="hero-pill">✎ 現役の小学校担任がつくっています</span>
+        <h1 class="reveal">授業で使う道具も、<br>その外で<span class="nib">助かる</span>道具も。</h1>
+        <p class="lead reveal">漢字や算数の教材から、席替えや記録の整理まで。現役の先生が「これ、あったら助かるのに」を形にした道具箱です。<span class="marker">全部ブラウザで動いて、無料で、いますぐ触れます。</span></p>
+        <div class="cta reveal">
+          <a class="btn btn-primary" href="#tools">道具箱をあける →</a>
+          <a class="btn btn-ghost" href="#feedback">ほしい道具を伝える</a>
+        </div>
+        <div class="hero-note">「こんなのが欲しい」も、<br>ぜひ聞かせてください。</div>
+      </div>
+    </header>
+
+    <!-- ==================== 課題提起（あるある） ==================== -->
+    <section id="problem">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">✎ まずは、放課後の職員室あるある</p>
+          <h2><span class="pen-underline">その作業、まだ手作業でやってませんか？</span></h2>
+        </div>
+        <div class="paper-sheet reveal">
+          <ul class="checklist">
+            <li><span class="box"></span><span>授業の<span class="punch">"あと5分"</span>を埋める教材が、手元にない。</span></li>
+            <li><span class="box"></span><span>「この漢字、もう習ったっけ？」を指導書で毎回確認。</span></li>
+            <li><span class="box"></span><span>約分や英文法の反復、ドリルだと"やらされ感"が出る。</span></li>
+            <li><span class="box"></span><span>席替えのたびに、紙を切って机の上で並べ替え。</span></li>
+            <li><span class="box"></span><span>体力テストの記録を、電卓で全国平均とにらめっこ。</span></li>
+          </ul>
+          <p class="closing">──これ、ぜんぶ「あるある」ですよね。<br>だから、ひとつずつ<span class="marker">道具</span>にしています。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ツール一覧（道具箱） ==================== -->
+    <section id="tools">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">✎ 机の引き出しに入っている道具</p>
+          <h2><span class="pen-underline">授業で使う道具も、その外の道具も</span></h2>
+          <p class="sub">インストール不要。カードをタップすればその場で動きます。子どもと授業で使うものと、先生が授業の外で使うもの、両方そろえています。</p>
+        </div>
+
+        <!-- グループ1：授業で使う教材 -->
+        <div class="group" id="jugyo">
+          <div class="group-head reveal">
+            <h3>📖 授業で使う道具</h3>
+            <span class="count">子どもと一緒に／教材</span>
+          </div>
+          <div class="tool-grid">
+
+            <a class="tool-card reveal" href="games/kanji-sugoroku/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">🎲</div>
+              <h4>漢字すごろく</h4>
+              <p class="tool-memo">読み・書きに答えながらゴールを目指す。サイコロを振る手が止まらない。</p>
+              <div class="tool-tags"><span class="tag tag-subject">国語</span><span class="tag tag-grade">小4・5・6</span></div>
+            </a>
+
+            <a class="tool-card reveal" href="games/make10/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">🔢</div>
+              <h4>メイク10</h4>
+              <p class="tool-memo">4つの数字で10を作る。2人対戦モードで、休み時間が盛り上がる。</p>
+              <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小学生〜</span></div>
+            </a>
+
+            <a class="tool-card reveal" href="games/kanji-quiz/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">✏️</div>
+              <h4>漢字穴埋めクイズ</h4>
+              <p class="tool-memo">文章の空欄に入る漢字を選ぶ。全学年の漢字に対応、スキマ時間にぴったり。</p>
+              <div class="tool-tags"><span class="tag tag-subject">国語</span><span class="tag tag-grade">全学年</span></div>
+            </a>
+
+            <a class="tool-card reveal" href="games/yakubun-battle/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">⚔️</div>
+              <h4>約分RPGバトル</h4>
+              <p class="tool-memo">タブレット1台で向かい合って対戦。約分を解いて相手を倒せ。8キャラ＆必殺技あり。</p>
+              <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小5・6</span></div>
+            </a>
+
+            <a class="tool-card reveal" href="games/enseki-lab/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">⭕</div>
+              <h4>円の面積ラボ</h4>
+              <p class="tool-memo">扇形をドラッグして「ぴったりの形」を発見。等積移動を手で体験する算数教材。</p>
+              <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小6</span></div>
+            </a>
+
+            <a class="tool-card reveal" href="games/eigo-narabikae/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">🔤</div>
+              <h4>英文法ならびかえ</h4>
+              <p class="tool-memo">単語カードを並べ替えて正しい英文に。単元別・苦手復習モード付き、258問。</p>
+              <div class="tool-tags"><span class="tag tag-subject">英語</span><span class="tag tag-grade">中学生</span></div>
+            </a>
+
           </div>
         </div>
-        <span class="card-arrow">→</span>
-      </a>
 
-      <a class="game-card" href="games/make10/index.html">
-        <div class="card-left">
-          <span class="card-num">02</span>
-          <div class="card-info">
-            <div class="card-title">メイク10<span class="card-tag tag-game">GAME</span></div>
-            <div class="card-meta">4つの数字を使って10を作ろう！2人対戦モード搭載。</div>
+        <!-- グループ2：授業の外で使う道具（準備・校務） -->
+        <div class="group" id="komu">
+          <div class="group-head reveal">
+            <h3>🗂️ 授業の外で使う道具</h3>
+            <span class="count">準備・校務／先生のための道具</span>
+          </div>
+          <div class="tool-grid">
+
+            <a class="tool-card reveal" href="games/tairyoku-test/index.html">
+              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="tool-emoji">🏃</div>
+              <h4>全国体力テストチェッカー</h4>
+              <p class="tool-memo">記録を入れると全国平均と段階がすぐ分かる。電卓とにらめっこ、もう卒業。</p>
+              <div class="tool-tags"><span class="tag tag-subject">記録整理</span><span class="tag tag-grade">小・中</span></div>
+            </a>
+
+            <!-- 近日公開（未実装プレースホルダー：実装後に上のカードと同形式へ差し替え） -->
+            <div class="tool-card soon reveal" aria-disabled="true">
+              <span class="soon-ribbon">近日公開</span>
+              <div class="tool-emoji">🪑</div>
+              <h4>座席表シミュレーター</h4>
+              <p class="tool-memo">配慮事項を入れると席替え案を自動生成。ドラッグで微調整。※ここは仮の説明です。</p>
+              <div class="tool-tags"><span class="tag tag-subject">席替え</span></div>
+            </div>
+
+            <div class="tool-card soon reveal" aria-disabled="true">
+              <span class="soon-ribbon">近日公開</span>
+              <div class="tool-emoji">📋</div>
+              <h4>宿題チェッカー</h4>
+              <p class="tool-memo">提出状況をタップで記録、未提出をひと目で把握。※ここは仮の説明です。</p>
+              <div class="tool-tags"><span class="tag tag-subject">提出管理</span></div>
+            </div>
+
           </div>
         </div>
-        <span class="card-arrow">→</span>
-      </a>
 
-      <a class="game-card" href="games/kanji-quiz/index.html">
-        <div class="card-left">
-          <span class="card-num">03</span>
-          <div class="card-info">
-            <div class="card-title">漢字穴埋めクイズ<span class="card-tag tag-game">GAME</span></div>
-            <div class="card-meta">文章の空欄に入る漢字を選ぼう。小学校全学年の漢字に対応。</div>
-          </div>
+        <p class="tool-note-placeholder reveal">📌 各ツールの詳細（対象学年・使い方・スクリーンショット等）は、後日、実データに差し替える前提のプレースホルダーです。授業の外で使う道具は、これから増やしていきます。</p>
+      </div>
+    </section>
+
+    <!-- ==================== つくっている人 ==================== -->
+    <section id="maker">
+      <div class="wrap reveal">
+        <div class="maker-band">
+          <p>つくっているのは、現役の小学校担任です。だから、授業で子どもがどこでつまずくかも、放課後にどんな作業で時間が溶けるかも、身をもって分かっているつもりです。</p>
+          <p>むずかしい理屈より、<span class="marker">「明日、ちょっと助かる」</span>を大事にしています。まずは触ってみて、合いそうなら教室で使ってみてください。</p>
+          <p class="sign">── ハル（First Penguin）</p>
         </div>
-        <span class="card-arrow">→</span>
-      </a>
+      </div>
+    </section>
 
-      <a class="game-card" href="games/yakubun-battle/index.html">
-        <div class="card-left">
-          <span class="card-num">04</span>
-          <div class="card-info">
-            <div class="card-title">約分RPGバトル<span class="card-tag tag-game">GAME</span></div>
-            <div class="card-meta">タブレット1台で向かい合って対戦！約分を解いて相手を倒せ。8キャラ×必殺技あり。</div>
-          </div>
+    <!-- ==================== リクエスト募集 ==================== -->
+    <section id="feedback">
+      <div class="wrap reveal">
+        <div class="fb-inner">
+          <h2>どんな道具が、あったら助かりますか？</h2>
+          <p>「こういう教材がほしい」「この校務、なんとかならない？」——現場の"困った"が、次の道具の出発点です。感想でも、要望でも、ダメ出しでも大歓迎。お気軽にどうぞ。</p>
+          <a class="btn btn-primary" href="#" aria-disabled="true" title="リクエストの受け付け方法は準備中です">リクエストを送る（準備中）→</a>
         </div>
-        <span class="card-arrow">→</span>
-      </a>
+      </div>
+    </section>
 
-      <a class="game-card" href="games/enseki-lab/index.html">
-        <div class="card-left">
-          <span class="card-num">05</span>
-          <div class="card-info">
-            <div class="card-title">円の面積ラボ<span class="card-tag tag-game">GAME</span></div>
-            <div class="card-meta">扇形や半円をドラッグして「ぴったりの形」を発見！等積移動を体験できる小6算数教材。</div>
-          </div>
-        </div>
-        <span class="card-arrow">→</span>
-      </a>
+  </main>
 
+  <!-- ==================== フッター ==================== -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-brand">
+        <svg viewBox="0 0 60 60" width="26" height="26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="30" cy="36" rx="17" ry="20" fill="#fdfdfb" stroke="#22303a" stroke-width="2.5"/>
+          <path d="M15 34 a15 20 0 0 1 30 0 v2 a15 6 0 0 1 -30 0 z" fill="#22303a"/>
+          <ellipse cx="30" cy="40" rx="9" ry="13" fill="#fdfdfb"/>
+          <circle cx="24" cy="30" r="2.3" fill="#22303a"/><circle cx="36" cy="30" r="2.3" fill="#22303a"/>
+          <path d="M27 35 l3 3 l3 -3 z" fill="#e5a23d"/>
+        </svg>
+        <span>先生の道具箱</span>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/hal-88/nocode-teacher" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <p class="foot-copy">© <span id="year">2026</span> 先生の道具箱 ／ ハル</p>
     </div>
-  </section>
-
-  <div class="divider fade-in"></div>
-
-  <!-- Links -->
-  <section class="links-section fade-in">
-    <div class="section-label">Links</div>
-
-    <a class="link-row" href="https://note.com/nocode_teacher" target="_blank">
-      <span class="link-label">制作記録を読む → note</span>
-      <span class="link-arrow">↗</span>
-    </a>
-
-    <a class="link-row" href="https://github.com/yugu-00/nocode-teacher" target="_blank">
-      <span class="link-label">ソースコード → GitHub</span>
-      <span class="link-arrow">↗</span>
-    </a>
-
-  </section>
-
-  <!-- Footer -->
-  <footer class="fade-in">
-    <span class="footer-text">© HAL — FIRST PENGUIN</span>
-    <span class="footer-text" id="footerDate"></span>
   </footer>
 
-</div>
+  <script>
+    // 年表示のみ（DAYカウンター等は廃止）
+    (function () {
+      var year = document.getElementById('year');
+      if (year) year.textContent = String(new Date().getFullYear());
+    })();
 
-<script>
-  // Generate stars
-  const starsEl = document.getElementById('stars');
-  for (let i = 0; i < 120; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    const size = Math.random() * 2 + 0.5;
-    star.style.cssText = `
-      width: ${size}px;
-      height: ${size}px;
-      top: ${Math.random() * 100}%;
-      left: ${Math.random() * 100}%;
-      --d: ${2 + Math.random() * 4}s;
-      --delay: ${Math.random() * 4}s;
-      --min-op: ${0.1 + Math.random() * 0.2};
-      --max-op: ${0.6 + Math.random() * 0.4};
-    `;
-    starsEl.appendChild(star);
-  }
-
-  // Day counter (starts from May 5, 2026)
-  const startDate = new Date('2026-05-06');
-  const today = new Date();
-  const diff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-  const day = Math.max(1, Math.min(diff, 100));
-  document.getElementById('dayCounter').textContent = `DAY ${String(day).padStart(3,'0')} / 100`;
-
-  // Footer date
-  document.getElementById('footerDate').textContent = today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
-</script>
+    // スクロールで要素をふわっと表示（reduced-motion尊重）
+    (function () {
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var items = document.querySelectorAll('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
 
 </body>
 </html>
