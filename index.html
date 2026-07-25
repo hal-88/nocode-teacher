@@ -207,6 +207,31 @@
       margin-top: 30px; text-align: center; color: var(--ink);
     }
 
+    /* ==================== ツール一覧：学年→教科フィルター ==================== */
+    .picker {
+      background: var(--paper-card); border: 1px solid var(--grid-strong);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 20px clamp(16px, 3vw, 26px); margin-bottom: 28px;
+    }
+    .picker-step { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .picker-step + .picker-step { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--grid-strong); }
+    .picker-label { font-family: var(--font-head); font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      font-family: var(--font-head); font-weight: 700; font-size: 14px;
+      padding: 9px 18px; border-radius: 100px; border: 2px solid var(--ink);
+      background: var(--paper); color: var(--ink); cursor: pointer;
+      transition: transform .15s ease, background .15s ease, color .15s ease;
+    }
+    .chip:hover { transform: translateY(-1px); }
+    .chip-grade[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .chip-subject[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+
+    .empty-state { text-align: center; padding: 36px 20px 20px; }
+    .empty-state p { font-family: var(--font-hand); font-size: 17px; color: var(--ink-soft); margin-bottom: 18px; }
+
+    .komu-group { margin-top: 56px; }
+
     /* ==================== ツール一覧：付箋カード ==================== */
     .group-head { display: flex; align-items: baseline; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
     .group-head h3 { font-family: var(--font-head); font-weight: 900; font-size: clamp(19px, 3.2vw, 24px); }
@@ -222,6 +247,7 @@
       border: 1px solid var(--grid-strong);
       transition: transform .18s ease, box-shadow .18s ease;
     }
+    .tool-card[hidden] { display: none; }
     .tool-card:nth-child(even){ transform: rotate(0.6deg); }
     .tool-card:nth-child(3n){ transform: rotate(-0.7deg); }
     .tool-card:hover { transform: translateY(-5px) rotate(0deg); box-shadow: 0 18px 34px -14px rgba(34,48,58,0.4); }
@@ -354,93 +380,89 @@
       <div class="wrap">
         <div class="section-head reveal">
           <p class="eyebrow">✎ 机の引き出しに入っている道具</p>
-          <h2><span class="pen-underline">授業で使う道具も、その外の道具も</span></h2>
-          <p class="sub">インストール不要。カードをタップすればその場で動きます。子どもと授業で使うものと、先生が授業の外で使うもの、両方そろえています。</p>
+          <h2><span class="pen-underline">学年と教科で、道具をえらぶ</span></h2>
+          <p class="sub">まず学年を、つぎに教科をえらぶと、その場で使える道具が出てきます。インストール不要、カードをタップすれば動きます。授業の外で使う道具は、下にまとめています。</p>
         </div>
 
-        <!-- グループ：国語 -->
-        <div class="group" id="jugyo">
-          <div class="group-head reveal">
-            <h3>📖 国語</h3>
-            <span class="count">読み・書き・漢字</span>
+        <!-- 授業で使う道具：学年→教科 フィルター -->
+        <div class="picker reveal" id="jugyo">
+          <div class="picker-step">
+            <span class="picker-label">① 学年</span>
+            <div class="chip-row" role="group" aria-label="学年をえらぶ">
+              <button type="button" class="chip chip-grade" data-grade="e13" aria-pressed="true">小学校 1〜3年</button>
+              <button type="button" class="chip chip-grade" data-grade="e46" aria-pressed="false">小学校 4〜6年</button>
+              <button type="button" class="chip chip-grade" data-grade="jhs" aria-pressed="false">中学校</button>
+            </div>
           </div>
-          <div class="tool-grid">
-
-            <a class="tool-card reveal" href="games/kanji-sugoroku/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">🎲</div>
-              <h4>漢字すごろく</h4>
-              <p class="tool-memo">読み・書きに答えながらゴールを目指す。サイコロを振る手が止まらない。</p>
-              <div class="tool-tags"><span class="tag tag-grade">小4・5・6</span></div>
-            </a>
-
-            <a class="tool-card reveal" href="games/kanji-quiz/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">✏️</div>
-              <h4>漢字穴埋めクイズ</h4>
-              <p class="tool-memo">文章の空欄に入る漢字を選ぶ。全学年の漢字に対応、スキマ時間にぴったり。</p>
-              <div class="tool-tags"><span class="tag tag-grade">全学年</span></div>
-            </a>
-
+          <div class="picker-step">
+            <span class="picker-label">② 教科</span>
+            <div class="chip-row" role="group" aria-label="教科をえらぶ">
+              <button type="button" class="chip chip-subject" data-subject="kokugo" aria-pressed="true">📖 国語</button>
+              <button type="button" class="chip chip-subject" data-subject="sansu" aria-pressed="false">🔢 算数</button>
+              <button type="button" class="chip chip-subject" data-subject="eigo" aria-pressed="false">🔤 英語</button>
+            </div>
           </div>
         </div>
 
-        <!-- グループ：算数 -->
-        <div class="group">
-          <div class="group-head reveal">
-            <h3>🔢 算数</h3>
-            <span class="count">計算・図形</span>
-          </div>
-          <div class="tool-grid">
+        <div class="tool-grid" id="toolResults" aria-live="polite">
 
-            <a class="tool-card reveal" href="games/make10/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">🔢</div>
-              <h4>メイク10</h4>
-              <p class="tool-memo">4つの数字で10を作る。2人対戦モードで、休み時間が盛り上がる。</p>
-              <div class="tool-tags"><span class="tag tag-grade">小学生〜</span></div>
-            </a>
+          <a class="tool-card" href="games/kanji-sugoroku/index.html" data-grades="e46" data-subject="kokugo">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">🎲</div>
+            <h4>漢字すごろく</h4>
+            <p class="tool-memo">読み・書きに答えながらゴールを目指す。サイコロを振る手が止まらない。</p>
+            <div class="tool-tags"><span class="tag tag-subject">国語</span><span class="tag tag-grade">小4・5・6</span></div>
+          </a>
 
-            <a class="tool-card reveal" href="games/yakubun-battle/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">⚔️</div>
-              <h4>約分RPGバトル</h4>
-              <p class="tool-memo">タブレット1台で向かい合って対戦。約分を解いて相手を倒せ。8キャラ＆必殺技あり。</p>
-              <div class="tool-tags"><span class="tag tag-grade">小5・6</span></div>
-            </a>
+          <a class="tool-card" href="games/kanji-quiz/index.html" data-grades="e13 e46" data-subject="kokugo">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">✏️</div>
+            <h4>漢字穴埋めクイズ</h4>
+            <p class="tool-memo">文章の空欄に入る漢字を選ぶ。全学年の漢字に対応、スキマ時間にぴったり。</p>
+            <div class="tool-tags"><span class="tag tag-subject">国語</span><span class="tag tag-grade">全学年</span></div>
+          </a>
 
-            <a class="tool-card reveal" href="games/enseki-lab/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">⭕</div>
-              <h4>円の面積ラボ</h4>
-              <p class="tool-memo">扇形をドラッグして「ぴったりの形」を発見。等積移動を手で体験する算数教材。</p>
-              <div class="tool-tags"><span class="tag tag-grade">小6</span></div>
-            </a>
+          <a class="tool-card" href="games/make10/index.html" data-grades="e13 e46" data-subject="sansu">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">🔢</div>
+            <h4>メイク10</h4>
+            <p class="tool-memo">4つの数字で10を作る。2人対戦モードで、休み時間が盛り上がる。</p>
+            <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小学生〜</span></div>
+          </a>
 
-          </div>
+          <a class="tool-card" href="games/yakubun-battle/index.html" data-grades="e46" data-subject="sansu">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">⚔️</div>
+            <h4>約分RPGバトル</h4>
+            <p class="tool-memo">タブレット1台で向かい合って対戦。約分を解いて相手を倒せ。8キャラ＆必殺技あり。</p>
+            <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小5・6</span></div>
+          </a>
+
+          <a class="tool-card" href="games/enseki-lab/index.html" data-grades="e46" data-subject="sansu">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">⭕</div>
+            <h4>円の面積ラボ</h4>
+            <p class="tool-memo">扇形をドラッグして「ぴったりの形」を発見。等積移動を手で体験する算数教材。</p>
+            <div class="tool-tags"><span class="tag tag-subject">算数</span><span class="tag tag-grade">小6</span></div>
+          </a>
+
+          <a class="tool-card" href="games/eigo-narabikae/index.html" data-grades="jhs" data-subject="eigo">
+            <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="tool-emoji">🔤</div>
+            <h4>英文法ならびかえ</h4>
+            <p class="tool-memo">単語カードを並べ替えて正しい英文に。単元別・苦手復習モード付き、258問。</p>
+            <div class="tool-tags"><span class="tag tag-subject">英語</span><span class="tag tag-grade">中学生</span></div>
+          </a>
+
         </div>
 
-        <!-- グループ：英語 -->
-        <div class="group">
-          <div class="group-head reveal">
-            <h3>🔤 英語</h3>
-            <span class="count">英文法・語順</span>
-          </div>
-          <div class="tool-grid">
-
-            <a class="tool-card reveal" href="games/eigo-narabikae/index.html">
-              <svg class="stamp" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="#e5484d" stroke-width="4"/><path d="M18 31 l8 8 l16 -18" fill="none" stroke="#e5484d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <div class="tool-emoji">🔤</div>
-              <h4>英文法ならびかえ</h4>
-              <p class="tool-memo">単語カードを並べ替えて正しい英文に。単元別・苦手復習モード付き、258問。</p>
-              <div class="tool-tags"><span class="tag tag-grade">中学生</span></div>
-            </a>
-
-          </div>
+        <div class="empty-state" id="emptyState" hidden>
+          <p>この学年・教科の道具は、まだありません。</p>
+          <a class="btn btn-ghost" href="#feedback">「これ、つくって！」とリクエストする →</a>
         </div>
 
         <!-- グループ：授業の外で使う道具（準備・校務） -->
-        <div class="group" id="komu">
+        <div class="group komu-group" id="komu">
           <div class="group-head reveal">
             <h3>🗂️ 授業の外で使う道具</h3>
             <span class="count">準備・校務／先生のための道具</span>
@@ -527,6 +549,39 @@
     (function () {
       var year = document.getElementById('year');
       if (year) year.textContent = String(new Date().getFullYear());
+    })();
+
+    // 学年 → 教科 で道具を絞り込む
+    (function () {
+      var state = { grade: 'e13', subject: 'kokugo' };
+      var cards = [].slice.call(document.querySelectorAll('#toolResults .tool-card'));
+      var empty = document.getElementById('emptyState');
+      if (!cards.length) return;
+
+      function apply() {
+        var shown = 0;
+        cards.forEach(function (c) {
+          var grades = (c.getAttribute('data-grades') || '').split(' ');
+          var hit = grades.indexOf(state.grade) > -1 && c.getAttribute('data-subject') === state.subject;
+          c.hidden = !hit;
+          if (hit) shown++;
+        });
+        if (empty) empty.hidden = shown > 0;
+      }
+
+      function wire(attr, key) {
+        var btns = document.querySelectorAll('[' + attr + ']');
+        btns.forEach(function (b) {
+          b.addEventListener('click', function () {
+            state[key] = b.getAttribute(attr);
+            btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+            apply();
+          });
+        });
+      }
+      wire('data-grade', 'grade');
+      wire('data-subject', 'subject');
+      apply();
     })();
 
     // スクロールで要素をふわっと表示（reduced-motion尊重）
