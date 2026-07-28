@@ -128,7 +128,6 @@ main{flex:1;min-height:0;display:flex;padding:8px 0 10px;}
     </div>
     <div class="toggles">
       <button class="tg" id="numToggle" aria-pressed="false">数字 <span class="state" id="numState">OFF</span></button>
-      <button class="tg" id="rubyToggle" aria-pressed="true">ふりがな <span class="state" id="rubyState">ON</span></button>
     </div>
   </header>
 
@@ -148,7 +147,7 @@ main{flex:1;min-height:0;display:flex;padding:8px 0 10px;}
         <button class="btn coral" id="expReset">ぜんぶ外す</button>
       </div>
       <div class="stage" id="expStage">
-        <div class="drop-hint">分銅を左右の位置(1〜6)にドラッグしてのせよう</div>
+        <div class="drop-hint">分銅を位置(1〜6)にドラッグしてのせる ｜ 分銅を長押しで外す</div>
         <svg viewBox="0 0 620 300" id="expSvg" role="img" aria-label="実験用のてこ"></svg>
       </div>
       <div class="readout">
@@ -175,7 +174,7 @@ main{flex:1;min-height:0;display:flex;padding:8px 0 10px;}
         <button class="btn primary" id="chNext" style="display:none">つぎの問題 →</button>
       </div>
       <div class="stage" id="chStage">
-        <div class="drop-hint">分銅を左うで(1〜6)にドラッグしてのせよう</div>
+        <div class="drop-hint">分銅を左うで(1〜6)にドラッグしてのせる ｜ 長押しで外す</div>
         <svg viewBox="0 0 620 300" id="chSvg" role="img" aria-label="チャレンジ用のてこ"></svg>
       </div>
       <div class="readout">
@@ -219,13 +218,14 @@ function buildTray(el, ids){
 const PIVOT=310,STEP=42,BB=126;
 function emptySide(){const o={};for(let p=1;p<=6;p++)o[p]=[];return o;}
 function momentSide(side){let m=0;for(let p=1;p<=6;p++)side[p].forEach(g=>m+=g*p);return m;}
-function stackSVG(x,grams){
+const WT_H=17, WT_GAP=2; // 分銅ブロックの高さ・すき間（数字が重ならないよう確保）
+function stackSVG(x,grams,side,pos){
   if(!grams.length)return'';
-  let s=`<line x1="${x}" y1="${BB}" x2="${x}" y2="${BB+3}" stroke="#b98a55" stroke-width="3"/>`;
-  grams.forEach((g,i)=>{const y=BB+3+i*15;
-    s+=`<path d="M${x-11} ${y+2} Q${x-11} ${y-3} ${x} ${y-3} Q${x+11} ${y-3} ${x+11} ${y+2}" fill="none" stroke="${GRAM_COLOR[g]}" stroke-width="2"/>`;
-    s+=`<path d="M${x-14} ${y+2} L${x+14} ${y+2} L${x+16} ${y+15} L${x-16} ${y+15} Z" fill="${GRAM_COLOR[g]}" stroke="#fff" stroke-width="1"/>`;
-    s+=`<text x="${x}" y="${y+13}" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">${g}</text>`;
+  let s=`<line x1="${x}" y1="${BB}" x2="${x}" y2="${BB+2}" stroke="#b98a55" stroke-width="3"/>`;
+  grams.forEach((g,i)=>{const y=BB+2+i*(WT_H+WT_GAP);
+    s+=`<g class="wt" data-side="${side}" data-pos="${pos}" data-idx="${i}">`+
+       `<rect x="${x-16}" y="${y}" width="32" height="${WT_H}" rx="4" fill="${GRAM_COLOR[g]}" stroke="#fff" stroke-width="1.5"/>`+
+       `<text x="${x}" y="${y+WT_H/2+4}" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">${g}</text></g>`;
   });
   return s;
 }
@@ -242,7 +242,7 @@ function renderLever(svg,state,opts){
   let ticks='',stacks='';
   for(let p=1;p<=6;p++){const lx=PIVOT-STEP*p,rx=PIVOT+STEP*p;
     ticks+=`<text x="${lx}" y="108">${p}</text><text x="${rx}" y="108">${p}</text>`;
-    stacks+=stackSVG(lx,state.left[p])+stackSVG(rx,state.right[p]);}
+    stacks+=stackSVG(lx,state.left[p],'left',p)+stackSVG(rx,state.right[p],'right',p);}
   let mystery='';
   if(opts.mystery)mystery=mysterySVG(PIVOT+STEP*opts.mystery.pos,opts.mystery.shown,opts.mystery.g);
   svg.innerHTML=
@@ -306,10 +306,25 @@ function setupDrag(tray,svg,editable,onDrop){
   window.addEventListener('pointerup',e=>{ if(!drag)return; const t=hit(e.clientX,e.clientY); if(t)onDrop(t.side,t.pos,drag.g); if(drag.clone)drag.clone.remove(); highlight(null); drag=null; });
 }
 
-/* ========== ふりがな / 数字トグル ========== */
-function applyRuby(){document.body.classList.toggle('no-ruby',!store.ruby);document.getElementById('rubyState').textContent=store.ruby?'ON':'OFF';document.getElementById('rubyToggle').setAttribute('aria-pressed',String(store.ruby));}
+/* ========== 長押しで分銅を外す ========== */
+function setupRemove(svg,canRemove,onRemove){
+  let lp=null;
+  const cancel=()=>{ if(lp){clearTimeout(lp.timer);lp=null;} };
+  svg.addEventListener('pointerdown',e=>{
+    const wt=e.target.closest('.wt'); if(!wt)return;
+    const side=wt.dataset.side,pos=Number(wt.dataset.pos),idx=Number(wt.dataset.idx);
+    if(!canRemove(side))return;
+    e.preventDefault();
+    wt.style.opacity='0.4';
+    lp={x:e.clientX,y:e.clientY,el:wt,timer:setTimeout(()=>{lp=null;wt.style.opacity='';onRemove(side,pos,idx);},500)};
+  });
+  svg.addEventListener('pointermove',e=>{ if(lp&&(Math.abs(e.clientX-lp.x)>10||Math.abs(e.clientY-lp.y)>10)){lp.el.style.opacity='';cancel();} });
+  svg.addEventListener('pointerup',()=>{ if(lp)lp.el.style.opacity=''; cancel(); });
+  svg.addEventListener('pointercancel',()=>{ if(lp)lp.el.style.opacity=''; cancel(); });
+}
+
+/* ========== 数字トグル ========== */
 function applyNums(){document.getElementById('numState').textContent=store.nums?'ON':'OFF';document.getElementById('numToggle').setAttribute('aria-pressed',String(store.nums));expRender();chRender();}
-document.getElementById('rubyToggle').addEventListener('click',()=>{store.ruby=!store.ruby;applyRuby();saveStore();});
 document.getElementById('numToggle').addEventListener('click',()=>{store.nums=!store.nums;applyNums();saveStore();});
 
 /* ========== タブ ========== */
@@ -332,6 +347,11 @@ function expRender(){
 buildTray(document.getElementById('expTray'),[10,20,30]);
 setupDrag(document.getElementById('expTray'),expSvg,{left:true,right:true},(side,pos,g)=>{
   exp[side][pos].push(g); exp.order.push({side,pos}); expRender();
+});
+setupRemove(expSvg,()=>true,(side,pos,idx)=>{
+  exp[side][pos].splice(idx,1);
+  for(let i=exp.order.length-1;i>=0;i--){if(exp.order[i].side===side&&exp.order[i].pos===pos){exp.order.splice(i,1);break;}}
+  expRender();
 });
 document.getElementById('expUndo').addEventListener('click',()=>{const o=exp.order.pop();if(o){exp[o.side][o.pos].pop();expRender();}});
 document.getElementById('expReset').addEventListener('click',()=>{exp.left=emptySide();exp.right=emptySide();exp.order=[];expRender();});
@@ -376,6 +396,11 @@ setupDrag(document.getElementById('chTray'),chSvg,{left:true,right:false},(side,
   if(ch.done||side!=='left')return;
   ch.left[pos].push(g); ch.order.push(pos); afterChange();
 });
+setupRemove(chSvg,side=>side==='left'&&!ch.done,(side,pos,idx)=>{
+  ch.left[pos].splice(idx,1);
+  for(let i=ch.order.length-1;i>=0;i--){if(ch.order[i]===pos){ch.order.splice(i,1);break;}}
+  afterChange();
+});
 function afterChange(){
   chRender();
   if(ch.done||!ch.mode)return;
@@ -408,7 +433,7 @@ document.getElementById('modeBalance').addEventListener('click',()=>newRound('ba
 document.getElementById('modeGuess').addEventListener('click',()=>newRound('guess'));
 
 /* ========== 初期化 ========== */
-applyRuby();applyNums();
+applyNums();
 expRender();
 newRound('balance');
 </script>
