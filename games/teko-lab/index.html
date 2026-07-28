@@ -2,24 +2,28 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>てこの働き研究所｜小6理科</title>
-<meta name="description" content="10g・20g・30gのおもりを何個でもつるして、てこの釣り合いを実験。重さ当て・つり合わせゲームで学べる小6理科。">
+<meta name="description" content="分銅をドラッグしててこにのせ、釣り合いを実験。重さ×距離は隠して発見できる、iPad最適化の小6理科教材。">
 <style>
 /* =========================================================
-   てこの働き研究所 ── 小6理科（実験＋チャレンジのシンプル構成）
-   Vanilla JS + CSS + SVG（外部ライブラリなし・単一ファイル）
-   おもり(10/20/30g)を各位置に何個でも積めるモデル
+   てこの働き研究所 ── 小6理科
+   ・分銅をドラッグして各位置(1〜6)にのせる
+   ・iPad1画面完結（ページはスクロールしない）
+   ・重さ×距離の数字はトグルで表示/非表示（初期は非表示）
+   Vanilla JS + CSS + SVG（外部ライブラリなし）
    ========================================================= */
 :root{
   --sky:#3aa0e6;--sky-d:#2b7fc0;--coral:#ff6f61;--coral-d:#e2564a;
-  --grass:#3fb28a;--grass-d:#2f8768;--sun:#ffcf3f;
+  --grass:#3fb28a;--grass-d:#2f8768;--sun:#ffcf3f;--purple:#9b6dbf;
   --ink:#2b3a45;--ink-soft:#6a7a85;--paper:#f3f8fc;--card:#fff;--line:#d6e6f0;
-  --shadow:0 6px 18px -8px rgba(43,58,69,.35);--radius:16px;
+  --shadow:0 6px 18px -8px rgba(43,58,69,.35);--radius:14px;
   --font:'Hiragino Maru Gothic ProN','Yu Gothic UI','Segoe UI',system-ui,sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.7;-webkit-text-size-adjust:100%;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.6;
+  -webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;overscroll-behavior:none;}
 body.no-ruby rt{display:none;}
 rt{font-size:.55em;color:var(--ink-soft);font-weight:400;}
 svg{max-width:100%;}
@@ -27,427 +31,384 @@ button{font-family:inherit;cursor:pointer;}
 a{color:var(--sky-d);}
 :focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:6px;}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.001ms!important;animation-duration:.001ms!important;}}
-.wrap{max-width:820px;margin:0 auto;padding:0 16px;}
 
-header.site{background:linear-gradient(120deg,var(--sky),#59b6f0);color:#fff;padding:16px 0 14px;box-shadow:var(--shadow);}
-header.site .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;}
-.logo{display:flex;align-items:center;gap:12px;}
-.logo h1{font-size:clamp(18px,4vw,24px);font-weight:800;}
-.logo .sub{font-size:12px;opacity:.9;}
-.ruby-toggle{display:flex;align-items:center;gap:6px;font-size:13px;background:rgba(255,255,255,.2);padding:6px 12px;border-radius:100px;border:none;color:#fff;font-weight:700;}
-.ruby-toggle .state{background:#fff;color:var(--sky-d);border-radius:100px;padding:1px 8px;font-size:12px;}
+.app{max-width:1000px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;padding:0 12px;}
 
-nav.tabs{background:var(--paper);padding:12px 0 0;position:sticky;top:0;z-index:20;box-shadow:0 4px 10px -8px rgba(0,0,0,.2);}
-nav.tabs .wrap{display:flex;gap:8px;}
-.tab{flex:1;border:2px solid var(--line);background:var(--card);border-radius:14px 14px 0 0;padding:12px 10px;font-weight:800;font-size:15px;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:none;transition:.2s;}
-.tab .ic{font-size:20px;}
+/* ヘッダー（コンパクト） */
+header.site{flex:0 0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;padding:8px 2px;}
+.logo{display:flex;align-items:center;gap:8px;min-width:0;}
+.logo h1{font-size:clamp(15px,3.4vw,20px);font-weight:800;white-space:nowrap;}
+.logo .sub{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;}
+.tg{display:flex;align-items:center;gap:6px;font-size:13px;background:#e9f2fa;padding:5px 12px;border-radius:100px;border:2px solid transparent;color:var(--ink);font-weight:800;}
+.tg .state{background:var(--ink-soft);color:#fff;border-radius:100px;padding:1px 9px;font-size:12px;min-width:34px;text-align:center;}
+.tg[aria-pressed="true"]{border-color:var(--sky);}
+.tg[aria-pressed="true"] .state{background:var(--sky);}
+
+/* タブ */
+nav.tabs{flex:0 0 auto;display:flex;gap:8px;}
+.tab{flex:1;border:2px solid var(--line);background:var(--card);border-radius:12px 12px 0 0;padding:9px;font-weight:800;font-size:15px;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:none;}
+.tab .ic{font-size:19px;}
 .tab[aria-selected="true"]{color:#fff;background:var(--sky);border-color:var(--sky);}
 
-main{padding:20px 0 60px;}
-.panel{display:none;animation:fade .35s;}
-.panel.active{display:block;}
-@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;}
-.panel h2{font-size:clamp(19px,4vw,24px);font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
-.panel .lead{color:var(--ink-soft);margin-bottom:14px;font-size:15px;}
+/* パネル本体（残り全部を使う） */
+main{flex:1;min-height:0;display:flex;padding:8px 0 10px;}
+.panel{flex:1;min-height:0;display:none;}
+.panel.active{display:flex;flex-direction:column;gap:7px;}
 
-/* おもりパレット */
-.palette{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
-.palette .lbl{font-size:13px;font-weight:800;color:var(--ink-soft);}
-.pchip{border:3px solid var(--line);background:var(--card);border-radius:12px;padding:10px 18px;font-weight:800;font-size:16px;color:var(--ink);transition:.15s;}
-.pchip[aria-pressed="true"]{color:#fff;transform:translateY(-1px);}
-.pchip[data-g="10"][aria-pressed="true"]{background:var(--sky);border-color:var(--sky);}
-.pchip[data-g="20"][aria-pressed="true"]{background:var(--grass);border-color:var(--grass);}
-.pchip[data-g="30"][aria-pressed="true"]{background:var(--coral);border-color:var(--coral);}
-
-/* てこ本体 */
-.stage{background:linear-gradient(#eef7ff,#fdfdff);border-radius:14px;padding:6px;margin:8px 0;}
-
-/* 位置ボタン（左右のうで） */
-.arm{margin-top:6px;}
-.arm .arm-name{font-size:13px;font-weight:800;margin-bottom:4px;}
-.arm.left .arm-name{color:var(--sky-d);}
-.arm.right .arm-name{color:var(--coral-d);}
-.pos-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
-.pos{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.12s;min-height:52px;}
-.pos:hover{transform:translateY(-2px);border-color:var(--sky);}
-.arm.right .pos:hover{border-color:var(--coral);}
-.pos b{font-size:17px;font-weight:800;}
-.pos .tot{font-size:11px;font-weight:800;color:var(--grass-d);min-height:13px;}
-.pos:disabled{opacity:.5;cursor:default;transform:none;}
-
-.btn{border:2px solid var(--sky);background:var(--card);color:var(--sky-d);border-radius:12px;padding:9px 14px;font-weight:800;font-size:14px;transition:.15s;}
-.btn:hover{transform:translateY(-2px);}
+/* ツールバー（分銅トレイ＋ボタン） */
+.toolbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.tray{display:flex;align-items:center;gap:8px;}
+.tray .lbl{font-size:12px;font-weight:800;color:var(--ink-soft);}
+.weight-src{border:none;background:transparent;padding:2px;display:flex;flex-direction:column;align-items:center;touch-action:none;cursor:grab;}
+.weight-src svg{width:38px;height:40px;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
+.weight-src span{font-size:12px;font-weight:800;margin-top:-2px;}
+.spacer{flex:1;}
+.btn{border:2px solid var(--sky);background:var(--card);color:var(--sky-d);border-radius:11px;padding:8px 13px;font-weight:800;font-size:14px;}
 .btn.primary{background:var(--sky);color:#fff;}
 .btn.coral{border-color:var(--coral);color:var(--coral-d);}
 .btn.coral.on{background:var(--coral);color:#fff;}
 .btn.grass{border-color:var(--grass);color:var(--grass-d);}
+.btn.grass.on{background:var(--grass);color:#fff;}
 .btn.ghost{border-color:var(--line);color:var(--ink-soft);}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 
-/* 読み取り */
-.readout{display:flex;justify-content:space-around;align-items:center;gap:10px;text-align:center;flex-wrap:wrap;margin-top:10px;}
-.mbox{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 14px;min-width:120px;}
-.mbox .cap{font-size:12px;font-weight:800;}
+/* ステージ（残り高さいっぱい） */
+.stage{flex:1;min-height:0;background:linear-gradient(#eef7ff,#fdfdff);border:1px solid var(--line);border-radius:14px;position:relative;touch-action:none;}
+.stage svg{width:100%;height:100%;display:block;}
+.drop-hint{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:12px;font-weight:800;color:var(--sky-d);opacity:.85;pointer-events:none;}
+
+/* 読み取り（コンパクト） */
+.readout{flex:0 0 auto;display:flex;justify-content:center;align-items:center;gap:12px;text-align:center;}
+.mbox{background:var(--card);border:2px solid var(--line);border-radius:11px;padding:5px 12px;min-width:98px;}
+.mbox .cap{font-size:11px;font-weight:800;}
 .mbox.l .cap{color:var(--sky-d);}
 .mbox.r .cap{color:var(--coral-d);}
-.mbox .v{font-size:20px;font-weight:800;}
-.state-text{font-size:clamp(17px,4vw,22px);font-weight:800;}
+.mbox .v{font-size:19px;font-weight:800;}
+.mbox .v.hidden{color:var(--ink-soft);}
+.state-text{font-size:clamp(16px,3.6vw,21px);font-weight:800;min-width:130px;}
 .state-text.balance{color:var(--grass-d);}
 .state-text.left{color:var(--sky-d);}
 .state-text.right{color:var(--coral-d);}
 
 /* チャレンジ */
-.mode-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
-.mode-row .btn{font-size:15px;padding:11px 16px;}
-.prompt{background:#fffbe9;border:2px dashed var(--sun);border-radius:12px;padding:12px 14px;font-weight:800;margin-bottom:10px;}
-.cleared{font-size:14px;font-weight:800;color:var(--grass-d);}
-.guess-choices{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
-.guess-choices .btn{font-size:16px;padding:12px 20px;}
-.feedback{text-align:center;font-weight:800;font-size:17px;margin-top:10px;min-height:24px;}
+.mode-row{flex:0 0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mode-row .btn{font-size:14px;}
+.cleared{font-size:13px;font-weight:800;color:var(--grass-d);}
+.prompt{flex:0 0 auto;background:#fffbe9;border:2px dashed var(--sun);border-radius:11px;padding:8px 12px;font-weight:800;font-size:14px;}
+.msgbar{flex:0 0 auto;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.feedback{font-weight:800;font-size:16px;text-align:center;}
 .feedback.ok{color:var(--grass-d);}
 .feedback.ng{color:var(--coral-d);}
+.guess-choices{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.guess-choices .btn{font-size:16px;padding:9px 18px;}
 
-.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50;}
-.confetti i{position:absolute;top:-20px;width:10px;height:14px;opacity:.9;animation:fall linear forwards;}
-@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:0;}}
-
-footer.site{border-top:1px solid var(--line);padding:20px 0;text-align:center;color:var(--ink-soft);font-size:13px;}
+/* ドラッグ中のクローン分銅 */
+.drag-clone{position:fixed;z-index:999;pointer-events:none;transform:translate(-50%,-60%);opacity:.9;}
+.drag-clone svg{width:44px;height:46px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.3));}
 
 @media (max-width:520px){
-  .tab{font-size:13px;}
-  .pchip{padding:9px 14px;font-size:15px;}
-  .mbox{min-width:96px;}
+  .mbox{min-width:78px;}
+  .state-text{min-width:0;}
+  .weight-src svg{width:34px;height:36px;}
 }
 </style>
 </head>
 <body>
+<div class="app">
 
-<header class="site">
-  <div class="wrap">
+  <header class="site">
     <div class="logo">
-      <span style="font-size:32px">⚖️</span>
+      <span style="font-size:26px">⚖️</span>
       <div>
-        <h1>てこの<ruby>働<rt>はたら</rt></ruby>き<ruby>研究所<rt>けんきゅうじょ</rt></ruby></h1>
-        <div class="sub">小学6年生 理科 ｜ おもりをつるして実験しよう</div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <h1>てこの<ruby>働<rt>はたら</rt></ruby>き<ruby>研究所<rt>けんきゅうじょ</rt></ruby></h1>
+          <span class="sub">小6理科</span>
+        </div>
       </div>
     </div>
-    <button class="ruby-toggle" id="rubyToggle" aria-pressed="true">ふりがな <span class="state" id="rubyState">ON</span></button>
-  </div>
-</header>
+    <div class="toggles">
+      <button class="tg" id="numToggle" aria-pressed="false">数字 <span class="state" id="numState">OFF</span></button>
+      <button class="tg" id="rubyToggle" aria-pressed="true">ふりがな <span class="state" id="rubyState">ON</span></button>
+    </div>
+  </header>
 
-<nav class="tabs">
-  <div class="wrap" role="tablist">
+  <nav class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" data-tab="jikken"><span class="ic">⚗️</span>じっけん</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="challenge"><span class="ic">🏅</span>チャレンジ</button>
-  </div>
-</nav>
+  </nav>
 
-<main><div class="wrap">
+  <main>
 
-<!-- ============ じっけん ============ -->
-<section class="panel active" id="panel-jikken" role="tabpanel">
-  <div class="card">
-    <h2>⚗️ じっけん<ruby>研究部<rt>けんきゅうぶ</rt></ruby></h2>
-    <p class="lead"><ruby>重<rt>おも</rt></ruby>さをえらんで、左右のうでの<b>1〜6の位置</b>をタップするとおもりがつき、<b>いくつでも重ねられる</b>よ。<b>重さ×きょり</b>の合計がそろうと水平で釣り合う！</p>
+    <!-- ======== じっけん ======== -->
+    <section class="panel active" id="panel-jikken" role="tabpanel">
+      <div class="toolbar">
+        <div class="tray" id="expTray"><span class="lbl">分銅：</span></div>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="expUndo">ひとつ戻す</button>
+        <button class="btn coral" id="expReset">ぜんぶ外す</button>
+      </div>
+      <div class="stage" id="expStage">
+        <div class="drop-hint">分銅を左右の位置(1〜6)にドラッグしてのせよう</div>
+        <svg viewBox="0 0 620 300" id="expSvg" role="img" aria-label="実験用のてこ"></svg>
+      </div>
+      <div class="readout">
+        <div class="mbox l"><div class="cap">左 ＝ 重さ×きょり</div><div class="v" id="expMomL">？</div></div>
+        <div class="state-text" id="expState">？</div>
+        <div class="mbox r"><div class="cap">右 ＝ 重さ×きょり</div><div class="v" id="expMomR">？</div></div>
+      </div>
+    </section>
 
-    <div class="palette" id="expPalette">
-      <span class="lbl">おもりをえらぶ：</span>
-      <button class="pchip" data-g="10" aria-pressed="true">10g</button>
-      <button class="pchip" data-g="20" aria-pressed="false">20g</button>
-      <button class="pchip" data-g="30" aria-pressed="false">30g</button>
-    </div>
+    <!-- ======== チャレンジ ======== -->
+    <section class="panel" id="panel-challenge" role="tabpanel">
+      <div class="mode-row">
+        <button class="btn grass" id="modeBalance">つり合わせ</button>
+        <button class="btn coral" id="modeGuess">重さ当て</button>
+        <span class="spacer"></span>
+        <span class="cleared" id="chCleared">クリア 0問</span>
+      </div>
+      <div class="prompt" id="chPrompt">上のボタンでゲームをえらんでね。</div>
+      <div class="toolbar">
+        <div class="tray" id="chTray"><span class="lbl">分銅：</span></div>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="chUndo">ひとつ戻す</button>
+        <button class="btn coral" id="chClear">ぜんぶ外す</button>
+        <button class="btn primary" id="chNext" style="display:none">つぎの問題 →</button>
+      </div>
+      <div class="stage" id="chStage">
+        <div class="drop-hint">分銅を左うで(1〜6)にドラッグしてのせよう</div>
+        <svg viewBox="0 0 620 300" id="chSvg" role="img" aria-label="チャレンジ用のてこ"></svg>
+      </div>
+      <div class="readout">
+        <div class="mbox l"><div class="cap">左 ＝ 重さ×きょり</div><div class="v" id="chMomL">？</div></div>
+        <div class="state-text" id="chState">？</div>
+        <div class="mbox r"><div class="cap">右</div><div class="v" id="chMomR">？</div></div>
+      </div>
+      <div class="msgbar">
+        <div class="feedback" id="chFeedback"></div>
+        <div class="guess-choices" id="chChoices"></div>
+      </div>
+    </section>
 
-    <div class="stage">
-      <svg viewBox="0 0 620 300" id="expSvg" role="img" aria-label="実験用のてこ">
-        <polygon points="310,120 280,196 340,196" fill="#7fa7c0"/>
-        <rect x="250" y="192" width="120" height="8" rx="4" fill="#9fbccf"/>
-        <g class="beamGroup" style="transform-box:view-box;transform-origin:310px 120px;transition:transform .6s cubic-bezier(.34,1.15,.5,1);"></g>
-      </svg>
-    </div>
-
-    <div class="arm left">
-      <div class="arm-name">🟦 左うで（1〜6の位置をタップ）</div>
-      <div class="pos-row" id="expLeft"></div>
-    </div>
-    <div class="arm right">
-      <div class="arm-name">🟥 右うで（1〜6の位置をタップ）</div>
-      <div class="pos-row" id="expRight"></div>
-    </div>
-
-    <div class="readout">
-      <div class="mbox l"><div class="cap">左 ＝ 重さ×きょり</div><div class="v" id="expMomL">0</div></div>
-      <div class="state-text" id="expState">？</div>
-      <div class="mbox r"><div class="cap">右 ＝ 重さ×きょり</div><div class="v" id="expMomR">0</div></div>
-    </div>
-
-    <div class="actions">
-      <button class="btn ghost" id="expUndoL">← 左をひとつ戻す</button>
-      <button class="btn ghost" id="expUndoR">右をひとつ戻す →</button>
-      <button class="btn coral" id="expReset">ぜんぶ外す</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ チャレンジ ============ -->
-<section class="panel" id="panel-challenge" role="tabpanel">
-  <div class="card">
-    <h2>🏅 チャレンジ<ruby>研究部<rt>けんきゅうぶ</rt></ruby></h2>
-    <div class="mode-row">
-      <button class="btn grass" id="modeBalance">つり合わせゲーム</button>
-      <button class="btn coral" id="modeGuess">重さ当てゲーム</button>
-      <span class="cleared" id="chCleared" style="align-self:center">クリア 0問</span>
-    </div>
-    <div class="prompt" id="chPrompt">上のボタンでゲームをえらんでね。</div>
-
-    <div class="palette" id="chPalette">
-      <span class="lbl">おもりをえらぶ：</span>
-      <button class="pchip" data-g="10" aria-pressed="true">10g</button>
-      <button class="pchip" data-g="20" aria-pressed="false">20g</button>
-      <button class="pchip" data-g="30" aria-pressed="false">30g</button>
-    </div>
-
-    <div class="stage">
-      <svg viewBox="0 0 620 300" id="chSvg" role="img" aria-label="チャレンジ用のてこ">
-        <polygon points="310,120 280,196 340,196" fill="#7fa7c0"/>
-        <rect x="250" y="192" width="120" height="8" rx="4" fill="#9fbccf"/>
-        <g class="beamGroup" style="transform-box:view-box;transform-origin:310px 120px;transition:transform .6s cubic-bezier(.34,1.15,.5,1);"></g>
-      </svg>
-    </div>
-
-    <div class="arm left">
-      <div class="arm-name">🟦 左うで（ここにおもりをつける）</div>
-      <div class="pos-row" id="chLeft"></div>
-    </div>
-
-    <div class="readout">
-      <div class="mbox l"><div class="cap">左 ＝ 重さ×きょり</div><div class="v" id="chMomL">0</div></div>
-      <div class="state-text" id="chState">？</div>
-      <div class="mbox r"><div class="cap">右</div><div class="v" id="chMomR">—</div></div>
-    </div>
-
-    <div class="feedback" id="chFeedback"></div>
-    <div class="guess-choices" id="chChoices"></div>
-
-    <div class="actions">
-      <button class="btn ghost" id="chUndo">← ひとつ戻す</button>
-      <button class="btn coral" id="chClear">ぜんぶ外す</button>
-      <button class="btn primary" id="chNext" style="display:none">つぎの問題 →</button>
-    </div>
-  </div>
-</section>
-
-</div></main>
-
-<footer class="site">
-  <div class="wrap">てこの働き研究所 ｜ <a href="../../index.html">← 先生の道具箱へもどる</a></div>
-</footer>
+  </main>
+</div>
 
 <script>
-/* ========== 保存（ふりがな設定だけ・失敗しても無視） ========== */
-const STORE='teko_lab_v2';
-let store={ruby:true};
-try{ store=Object.assign(store, JSON.parse(localStorage.getItem(STORE)||'{}')); }catch(e){}
-function saveStore(){ try{ localStorage.setItem(STORE, JSON.stringify(store)); }catch(e){} }
+/* ========== 設定の保存（失敗しても無視） ========== */
+const STORE='teko_lab_v3';
+let store={ruby:true,nums:false};
+try{store=Object.assign(store,JSON.parse(localStorage.getItem(STORE)||'{}'));}catch(e){}
+function saveStore(){try{localStorage.setItem(STORE,JSON.stringify(store));}catch(e){}}
 
-/* ========== ふりがな ON/OFF ========== */
-const rubyToggle=document.getElementById('rubyToggle');
-function applyRuby(){
-  document.body.classList.toggle('no-ruby', !store.ruby);
-  document.getElementById('rubyState').textContent=store.ruby?'ON':'OFF';
-  rubyToggle.setAttribute('aria-pressed', String(store.ruby));
+/* ========== 分銅のイラスト(SVG) ========== */
+const GRAM_COLOR={10:'#3aa0e6',20:'#3fb28a',30:'#ff6f61'};
+function fundoSVG(g){
+  const c=GRAM_COLOR[g];
+  return `<svg viewBox="0 0 40 44" aria-hidden="true"><path d="M13 16 Q13 6 20 6 Q27 6 27 16" fill="none" stroke="${c}" stroke-width="3.5"/><path d="M11 16 L29 16 L33 40 L7 40 Z" fill="${c}" stroke="#fff" stroke-width="1.5"/><text x="20" y="33" font-size="11" font-weight="800" fill="#fff" text-anchor="middle">${g}</text></svg>`;
 }
-rubyToggle.addEventListener('click',()=>{ store.ruby=!store.ruby; applyRuby(); saveStore(); });
-
-/* ========== タブ ========== */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', String(x===t)));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+t.dataset.tab));
-}));
+function buildTray(el, ids){
+  ids.forEach(g=>{
+    const b=document.createElement('button');
+    b.className='weight-src'; b.dataset.g=g; b.type='button';
+    b.setAttribute('aria-label',g+'グラムの分銅');
+    b.innerHTML=fundoSVG(g)+`<span>${g}g</span>`;
+    el.appendChild(b);
+  });
+}
 
 /* ========== てこ共通ロジック ========== */
-const GRAM_COLOR={10:'#3aa0e6',20:'#3fb28a',30:'#ff6f61'};
-const PIVOT=310, STEP=42, BEAM_BOTTOM=126;
+const PIVOT=310,STEP=42,BB=126;
 function emptySide(){const o={};for(let p=1;p<=6;p++)o[p]=[];return o;}
 function momentSide(side){let m=0;for(let p=1;p<=6;p++)side[p].forEach(g=>m+=g*p);return m;}
-function gramsAt(arr){return arr.reduce((a,c)=>a+c,0);}
-
-// 1つの位置に積まれたおもりのSVG（下向きに積む）
 function stackSVG(x,grams){
-  if(!grams.length) return '';
-  let s=`<line x1="${x}" y1="${BEAM_BOTTOM}" x2="${x}" y2="${BEAM_BOTTOM+4}" stroke="#b98a55" stroke-width="3"/>`;
-  grams.forEach((g,i)=>{
-    const y=BEAM_BOTTOM+4+i*15;
-    s+=`<rect x="${x-15}" y="${y}" width="30" height="13" rx="3" fill="${GRAM_COLOR[g]}" stroke="#fff" stroke-width="1"/>`;
-    s+=`<text x="${x}" y="${y+10}" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">${g}</text>`;
+  if(!grams.length)return'';
+  let s=`<line x1="${x}" y1="${BB}" x2="${x}" y2="${BB+3}" stroke="#b98a55" stroke-width="3"/>`;
+  grams.forEach((g,i)=>{const y=BB+3+i*15;
+    s+=`<path d="M${x-11} ${y+2} Q${x-11} ${y-3} ${x} ${y-3} Q${x+11} ${y-3} ${x+11} ${y+2}" fill="none" stroke="${GRAM_COLOR[g]}" stroke-width="2"/>`;
+    s+=`<path d="M${x-14} ${y+2} L${x+14} ${y+2} L${x+16} ${y+15} L${x-16} ${y+15} Z" fill="${GRAM_COLOR[g]}" stroke="#fff" stroke-width="1"/>`;
+    s+=`<text x="${x}" y="${y+13}" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">${g}</text>`;
   });
   return s;
 }
-// 「?」のなぞのおもり（重さ当て用）
-function mysterySVG(x,shown,g){
-  const y=BEAM_BOTTOM+4;
-  return `<line x1="${x}" y1="${BEAM_BOTTOM}" x2="${x}" y2="${y}" stroke="#b98a55" stroke-width="3"/>`+
-    `<rect x="${x-20}" y="${y}" width="40" height="34" rx="6" fill="#9b6dbf" stroke="#fff" stroke-width="2"/>`+
-    `<text x="${x}" y="${y+24}" font-size="20" font-weight="900" fill="#fff" text-anchor="middle">${shown?g:'?'}</text>`;
+function mysterySVG(x,shown,g){const y=BB+3;
+  return `<line x1="${x}" y1="${BB}" x2="${x}" y2="${y}" stroke="#b98a55" stroke-width="3"/>`+
+    `<rect x="${x-21}" y="${y}" width="42" height="36" rx="7" fill="#9b6dbf" stroke="#fff" stroke-width="2"/>`+
+    `<text x="${x}" y="${y+25}" font-size="21" font-weight="900" fill="#fff" text-anchor="middle">${shown?g:'?'}</text>`;
 }
-// てこを描画。opts.mystery={pos,g,shown} があれば右になぞのおもり、tiltはmysteryMoment使用
-function renderLever(svg, state, opts){
+function renderLever(svg,state,opts){
   opts=opts||{};
   const mL=momentSide(state.left);
   const mR=(opts.mysteryMoment!=null)?opts.mysteryMoment:momentSide(state.right);
-  let deg=(mR-mL)*0.09;
-  deg=Math.max(-15,Math.min(15,deg));
+  let deg=Math.max(-15,Math.min(15,(mR-mL)*0.09));
   let ticks='',stacks='';
-  for(let p=1;p<=6;p++){
-    const lx=PIVOT-STEP*p, rx=PIVOT+STEP*p;
+  for(let p=1;p<=6;p++){const lx=PIVOT-STEP*p,rx=PIVOT+STEP*p;
     ticks+=`<text x="${lx}" y="108">${p}</text><text x="${rx}" y="108">${p}</text>`;
-    stacks+=stackSVG(lx,state.left[p])+stackSVG(rx,state.right[p]);
-  }
+    stacks+=stackSVG(lx,state.left[p])+stackSVG(rx,state.right[p]);}
   let mystery='';
-  if(opts.mystery){ mystery=mysterySVG(PIVOT+STEP*opts.mystery.pos, opts.mystery.shown, opts.mystery.g); }
-  const g=svg.querySelector('.beamGroup');
-  g.innerHTML=`<rect x="46" y="113" width="528" height="13" rx="6" fill="#d8a26a"/>`+
-    `<g fill="#9a7b52" font-size="12" font-weight="700" text-anchor="middle">${ticks}</g>${stacks}${mystery}`;
-  g.style.transform=`rotate(${deg}deg)`;
-}
-// 位置ボタンを6個つくる
-function buildPosRow(container, onTap){
-  let s='';
-  for(let p=1;p<=6;p++) s+=`<button class="pos" data-pos="${p}"><b>${p}</b><span class="tot"></span></button>`;
-  container.innerHTML=s;
-  container.addEventListener('click',e=>{const b=e.target.closest('.pos'); if(b&&!b.disabled) onTap(Number(b.dataset.pos));});
-}
-function updatePosTotals(container, side){
-  container.querySelectorAll('.pos').forEach(b=>{
-    const g=gramsAt(side[Number(b.dataset.pos)]);
-    b.querySelector('.tot').textContent=g?g+'g':'';
-  });
-}
-// パレット（重さえらび）
-function bindPalette(el, getset){
-  el.addEventListener('click',e=>{const b=e.target.closest('.pchip'); if(!b)return;
-    el.querySelectorAll('.pchip').forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
-    getset(Number(b.dataset.g));
-  });
-}
-function stateText(el, mL, mR){
-  el.className='state-text '+(mL===mR?'balance':(mL>mR?'left':'right'));
-  el.textContent = mL===mR ? '⚖️ つり合った！' : (mL>mR?'左が下がる ⬇️':'⬇️ 右が下がる');
-}
-function confetti(){
-  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  const c=document.createElement('div'); c.className='confetti';
-  const cols=['#3aa0e6','#ff6f61','#3fb28a','#ffcf3f'];
-  for(let i=0;i<70;i++){const p=document.createElement('i');
-    p.style.left=Math.random()*100+'%'; p.style.background=cols[i%cols.length];
-    p.style.animationDuration=(2+Math.random()*2)+'s'; p.style.animationDelay=(Math.random()*.7)+'s';
-    c.appendChild(p);}
-  document.body.appendChild(c); setTimeout(()=>c.remove(),5000);
+  if(opts.mystery)mystery=mysterySVG(PIVOT+STEP*opts.mystery.pos,opts.mystery.shown,opts.mystery.g);
+  svg.innerHTML=
+    `<rect class="dhl" x="0" y="104" width="0" height="196" rx="6" fill="#ffcf3f" opacity="0"/>`+
+    `<polygon points="310,120 280,196 340,196" fill="#7fa7c0"/>`+
+    `<rect x="250" y="192" width="120" height="8" rx="4" fill="#9fbccf"/>`+
+    `<g class="beamGroup" style="transform-box:view-box;transform-origin:310px 120px;transition:transform .6s cubic-bezier(.34,1.15,.5,1);">`+
+      `<rect x="46" y="113" width="528" height="13" rx="6" fill="#d8a26a"/>`+
+      `<g fill="#9a7b52" font-size="12" font-weight="700" text-anchor="middle">${ticks}</g>${stacks}${mystery}`+
+    `</g>`;
+  svg.querySelector('.beamGroup').style.transform=`rotate(${deg}deg)`;
 }
 
-/* ========== ① じっけん（自由実験） ========== */
-const exp={left:emptySide(),right:emptySide(),gram:10,order:{left:[],right:[]}};
+/* ========== 数字表示のトグル ========== */
+function setMoment(el,val){
+  if(store.nums){el.textContent=val;el.classList.remove('hidden');}
+  else{el.textContent='？';el.classList.add('hidden');}
+}
+function stateText(el,mL,mR){
+  el.className='state-text '+(mL===mR?'balance':(mL>mR?'left':'right'));
+  el.textContent=mL===mR?'⚖️ つり合った！':(mL>mR?'左が下がる ⬇️':'⬇️ 右が下がる');
+}
+
+/* ========== ドラッグでのせる ========== */
+function clientToVB(svg,cx,cy){
+  const r=svg.getBoundingClientRect();
+  const scale=Math.min(r.width/620,r.height/300);
+  const ox=(r.width-620*scale)/2, oy=(r.height-300*scale)/2;
+  return {x:(cx-r.left-ox)/scale, y:(cy-r.top-oy)/scale,
+          inside:cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom};
+}
+// tray から svg へドラッグして side/pos を返す
+function setupDrag(tray,svg,editable,onDrop){
+  let drag=null;
+  function hit(cx,cy){
+    const v=clientToVB(svg,cx,cy); if(!v.inside)return null;
+    const off=v.x-PIVOT; const side=off<0?'left':'right';
+    if(!editable[side])return null;
+    const p=Math.round(Math.abs(off)/STEP);
+    if(p<1||p>6)return null;
+    return {side,pos:p};
+  }
+  function highlight(t){
+    const dhl=svg.querySelector('.dhl'); if(!dhl)return;
+    if(!t){dhl.setAttribute('opacity','0');return;}
+    const x=PIVOT+(t.side==='left'?-1:1)*STEP*t.pos;
+    dhl.setAttribute('x',x-STEP/2); dhl.setAttribute('width',STEP); dhl.setAttribute('opacity','0.35');
+  }
+  tray.querySelectorAll('.weight-src').forEach(src=>{
+    src.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const g=Number(src.dataset.g);
+      const c=document.createElement('div'); c.className='drag-clone'; c.innerHTML=fundoSVG(g);
+      document.body.appendChild(c);
+      drag={g,clone:c};
+      move(e.clientX,e.clientY);
+    });
+  });
+  function move(x,y){ if(drag&&drag.clone){drag.clone.style.left=x+'px';drag.clone.style.top=y+'px';} }
+  window.addEventListener('pointermove',e=>{ if(!drag)return; move(e.clientX,e.clientY); highlight(hit(e.clientX,e.clientY)); },{passive:false});
+  window.addEventListener('pointerup',e=>{ if(!drag)return; const t=hit(e.clientX,e.clientY); if(t)onDrop(t.side,t.pos,drag.g); if(drag.clone)drag.clone.remove(); highlight(null); drag=null; });
+}
+
+/* ========== ふりがな / 数字トグル ========== */
+function applyRuby(){document.body.classList.toggle('no-ruby',!store.ruby);document.getElementById('rubyState').textContent=store.ruby?'ON':'OFF';document.getElementById('rubyToggle').setAttribute('aria-pressed',String(store.ruby));}
+function applyNums(){document.getElementById('numState').textContent=store.nums?'ON':'OFF';document.getElementById('numToggle').setAttribute('aria-pressed',String(store.nums));expRender();chRender();}
+document.getElementById('rubyToggle').addEventListener('click',()=>{store.ruby=!store.ruby;applyRuby();saveStore();});
+document.getElementById('numToggle').addEventListener('click',()=>{store.nums=!store.nums;applyNums();saveStore();});
+
+/* ========== タブ ========== */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',String(x===t)));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t.dataset.tab));
+  expRender();chRender();
+}));
+
+/* ========== ① じっけん ========== */
+const exp={left:emptySide(),right:emptySide(),order:[]};
 const expSvg=document.getElementById('expSvg');
-function expAdd(side,pos){ exp[side][pos].push(exp.gram); exp.order[side].push(pos); expRender(); }
 function expRender(){
   renderLever(expSvg,{left:exp.left,right:exp.right},{});
-  updatePosTotals(document.getElementById('expLeft'), exp.left);
-  updatePosTotals(document.getElementById('expRight'), exp.right);
-  const mL=momentSide(exp.left), mR=momentSide(exp.right);
-  document.getElementById('expMomL').textContent=mL;
-  document.getElementById('expMomR').textContent=mR;
-  stateText(document.getElementById('expState'), mL, mR);
+  const mL=momentSide(exp.left),mR=momentSide(exp.right);
+  setMoment(document.getElementById('expMomL'),mL);
+  setMoment(document.getElementById('expMomR'),mR);
+  stateText(document.getElementById('expState'),mL,mR);
 }
-buildPosRow(document.getElementById('expLeft'), p=>expAdd('left',p));
-buildPosRow(document.getElementById('expRight'), p=>expAdd('right',p));
-bindPalette(document.getElementById('expPalette'), g=>exp.gram=g);
-document.getElementById('expUndoL').addEventListener('click',()=>{const o=exp.order.left; if(o.length){exp.left[o.pop()].pop(); expRender();}});
-document.getElementById('expUndoR').addEventListener('click',()=>{const o=exp.order.right; if(o.length){exp.right[o.pop()].pop(); expRender();}});
-document.getElementById('expReset').addEventListener('click',()=>{exp.left=emptySide();exp.right=emptySide();exp.order={left:[],right:[]};expRender();});
+buildTray(document.getElementById('expTray'),[10,20,30]);
+setupDrag(document.getElementById('expTray'),expSvg,{left:true,right:true},(side,pos,g)=>{
+  exp[side][pos].push(g); exp.order.push({side,pos}); expRender();
+});
+document.getElementById('expUndo').addEventListener('click',()=>{const o=exp.order.pop();if(o){exp[o.side][o.pos].pop();expRender();}});
+document.getElementById('expReset').addEventListener('click',()=>{exp.left=emptySide();exp.right=emptySide();exp.order=[];expRender();});
 
-/* ========== ② チャレンジ（2ゲーム） ========== */
-const ch={mode:null,left:emptySide(),right:emptySide(),gram:10,order:[],mystery:null,cleared:0,done:false};
+/* ========== ② チャレンジ ========== */
+const ch={mode:null,left:emptySide(),right:emptySide(),order:[],mystery:null,cleared:0,done:false};
 const chSvg=document.getElementById('chSvg');
 const rand=n=>Math.floor(Math.random()*n);
-
 function chRender(){
-  const opts = ch.mode==='guess' && ch.mystery
-    ? {mystery:ch.mystery, mysteryMoment:ch.mystery.g*ch.mystery.pos}
-    : {};
+  const opts=ch.mode==='guess'&&ch.mystery?{mystery:ch.mystery,mysteryMoment:ch.mystery.g*ch.mystery.pos}:{};
   renderLever(chSvg,{left:ch.left,right:ch.right},opts);
-  updatePosTotals(document.getElementById('chLeft'), ch.left);
   const mL=momentSide(ch.left);
-  document.getElementById('chMomL').textContent=mL;
-  const mR = ch.mode==='guess' ? (ch.mystery&&ch.mystery.shown? ch.mystery.g*ch.mystery.pos : '?')
-                               : momentSide(ch.right);
-  document.getElementById('chMomR').textContent=mR;
-  const mRnum = ch.mode==='guess' ? ch.mystery.g*ch.mystery.pos : momentSide(ch.right);
-  stateText(document.getElementById('chState'), mL, mRnum);
+  setMoment(document.getElementById('chMomL'),mL);
+  const rBox=document.getElementById('chMomR');
+  if(ch.mode==='guess'){ // 右はなぞ：答えるまで？
+    if(ch.mystery&&ch.mystery.shown)setMoment(rBox,ch.mystery.g*ch.mystery.pos);
+    else{rBox.textContent='？';rBox.classList.add('hidden');}
+  }else setMoment(rBox,momentSide(ch.right));
+  const mRn=ch.mode==='guess'&&ch.mystery?ch.mystery.g*ch.mystery.pos:momentSide(ch.right);
+  stateText(document.getElementById('chState'),mL,mRn);
 }
 function newRound(mode){
-  ch.mode=mode; ch.left=emptySide(); ch.right=emptySide(); ch.order=[]; ch.done=false;
+  ch.mode=mode;ch.left=emptySide();ch.right=emptySide();ch.order=[];ch.done=false;
   document.getElementById('chNext').style.display='none';
   document.getElementById('chChoices').innerHTML='';
-  const fb=document.getElementById('chFeedback'); fb.textContent=''; fb.className='feedback';
-  document.getElementById('modeBalance').classList.toggle('on', mode==='balance');
-  document.getElementById('modeGuess').classList.toggle('on', mode==='guess');
+  const fb=document.getElementById('chFeedback');fb.textContent='';fb.className='feedback';
+  document.getElementById('modeBalance').classList.toggle('on',mode==='balance');
+  document.getElementById('modeGuess').classList.toggle('on',mode==='guess');
   if(mode==='balance'){
-    const g=[10,20,30][rand(3)], d=2+rand(5); // きょり2〜6
-    ch.right[d]=[g]; ch.mystery=null;
-    document.getElementById('chPrompt').innerHTML=`🟥 右うで（<b>${g}g・きょり${d}</b>）とつり合うように、左におもりをつけよう！`;
+    const g=[10,20,30][rand(3)],d=2+rand(5);
+    ch.right[d]=[g];ch.mystery=null;
+    document.getElementById('chPrompt').innerHTML=`🟥 右うで（<b>${g}g・きょり${d}</b>）とつり合うように、左に分銅をのせよう！`;
   }else{
-    const g=[20,30,40,50,60][rand(5)], d=2+rand(4); // きょり2〜5
+    const g=[20,30,40,50,60][rand(5)],d=2+rand(4);
     ch.mystery={pos:d,g:g,shown:false};
-    document.getElementById('chPrompt').innerHTML=`🟣 右の「?」（きょり${d}）を、左のおもりで<b>つり合わせて</b>、重さを当てよう！`;
+    document.getElementById('chPrompt').innerHTML=`🟣 右の「?」（きょり${d}）を、左の分銅で<b>つり合わせて</b>、重さを当てよう！`;
   }
   chRender();
 }
-function chAdd(pos){ if(ch.done)return; ch.left[pos].push(ch.gram); ch.order.push(pos); afterChange(); }
+buildTray(document.getElementById('chTray'),[10,20,30]);
+setupDrag(document.getElementById('chTray'),chSvg,{left:true,right:false},(side,pos,g)=>{
+  if(ch.done||side!=='left')return;
+  ch.left[pos].push(g); ch.order.push(pos); afterChange();
+});
 function afterChange(){
   chRender();
-  if(ch.done || !ch.mode) return;
+  if(ch.done||!ch.mode)return;
   const mL=momentSide(ch.left);
-  if(ch.mode==='balance'){
-    if(mL>0 && mL===momentSide(ch.right)) roundClear('やった！つり合った！ 🎉');
-  }else{
-    const target=ch.mystery.g*ch.mystery.pos;
-    if(mL===target) showGuessChoices(); else document.getElementById('chChoices').innerHTML='';
-  }
+  if(ch.mode==='balance'){ if(mL>0&&mL===momentSide(ch.right))roundClear('やった！つり合った！ 🎉'); }
+  else{ const t=ch.mystery.g*ch.mystery.pos; if(mL===t)showChoices(); else document.getElementById('chChoices').innerHTML=''; }
 }
-function showGuessChoices(){
-  const fb=document.getElementById('chFeedback'); fb.textContent='つり合った！右のおもりは何g？'; fb.className='feedback';
-  const g=ch.mystery.g;
-  const set=new Set([g]); while(set.size<3){const c=[10,20,30,40,50,60][rand(6)]; set.add(c);}
+function showChoices(){
+  const fb=document.getElementById('chFeedback');fb.textContent='つり合った！右のおもりは何g？';fb.className='feedback';
+  const g=ch.mystery.g;const set=new Set([g]);while(set.size<3)set.add([10,20,30,40,50,60][rand(6)]);
   const opts=[...set].sort((a,b)=>a-b);
   document.getElementById('chChoices').innerHTML=opts.map(o=>`<button class="btn coral" data-ans="${o}">${o}g</button>`).join('');
 }
 document.getElementById('chChoices').addEventListener('click',e=>{
-  const b=e.target.closest('[data-ans]'); if(!b||ch.done)return;
-  if(Number(b.dataset.ans)===ch.mystery.g){
-    ch.mystery.shown=true; chRender();
-    roundClear(`せいかい！ 右のおもりは ${ch.mystery.g}g でした 🎉`);
-  }else{
-    const fb=document.getElementById('chFeedback'); fb.textContent='ちがうみたい…左のモーメントと右のきょりから考えよう。'; fb.className='feedback ng';
-  }
+  const b=e.target.closest('[data-ans]');if(!b||ch.done)return;
+  if(Number(b.dataset.ans)===ch.mystery.g){ch.mystery.shown=true;chRender();roundClear(`せいかい！ 右のおもりは ${ch.mystery.g}g でした 🎉`);}
+  else{const fb=document.getElementById('chFeedback');fb.textContent='ちがうみたい…左のようすと右のきょりから考えよう。';fb.className='feedback ng';}
 });
 function roundClear(msg){
-  ch.done=true; ch.cleared++;
+  ch.done=true;ch.cleared++;
   document.getElementById('chCleared').textContent=`クリア ${ch.cleared}問`;
-  const fb=document.getElementById('chFeedback'); fb.textContent=msg; fb.className='feedback ok';
+  const fb=document.getElementById('chFeedback');fb.textContent=msg;fb.className='feedback ok';
   document.getElementById('chChoices').innerHTML='';
   document.getElementById('chNext').style.display='';
-  confetti();
 }
-buildPosRow(document.getElementById('chLeft'), chAdd);
-bindPalette(document.getElementById('chPalette'), g=>ch.gram=g);
-document.getElementById('chUndo').addEventListener('click',()=>{ if(ch.done)return; if(ch.order.length){ch.left[ch.order.pop()].pop(); afterChange();}});
-document.getElementById('chClear').addEventListener('click',()=>{ if(ch.done)return; ch.left=emptySide(); ch.order=[]; afterChange();});
+document.getElementById('chUndo').addEventListener('click',()=>{if(ch.done)return;const p=ch.order.pop();if(p!=null){ch.left[p].pop();afterChange();}});
+document.getElementById('chClear').addEventListener('click',()=>{if(ch.done)return;ch.left=emptySide();ch.order=[];afterChange();});
 document.getElementById('chNext').addEventListener('click',()=>newRound(ch.mode));
 document.getElementById('modeBalance').addEventListener('click',()=>newRound('balance'));
 document.getElementById('modeGuess').addEventListener('click',()=>newRound('guess'));
 
 /* ========== 初期化 ========== */
-applyRuby();
+applyRuby();applyNums();
 expRender();
 newRound('balance');
 </script>
